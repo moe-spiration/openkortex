@@ -1,0 +1,449 @@
+@import "tailwindcss";
+@import "@kortex/ui/styles";
+
+/* Tailwind must scan the shared UI package for utility classes. */
+@source "../../../../packages/ui/src";
+/* ...and this app (the preview server uses preview/ as its root, so auto-detection would miss src/). */
+@source "../";
+
+/*
+ * Extension-only component recipes, ported from design/reference/ds/kortex/components/bundle.css for the pieces
+ * @kortex/ui has no primitive for yet. Class names are kept (kx-*) so the markup reads like Extension.dc.html.
+ *
+ * Flat look (2026-11-11, feedback 0.6.3: no 3D edges, no sunken fields): colours come only from the shared tokens
+ * (packages/ui/src/styles/tokens.css); nothing here redefines a token (apps/mobile/test/token-parity.test.ts). Surfaces are
+ * soft fills on the luminance steps (--lum-0 tray, --lum-1 canvas, --lum-2 card/field, --lum-3 hover/selected) with at
+ * most one hairline; only floating things (menu, drag ghost, toasts, the in-page clipper) cast a shadow. Filled accent
+ * controls use --accent-fill with --on-accent (picked by luminance), so any accent stays readable.
+ */
+
+/* Unlayered rules would beat Tailwind utilities (which live in @layer utilities), so the recipes
+   sit in @layer components: utilities such as items-start or h-8 still win when set on an element. */
+@layer components {
+:root, .kx-root {
+  /* tokens.css defines these on :root, which does not reach into shadow roots. @fontsource variable
+     fonts register as "Geist Variable" / "JetBrains Mono Variable", so list those names first. */
+  --font-sans: "Geist Variable", "Geist", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans); /* Typography v2: no serif */
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+}
+.kx-root {
+  /* Tailwind sizes are rem-based, and rem follows the host page's <html> font-size inside the content-script
+     shadow root (a 10px root shrank the highlighter menu to 62%). Pin them to px so the UI is the same size on
+     every page; on extension pages (16px root) nothing changes. */
+  --spacing: 4px;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-pill: 9999px;
+  --opacity-disabled: 0.45;
+  --dur: 150ms;
+  --dur-fast: 120ms;
+  --saturate-glass: 140%;
+  /* V2 scale (design/feedback/v2 01a): body is Geist 14/21 · 400; headings and meta use the helpers below */
+  --type-h3: 600 17px/24px var(--font-sans);
+  --type-h3-tracking: -0.01em;
+  --type-body: 400 14px/21px var(--font-sans);
+  --type-meta: 400 12.5px/18px var(--font-sans);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+.kx-root *, .kx-root *::before, .kx-root *::after { box-sizing: border-box; }
+
+/* prototype helpers */
+.kxb { appearance: none; -webkit-appearance: none; border: 0; margin: 0; padding: 0; font: inherit; letter-spacing: normal; text-align: left; cursor: pointer; background: transparent; color: inherit; }
+.kxh-row { display: flex; align-items: center; gap: 8px; }
+.kxh-grow { flex: 1; min-width: 0; }
+.kxh-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.kx-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.kx-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.kx-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+@keyframes kxup { from { transform: translateY(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+.kx-slide-up { animation: kxup 180ms var(--ease-snappy) both; }
+@keyframes kx-spin { to { transform: rotate(360deg); } }
+
+/* Alt+K clipper */
+.kx-clip { width: 360px; padding: 14px 16px 16px; border-radius: var(--radius-2xl); background: var(--lum-1); box-shadow: var(--edge-float); color: var(--t1); }
+.kx-clip--popup { border-radius: 0; box-shadow: none; }
+/* C1/C2: summary detail + Autosave below the form, separated by a hairline (no card in the card). */
+.kx-clip-foot { padding-top: 8px; border-top: 1px solid var(--hair-strong); }
+.kx-clip-field { display: flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 10px; border-radius: var(--radius-xl); background: var(--lum-2); color: var(--t2); }
+/* One surface per area (V2-11D): the page preview sits flat on the panel, no card inside the card. */
+.kx-bookmark { display: grid; gap: 8px; }
+/* fx4: compact preview row (thumb left, title right) like a link card, instead of a big hero image */
+.kx-bookmark-main { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; align-items: start; padding: 8px; border-radius: var(--radius-xl); background: var(--lum-2); }
+.kx-bookmark-thumb { height: 60px; border-radius: var(--radius-lg); background: var(--lum-3); position: relative; overflow: hidden; }
+.kx-bookmark-main .kx-t-body-strong { font-size: 13.5px; line-height: 19px; }
+.kx-clip-title { font: var(--type-body); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.kx-clip-cta { min-height: 42px; }
+/* V2-11H: mono only for URLs; everything else is Geist on the scale */
+.kx-domain { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 12.5px; line-height: 18px; font-weight: 400; color: var(--text-muted); letter-spacing: 0; }
+.kx-t-h3 { font: var(--type-h3); letter-spacing: var(--type-h3-tracking); }
+.kx-t-body { font: var(--type-body); letter-spacing: 0; }
+.kx-t-body-strong { font: var(--type-body); font-weight: 600; letter-spacing: 0; }
+.kx-t-meta { font: var(--type-meta); letter-spacing: 0; }
+.kx-url { font-family: var(--font-mono) !important; font-size: 13px !important; }
+.kx-spinner { width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid var(--text-muted); border-right-color: transparent; animation: kx-spin 700ms linear infinite; }
+.kx-progress { height: 4px; border-radius: 2px; background: var(--lum-4); overflow: hidden; }
+.kx-progress > i { display: block; height: 100%; border-radius: 2px; background: var(--accent-fill); }
+.kx-progress--processing > i { background: var(--status-processing); }
+
+/* inputs */
+/* flat field (2026-11-11): a soft fill, a hairline on hover, the accent ring on focus; no inset edges */
+.kx-control { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; border-radius: var(--radius-lg); background: var(--lum-2); box-shadow: none; color: var(--t3); transition: box-shadow var(--dur) var(--ease-snappy), background var(--dur) var(--ease-snappy); }
+.kx-control:hover { box-shadow: 0 0 0 1px var(--hair-strong); }
+.kx-control:focus-within { box-shadow: 0 0 0 1px var(--accent-line), 0 0 0 3px var(--accent-soft); }
+.kx-control > input, .kx-control > textarea, .kx-input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: 14px; font-weight: 400; letter-spacing: -0.005em; padding: 0; }
+.kx-control > input::placeholder, .kx-control > textarea::placeholder, .kx-input::placeholder { color: var(--text-muted); }
+.kx-control.is-invalid { box-shadow: 0 0 0 1px var(--crit), 0 0 0 3px color-mix(in srgb, var(--crit) 14%, transparent); }
+.kx-radio, .kx-check { appearance: none; -webkit-appearance: none; display: inline-grid; place-content: center; width: 16px; height: 16px; flex: none; margin: 0; border-radius: 5px; background: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--t3) 70%, transparent); cursor: pointer; transition: background var(--dur) var(--ease-snappy), box-shadow var(--dur) var(--ease-snappy); }
+.kx-radio { border-radius: 50%; }
+.kx-radio:hover, .kx-check:hover { box-shadow: inset 0 0 0 1.5px var(--t2); }
+.kx-radio:checked, .kx-check:checked { background: var(--accent-fill); box-shadow: none; }
+.kx-radio:checked::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--on-accent); }
+.kx-check:checked::after { content: ""; width: 9px; height: 5px; margin-top: -2px; border: solid var(--on-accent); border-width: 0 0 2px 2px; transform: rotate(-45deg); }
+.kx-choice { display: flex; align-items: center; gap: 10px; min-height: 28px; padding: 0 8px; border-radius: var(--radius-xl); font: var(--type-body); color: var(--text-primary); cursor: pointer; transition: background var(--dur) var(--ease-snappy); }
+.kx-choice:hover { background: var(--lum-3); }
+.kx-switch { appearance: none; -webkit-appearance: none; position: relative; width: 34px; height: 20px; flex: none; margin: 0; border-radius: var(--radius-pill); background: var(--lum-4); box-shadow: none; cursor: pointer; transition: background var(--dur) var(--ease-snappy); }
+.kx-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 2px var(--spec-bottom), 0 0 0 0.5px var(--hair-strong); transition: transform var(--dur) var(--ease-snappy); }
+.kx-switch:checked { background: var(--accent-fill); box-shadow: none; }
+.kx-switch:checked::after { transform: translateX(14px); }
+
+/* touch-sized segmented tabs (the prototype sets min-height inline) */
+.kx-tabs-touch-36 [role="tab"] { min-height: 36px; }
+.kx-tabs-touch-40 [role="tab"] { min-height: 40px; }
+
+/* inline highlighter */
+/* inline highlighter: level 2, but opaque (it sits on arbitrary pages) */
+.kx-seltool { position: absolute; display: inline-flex; gap: 2px; padding: 4px; border-radius: var(--radius-xl); background: var(--lum-2); box-shadow: var(--edge-float); z-index: 3; }
+
+/* toast */
+/* toast: the one glass surface of the extension (level 2 with the gradient edge, like .kx-toast in tactile.css) */
+.kx-toast { display: flex; align-items: center; gap: 10px; width: 360px; max-width: 100%; padding: 10px 10px 10px 12px; border: 1px solid transparent; border-radius: var(--radius-xl); background-color: var(--glass-strong); background-image: linear-gradient(var(--glass-strong), var(--glass-strong)), linear-gradient(180deg, var(--hair-strong), var(--hair) 45%, transparent); background-origin: border-box; background-clip: padding-box, border-box; -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%); box-shadow: var(--drop); font-size: 14px; line-height: 21px; color: var(--t1); }
+/* icon colour = status; mixed with the text colour so it keeps 3:1 against the surface in both themes */
+.kx-toast > svg:first-child { color: var(--t, var(--text-secondary)); }
+.kx-toast--success { --t: color-mix(in srgb, var(--status-synced) 60%, var(--text-primary)); }
+.kx-toast--error { --t: color-mix(in srgb, var(--status-urgent) 60%, var(--text-primary)); }
+
+/* status chip (done / pending / failed): neutral fill, colour only on the icon */
+.kx-statechip { display: inline-flex; align-items: center; gap: 6px; width: fit-content; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--lum-3); box-shadow: none; color: var(--t1); font: var(--type-meta); font-weight: 500; letter-spacing: 0; white-space: nowrap; }
+.kx-statechip--ok > svg { color: color-mix(in srgb, var(--status-synced) 60%, var(--text-primary)); }
+.kx-statechip--warn > svg { color: color-mix(in srgb, var(--status-processing) 60%, var(--text-primary)); }
+.kx-statechip--error > svg { color: color-mix(in srgb, var(--status-urgent) 60%, var(--text-primary)); }
+
+/* hashtag choice in the clipper: a neutral chip, the tag colour is only the dot (V2-11E) */
+.kx-tagchip { display: inline-flex; align-items: center; min-height: 30px; padding: 0 10px; border: 1px dashed color-mix(in srgb, var(--text-muted) 55%, transparent); border-radius: var(--radius-pill); background: transparent; cursor: pointer; transition: background var(--dur) var(--ease-snappy), border-color var(--dur) var(--ease-snappy); }
+.kx-tagchip:hover { background: var(--lum-3); }
+/* picked: raised chip (top-lit edge), the hairline replaces the dashed border */
+.kx-tagchip[aria-pressed="true"] { border-style: solid; border-color: transparent; background: var(--lum-3); box-shadow: none; }
+.kx-tagchip[aria-pressed="true"] span { color: var(--text-primary); }
+
+/* page chrome helpers shared by the options page */
+.kx-page { min-height: 100vh; background: var(--lum-0) var(--glow-shell) no-repeat; color: var(--t1); }
+}
+
+/* extension pages (popup / options) */
+html { background: var(--lum-1); }
+body { margin: 0; }
+
+/* Flat look (2026-11-11, replaces Tactile Craft's raised thumb): the selected segment is a light tint, no edges.
+   Unlayered, so it wins over the ring utility the @kortex/ui SegmentedTabs sets. */
+.kx-root [role="tablist"] > [role="tab"][aria-selected="true"] { background: var(--lum-3); color: var(--t1); box-shadow: none; }
+
+/* Cover choice (clipper): small previews, the picked one gets the outline; every cover is a real button. */
+@layer components {
+  .kx-covers { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kx-cover { position: relative; width: 64px; height: 44px; padding: 0; overflow: hidden; border: 0; border-radius: var(--radius-lg); background: var(--lum-2); box-shadow: none; cursor: pointer; }
+  .kx-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .kx-cover[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--accent-line), 0 0 0 1px var(--accent); }
+  .kx-cover--none { display: inline-grid; place-items: center; width: auto; padding: 0 10px; font: var(--type-meta); color: var(--t2); }
+}
+
+/* Side panel shell (2026-11-11, flat): top bar with the view switch, sticky search, sync line, prompts. The tab manager
+   itself (open tabs, sessions, cards, drag & drop) is the .kx-tm block below, shared with the full page (tabs.html). */
+@layer components {
+  .kx-sp-shell { padding: 0 12px 16px; }
+  .kx-sp { container: kx-sp / inline-size; }
+  .kx-sp h2, .kx-sp p { margin: 0; }
+  /* Grid items default to min-width:auto; without minmax(0,1fr) one long title or URL widens the whole panel. */
+  .kx-sp, .kx-sp-grid, .kx-sp-prompts { grid-template-columns: minmax(0, 1fr); }
+  .kx-sp > *, .kx-sp-prompts > li { min-width: 0; }
+  .kx-sp-prompts { overflow-wrap: anywhere; }
+
+  /* top bar: mark, view switch (underline tabs), big view and options. Sticky with the search below it. */
+  .kx-sp-top { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: 10px; margin: 0 -12px; padding: 10px 12px 8px; background: var(--lum-1); }
+  .kx-sp-views { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border-radius: var(--radius-lg); background: var(--hair); }
+  .kx-sp-view { appearance: none; display: inline-flex; align-items: center; gap: 6px; height: 28px; margin: 0; padding: 0 10px; border: 0; border-radius: 5px; background: transparent; color: var(--t3); font: var(--type-meta); font-size: 13px; font-weight: 500; cursor: pointer; transition: color var(--dur) var(--ease-snappy), background var(--dur) var(--ease-snappy); }
+  .kx-sp-view svg { width: 14px; height: 14px; }
+  .kx-sp-view:hover { color: var(--t1); }
+  .kx-sp-view[aria-selected="true"] { color: var(--t1); background: var(--lum-3); }
+
+  /* sticky search under the top bar; "/" focuses it */
+  .kx-sp-search { position: sticky; top: 46px; z-index: 3; margin: -6px -12px -8px; padding: 0 12px 8px; background: linear-gradient(var(--lum-1) 80%, transparent); }
+  .kx-sp-search .kx-control { height: 36px; border-radius: var(--radius-xl); background: var(--lum-2); }
+  .kx-sp-search .kx-control > input { font-size: 13px; }
+  .kx-sp-search .kx-control > input::-webkit-search-cancel-button { display: none; }
+  .kx-sp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 5px; background: var(--hair); color: var(--t3); font: var(--type-meta); font-size: 11.5px; line-height: 1; }
+  .kx-sp-clear { appearance: none; display: inline-grid; place-items: center; width: 24px; height: 24px; margin-right: -4px; padding: 0; border: 0; border-radius: var(--radius-lg); background: transparent; color: var(--t3); cursor: pointer; }
+  .kx-sp-clear:hover { background: var(--lum-3); color: var(--t1); }
+  .kx-sp-clear svg { width: 14px; height: 14px; }
+
+  .kx-sp-sechead { display: flex; align-items: center; gap: 8px; min-height: 28px; min-width: 0; }
+  .kx-sp-sync { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; min-height: 28px; font-size: 12px; }
+  .kx-tm-sechead > .kx-sp-sync, .kx-sp-sechead > .kx-sp-sync { flex: 1; }
+  .kx-tm-sechead > .kx-sp-sync > .kxh-grow { flex: 0 1 auto; }
+
+  /* states shared by the prompts view */
+  .kx-sp-undo { position: sticky; bottom: 12px; z-index: 3; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border-radius: var(--radius-xl); background: var(--glass-strong); -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%); box-shadow: var(--edge-float); color: var(--t1); font: var(--type-body); font-size: 13px; }
+  .kx-sp-state { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 4px; color: var(--t2); font: var(--type-body); font-size: 13px; }
+
+  /* prompts: flat rows like the collections */
+  .kx-sp-actions { display: flex; align-items: center; gap: 0; flex: none; }
+  .kx-sp-prompts { display: grid; gap: 0; margin: 0 -4px; padding: 0; list-style: none; }
+  .kx-sp-prompt { position: relative; display: grid; gap: 2px; padding: 8px 6px 10px 10px; border-radius: var(--radius-xl); transition: background var(--dur) var(--ease-snappy); }
+  .kx-sp-prompt + .kx-sp-prompt::after { content: ""; position: absolute; left: 10px; right: 10px; top: 0; height: 1px; background: var(--hair); }
+  .kx-sp-prompt:is(:hover, :focus-within) { background: var(--lum-2); }
+  .kx-sp-prompt:is(:hover, :focus-within)::after, .kx-sp-prompt:is(:hover, :focus-within) + .kx-sp-prompt::after { opacity: 0; }
+  .kx-sp-prompt .kx-t-body-strong { font-size: 13.5px; line-height: 19px; }
+  .kx-sp-prompt .kx-clamp1 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; line-height: 17px; }
+  @media (hover: hover) {
+    .kx-sp-prompt .kx-sp-actions { opacity: 0; transition: opacity var(--dur) var(--ease-snappy); }
+    .kx-sp-prompt:is(:hover, :focus-within) .kx-sp-actions { opacity: 1; }
+  }
+}
+
+/* Tab manager (Toby as the model, 2026-11-11): open tabs sit in a recessed tray, saved sessions are collections on the
+   canvas with a grid of tab cards (favicon tile, two-line title, host). Flat: fills and one hairline, no edges or
+   inner shadows; only floating things (menu, drag ghost, toasts) cast a shadow. Accent only for actions, the current
+   tab, the selection and drop targets. Radii: 16 blocks, 12 cards, 8 controls. */
+@layer components {
+  .kx-tm { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; min-width: 0; }
+  .kx-tm h2, .kx-tm p { margin: 0; }
+  .kx-tm-sechead { display: flex; align-items: center; gap: 8px; min-height: 28px; min-width: 0; }
+  .kx-tm-h { display: flex; align-items: center; gap: 8px; flex: none; font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--t1); }
+  .kx-tm-count { display: inline-grid; place-items: center; flex: none; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill); background: var(--hair); color: var(--t3); font: 500 11.5px/1 var(--font-sans); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  .kx-tm-meta { font: var(--type-meta); font-size: 12px; color: var(--t3); }
+  .kx-tm-state { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 4px; color: var(--t2); font: var(--type-body); font-size: 13px; }
+  .kx-tm-empty-line { padding: 4px 2px; font: var(--type-meta); color: var(--t3); }
+
+  /* open tabs: a recessed tray, cards raised on it */
+  .kx-tm-open { display: grid; gap: 10px; min-width: 0; padding: 12px; border-radius: var(--radius-2xl); background: var(--lum-0); }
+  .kx-tm-pickbar { display: flex; align-items: center; gap: 4px; min-width: 0; }
+  .kx-tm-more { appearance: none; justify-self: start; margin: -2px 0 0; padding: 2px 8px; border: 0; border-radius: var(--radius-lg); background: transparent; color: var(--t3); font: var(--type-meta); font-size: 12px; font-weight: 500; cursor: pointer; }
+  .kx-tm-more:hover { color: var(--t1); background: var(--hair); }
+  .kx-tm-savebar { display: grid; gap: 8px; padding-top: 2px; }
+  .kx-tm-name { display: flex; align-items: center; gap: 8px; min-width: 0; height: 34px; padding: 0 10px; border-radius: var(--radius-lg); background: var(--lum-2); color: var(--t3); transition: box-shadow var(--dur) var(--ease-snappy); }
+  .kx-tm-name > svg { width: 14px; height: 14px; flex: none; }
+  .kx-tm-name > input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent; color: var(--t1); font: inherit; font-size: 13px; }
+  .kx-tm-name > input::placeholder { color: var(--t3); }
+  .kx-tm-name:focus-within { box-shadow: 0 0 0 1px var(--accent-line), 0 0 0 3px var(--accent-soft); }
+  .kx-tm-saveacts { display: flex; gap: 8px; min-width: 0; }
+  .kx-tm-primary { flex: 1; min-width: 0; height: 36px; }
+  .kx-tm-saveacts > button { height: 36px; }
+
+  /* card grid */
+  .kx-tm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .kx-tm-card { position: relative; min-width: 0; border-radius: var(--radius-xl); background: var(--lum-2); transition: background var(--dur) var(--ease-snappy), opacity var(--dur) var(--ease-snappy); touch-action: manipulation; }
+  .kx-tm-card:hover, .kx-tm-card:focus-within { background: var(--lum-3); }
+  .kx-tm-card[data-dragging] { opacity: 0.35; }
+  .kx-tm-card[data-current] { box-shadow: inset 0 0 0 1.5px var(--accent-line); }
+  .kx-tm-card[data-checked] { background: color-mix(in srgb, var(--accent-soft) 70%, var(--lum-2)); box-shadow: inset 0 0 0 1.5px var(--accent-line); }
+  .kx-tm-card[data-insert]::before { content: ""; position: absolute; left: -5px; top: 8px; bottom: 8px; width: 3px; border-radius: 2px; background: var(--accent-fill); }
+  .kx-tm-cardbtn { appearance: none; -webkit-appearance: none; display: block; width: 100%; min-height: 58px; margin: 0; padding: 10px 12px; border: 0; border-radius: inherit; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  label.kx-tm-cardbtn { display: flex; align-items: center; gap: 8px; }
+  .kx-tm-card:not(.kx-tm-card--open) .kx-tm-cardbtn, .kx-tm-card--open:not([data-checked]) .kx-tm-cardbtn { cursor: pointer; }
+  .kx-tm-face { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 10px; row-gap: 2px; align-items: center; min-width: 0; }
+  .kx-tm-favbox { grid-row: 1 / span 2; display: inline-grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: var(--radius-lg); background: var(--lum-3); transition: background var(--dur) var(--ease-snappy); }
+  .kx-tm-card:hover .kx-tm-favbox { background: var(--lum-4); }
+  .kx-tm-favbox--sm { width: 22px; height: 22px; border-radius: 5px; background: var(--lum-2); }
+  .kx-tm-fav { width: 16px; height: 16px; flex: none; border-radius: 3px; object-fit: contain; }
+  .kx-tm-favbox--sm .kx-tm-fav { width: 14px; height: 14px; }
+  .kx-tm-fav--none { color: var(--t3); stroke-width: 1.6; }
+  .kx-tm-cardtitle { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-width: 0; font: 500 12.5px/17px var(--font-sans); color: var(--t1); overflow-wrap: anywhere; }
+  .kx-tm-host { min-width: 0; font: 400 11.5px/15px var(--font-sans); color: var(--t3); }
+  /* hover actions sit on the card's own fill, faded in from the left */
+  .kx-tm-cardacts { position: absolute; top: 4px; right: 4px; display: flex; align-items: center; gap: 0; padding-left: 10px; border-radius: var(--radius-lg); background: linear-gradient(90deg, transparent, var(--lum-3) 10px); }
+  .kx-tm-card[data-checked] .kx-tm-cardacts { display: none; }
+  .kx-tm-cardacts button { width: 24px; height: 24px; min-width: 24px; }
+  .kx-tm-cardacts svg { width: 13px; height: 13px; }
+  .kx-tm-pick { width: 14px; height: 14px; }
+
+  /* drag ghost (follows the pointer) */
+  .kx-tm-face[data-ghost] { width: 220px; padding: 10px 12px; border-radius: var(--radius-xl); background: var(--lum-3); box-shadow: 0 0 0 1px var(--hair-strong), var(--shadow-floating); transform: rotate(-1.5deg); cursor: grabbing; }
+  .kx-tm-ghost { display: grid; justify-items: start; gap: 6px; width: max-content; }
+  .kx-tm-ghosthint { display: grid; gap: 1px; max-width: 260px; padding: 6px 10px; border-radius: var(--radius-lg); background: var(--accent); color: #FFFFFF; font: 500 12px/16px var(--font-sans); box-shadow: var(--shadow-floating); }
+  .kx-tm-ghosthint > strong { font-weight: 600; }
+  .kx-tm-ghosthint > span { opacity: 0.85; }
+  .kx-tm-ghosthint[data-none] { background: var(--lum-3); color: var(--t2); box-shadow: 0 0 0 1px var(--hair-strong), var(--shadow-floating); }
+  .kx-tm-ghostsession { display: flex; align-items: center; gap: 8px; width: max-content; max-width: 320px; padding: 8px 12px; border-radius: var(--radius-xl); background: var(--lum-3); box-shadow: 0 0 0 1px var(--hair-strong), var(--shadow-floating); color: var(--t1); font: 600 13.5px/18px var(--font-sans); cursor: grabbing; }
+  .kx-tm-ghostsession svg { width: 14px; height: 14px; color: var(--t3); }
+
+  /* saved sessions: collections on the canvas */
+  .kx-tm-saved { display: grid; gap: 8px; min-width: 0; }
+  .kx-tm-sessions { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+  .kx-tm-session { position: relative; display: grid; gap: 8px; min-width: 0; margin: 0 -8px; padding: 6px 8px 10px; border-radius: var(--radius-2xl); transition: background var(--dur) var(--ease-snappy), box-shadow var(--dur) var(--ease-snappy); scroll-margin-top: 96px; }
+  .kx-tm-session + .kx-tm-session::before { content: ""; position: absolute; left: 12px; right: 12px; top: -2px; height: 1px; background: var(--hair); }
+  .kx-tm-session[data-dragging] { opacity: 0.4; }
+  .kx-tm-session[data-drop] { background: color-mix(in srgb, var(--accent-soft) 55%, transparent); box-shadow: inset 0 0 0 1.5px var(--accent-line); }
+  .kx-tm-session[data-drop]::before, .kx-tm-session[data-drop] + .kx-tm-session::before { opacity: 0; }
+  .kx-tm-shead { display: flex; flex-wrap: wrap; align-items: center; column-gap: 2px; min-width: 0; }
+  .kx-tm-grip { appearance: none; display: inline-grid; place-items: center; width: 18px; height: 28px; flex: none; margin: 0 0 0 -6px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: var(--t4); cursor: grab; touch-action: none; }
+  .kx-tm-grip:active { cursor: grabbing; }
+  .kx-tm-grip svg { width: 13px; height: 13px; }
+  .kx-tm-stitle { appearance: none; -webkit-appearance: none; display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; margin: 0; padding: 4px 6px 4px 0; border: 0; border-radius: var(--radius-lg); background: transparent; color: var(--t1); font: 600 14px/20px var(--font-sans); letter-spacing: -0.005em; text-align: left; cursor: pointer; }
+  .kx-tm-sname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .kx-tm-chevron { width: 16px; height: 16px; flex: none; color: var(--t4); transition: transform var(--dur) var(--ease-snappy), color var(--dur) var(--ease-snappy); }
+  .kx-tm-stitle[aria-expanded="true"] .kx-tm-chevron { transform: rotate(90deg); color: var(--t3); }
+  .kx-tm-stitle:hover .kx-tm-chevron { color: var(--t1); }
+  .kx-tm-sacts { display: flex; align-items: center; gap: 0; flex: none; margin-left: auto; }
+  .kx-tm-openall { color: var(--t2); }
+  /* meta under the title in the narrow panel, next to it on the page */
+  .kx-tm-smeta { order: 5; flex: 1 0 100%; min-width: 0; padding-left: 34px; margin-top: -4px; font: var(--type-meta); font-size: 12px; line-height: 16px; color: var(--t3); }
+  .kx-tm-strip { appearance: none; display: flex; align-items: center; gap: 6px; min-width: 0; margin: 0; padding: 0 0 0 34px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; overflow: hidden; }
+  .kx-tm-moretabs { font: var(--type-meta); font-size: 12px; font-weight: 500; color: var(--t3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .kx-tm-session > .kx-tm-grid { padding-left: 0; }
+  .kx-tm-dropslot { display: grid; place-items: center; min-height: 58px; padding: 8px 12px; border-radius: var(--radius-xl); border: 1px dashed var(--hair-strong); color: var(--t3); font: var(--type-meta); text-align: center; }
+  /* over the section head while an open tab is dragged, so nothing below moves */
+  .kx-tm-saved > .kx-tm-sechead { position: relative; }
+  .kx-tm-newdrop { position: absolute; inset: -6px 0; z-index: 3; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radius-xl); border: 1.5px dashed var(--accent-line); background: linear-gradient(color-mix(in srgb, var(--accent-soft) 60%, transparent), color-mix(in srgb, var(--accent-soft) 60%, transparent)), var(--lum-1); color: var(--t1); font: 500 13px/18px var(--font-sans); transition: background var(--dur) var(--ease-snappy); }
+  .kx-tm-newdrop svg { width: 16px; height: 16px; flex: none; }
+  .kx-tm-newdroptext { display: flex; align-items: baseline; gap: 8px; min-width: 0; padding: 0 8px; }
+  .kx-tm-newdroptext > strong { flex: none; font-weight: 600; }
+  .kx-tm-newdroptext > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--t3); font: var(--type-meta); }
+  .kx-tm-newdrop[data-over] { background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--lum-1); border-style: solid; }
+  .kx-tm-emptystate { display: grid; justify-items: center; gap: 8px; padding: 28px 16px; border-radius: var(--radius-2xl); border: 1px dashed var(--hair-strong); color: var(--t1); font: var(--type-body); text-align: center; }
+  .kx-tm-emptystate > p { max-width: 300px; color: var(--t3); font: var(--type-meta); text-wrap: balance; }
+  .kx-tm-badge { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-xl); background: var(--lum-2); color: var(--t2); }
+  .kx-tm-badge > svg { width: 18px; height: 18px; stroke-width: 1.8; }
+
+  /* while dragging an open or saved tab every collection is a visible target */
+  .kx-tm:is([data-dragging="open"], [data-dragging="tab"]) .kx-tm-session:not([data-drop]) { box-shadow: inset 0 0 0 1px var(--hair-strong); }
+  .kx-tm[data-dragging] .kx-tm-cardacts { display: none; }
+
+  /* actions: visible where the hand is (always on touch) */
+  @media (hover: hover) {
+    .kx-tm-cardacts, .kx-tm-grip, .kx-tm-sacts .kx-tm-menuwrap { opacity: 0; transition: opacity var(--dur) var(--ease-snappy); }
+    .kx-tm-card:is(:hover, :focus-within) .kx-tm-cardacts,
+    .kx-tm-cardacts:has([aria-expanded="true"]),
+    .kx-tm-session:is(:hover, :focus-within) :is(.kx-tm-grip, .kx-tm-sacts .kx-tm-menuwrap),
+    .kx-tm-menuwrap[data-open] { opacity: 1; }
+  }
+
+  /* menu */
+  .kx-tm-menuwrap { position: relative; }
+  .kx-tm-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; display: grid; gap: 1px; width: max-content; min-width: 200px; max-width: min(300px, 80vw); max-height: 300px; overflow: auto; margin: 0; padding: 4px; list-style: none; border-radius: var(--radius-xl); background: var(--lum-3); box-shadow: 0 0 0 1px var(--hair-strong), var(--shadow-floating); }
+  @starting-style { .kx-tm-menu { opacity: 0; transform: translateY(-4px); } }
+  .kx-tm-menu { transition: opacity var(--dur) var(--ease-snappy), transform var(--dur) var(--ease-snappy); }
+  .kx-tm-menu-item { appearance: none; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; margin: 0; padding: 4px 8px; border: 0; border-radius: var(--radius-lg); background: transparent; color: var(--t1); font: var(--type-body); font-size: 13px; text-align: left; cursor: pointer; }
+  .kx-tm-menu-item > svg { width: 14px; height: 14px; flex: none; color: var(--t3); }
+  .kx-tm-menu-item:is(:hover, :focus-visible) { background: var(--lum-4); outline: none; }
+  .kx-tm-menu-item[data-danger] { color: var(--crit-ink); }
+  .kx-tm-menu-item[data-danger] > svg { color: var(--crit-ink); }
+  .kx-tm-menu-meta { font: var(--type-meta); font-size: 12px; color: var(--t3); font-variant-numeric: tabular-nums; }
+  .kx-tm-menu-empty { padding: 6px 8px; font: var(--type-meta); color: var(--t3); }
+
+  /* narrow panels: drop secondary text instead of wrapping */
+  @container kx-sp (width < 320px) {
+    .kx-tm-btntext { display: none; }
+    .kx-tm-saveacts { flex-wrap: wrap; }
+    .kx-tm-saveacts > * { flex: 1 0 100%; }
+  }
+
+  /* ---------- full page (tabs.html) ---------- */
+  .kx-tmp { min-height: 100vh; background: var(--lum-1); color: var(--t1); }
+  .kx-tmp > .kx-tm { display: block; }
+  .kx-tmp-grid { display: grid; grid-template-columns: 252px minmax(0, 1fr) 340px; min-height: 100vh; }
+  .kx-tmp-side, .kx-tmp-rail { position: sticky; top: 0; height: 100vh; min-width: 0; overflow: auto; overscroll-behavior: contain; background: var(--lum-0); }
+  .kx-tmp-side { display: flex; flex-direction: column; gap: 12px; padding: 16px 12px 12px; border-right: 1px solid var(--hair); }
+  .kx-tmp-brand { display: flex; align-items: center; gap: 10px; padding: 2px 6px 4px; font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; }
+  .kx-tmp-side .kx-sp-search { position: static; margin: 0; padding: 0; background: none; }
+  .kx-tmp-side .kx-sp-search .kx-control { background: var(--lum-2); }
+  .kx-tmp-index { flex: 1; min-height: 0; overflow: auto; margin: 0 -4px; }
+  .kx-tmp-index ul { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; margin: 0; padding: 0 4px; list-style: none; }
+  .kx-tmp-index button { appearance: none; display: flex; align-items: center; gap: 8px; width: 100%; min-height: 32px; margin: 0; padding: 4px 8px; border: 0; border-radius: var(--radius-lg); background: transparent; color: var(--t2); font: 500 13px/18px var(--font-sans); text-align: left; cursor: pointer; }
+  .kx-tmp-index button:hover { background: var(--lum-2); color: var(--t1); }
+  .kx-tmp-sidefoot { display: flex; align-items: center; gap: 4px; padding-top: 8px; border-top: 1px solid var(--hair); }
+  .kx-tmp-main { min-width: 0; padding: 28px clamp(20px, 3vw, 44px) 80px; }
+  .kx-tmp-main .kx-tm-saved > .kx-tm-sechead { position: sticky; top: 0; z-index: 2; margin: -28px -12px 8px; padding: 24px 12px 10px; background: linear-gradient(var(--lum-1) 85%, transparent); }
+  .kx-tmp-main .kx-tm-h { font-size: 22px; line-height: 28px; letter-spacing: -0.02em; }
+  .kx-tmp-main .kx-tm-sessions { gap: 14px; }
+  .kx-tmp-main .kx-tm-session { margin: 0 -12px; padding: 10px 12px 14px; }
+  .kx-tmp-main .kx-tm-session + .kx-tm-session::before { top: -7px; }
+  .kx-tmp-main .kx-tm-stitle { flex: 0 1 auto; max-width: 68%; font-size: 16px; line-height: 22px; }
+  .kx-tmp-main .kx-tm-smeta { order: 0; flex: 0 1 auto; padding: 0 0 0 8px; margin: 0; }
+  .kx-tmp-main .kx-tm-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .kx-tmp-main .kx-tm-cardbtn { min-height: 66px; padding: 12px 14px; }
+  .kx-tmp-main .kx-tm-cardtitle { font-size: 13px; line-height: 18px; }
+  .kx-tmp-main .kx-tm-strip, .kx-tmp-main .kx-tm-smeta { padding-left: 34px; }
+  .kx-tmp-main .kx-tm-smeta { padding-left: 8px; }
+  .kx-tmp-rail { display: grid; align-content: start; gap: 18px; padding: 16px 14px 24px; border-left: 1px solid var(--hair); }
+  .kx-tmp-rail .kx-tm-open { padding: 0; background: transparent; }
+  .kx-tmp-rail .kx-tm-open + .kx-tm-open { padding-top: 16px; border-top: 1px solid var(--hair); }
+  .kx-tmp-rail .kx-tm-h { font-size: 13px; }
+  /* rail: compact one-line rows (Toby's open-tabs column) */
+  .kx-tmp-rail .kx-tm-grid { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .kx-tmp-rail .kx-tm-card { background: transparent; }
+  .kx-tmp-rail .kx-tm-card:hover, .kx-tmp-rail .kx-tm-card:focus-within { background: var(--lum-2); }
+  .kx-tmp-rail .kx-tm-cardbtn { min-height: 36px; padding: 5px 8px; }
+  .kx-tmp-rail .kx-tm-face { grid-template-rows: auto; }
+  .kx-tmp-rail .kx-tm-favbox { grid-row: auto; width: 22px; height: 22px; border-radius: 5px; background: transparent; }
+  .kx-tmp-rail .kx-tm-cardtitle { -webkit-line-clamp: 1; font-size: 13px; font-weight: 400; color: var(--t2); }
+  .kx-tmp-rail .kx-tm-card:hover .kx-tm-cardtitle { color: var(--t1); }
+  .kx-tmp-rail .kx-tm-host { display: none; }
+  .kx-tmp-rail .kx-tm-cardacts { top: 50%; transform: translateY(-50%); background: linear-gradient(90deg, transparent, var(--lum-2) 10px); }
+  .kx-tmp-rail .kx-tm-name { background: var(--lum-2); }
+  @media (max-width: 1180px) { .kx-tmp-grid { grid-template-columns: 220px minmax(0, 1fr) 300px; } }
+  @media (max-width: 900px) {
+    .kx-tmp-grid { grid-template-columns: minmax(0, 1fr); }
+    .kx-tmp-side, .kx-tmp-rail { position: static; height: auto; border: 0; }
+    .kx-tmp-index { display: none; }
+    .kx-tmp-rail { order: -1; }
+  }
+}
+
+/* Calm scrollbars everywhere in the extension pages: thin, token-coloured, no track. */
+html { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+html:hover { scrollbar-color: var(--scrollbar-hover) transparent; }
+
+/* Keyboard focus in the side panel: a visible ring on every control (the shared Button has none of its own). */
+.kx-sp :is(button, a, [role="radio"], input[type="checkbox"]):focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.kx-tm :is(button, a, input[type="checkbox"]):focus-visible, .kx-tmp :is(button, a):focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.kx-tm :is(.kx-tm-cardbtn, .kx-tm-stitle, .kx-tm-strip):focus-visible { outline-offset: -2px; }
+.kx-root [role="tablist"].kx-sp-views > [role="tab"][aria-selected="true"] { background: var(--lum-3); box-shadow: none; }
+
+/* Sonner toasts in the Kortex look: flat surface, one hairline, accent action button. Unlayered: Sonner injects its
+   own unlayered styles, which would beat anything inside a layer. */
+.kx-root [data-sonner-toaster][data-sonner-theme] { --normal-bg: var(--lum-3); --normal-border: var(--hair-strong); --normal-text: var(--t1); --success-bg: var(--lum-3); --success-border: var(--hair-strong); --success-text: var(--t1); --error-bg: var(--lum-3); --error-border: var(--hair-strong); --error-text: var(--t1); --warning-bg: var(--lum-3); --warning-border: var(--hair-strong); --warning-text: var(--t1); --border-radius: var(--radius-xl); font-family: var(--font-sans); }
+.kx-root [data-sonner-toast].kx-toast2 { gap: 10px; padding: 12px 14px; font: 500 13px/18px var(--font-sans); box-shadow: var(--shadow-floating); }
+.kx-root [data-sonner-toast].kx-toast2 [data-description] { font: 400 12px/16px var(--font-sans); color: var(--t3); }
+.kx-root [data-sonner-toast].kx-toast2 [data-button][data-action] { height: 28px; padding: 0 10px; border-radius: var(--radius-lg); background: var(--accent-fill); color: var(--on-accent); font: 500 12.5px/1 var(--font-sans); }
+.kx-root [data-sonner-toast].kx-toast2[data-type="success"] [data-icon] { color: var(--ok-ink); }
+.kx-root [data-sonner-toast].kx-toast2[data-type="warning"] [data-icon] { color: var(--warn-ink); }
+.kx-root [data-sonner-toast].kx-toast2[data-type="error"] [data-icon] { color: var(--crit-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kx-root *, .kx-root *::before, .kx-root *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}
+
+/* Options page (fx3): switch rows with the switch on the right, hairlines between them, a sticky save bar. */
+@layer components {
+  .kx-opt h2 { margin: 0; }
+  .kx-opt-toggle { display: flex; align-items: flex-start; gap: 16px; cursor: pointer; }
+  .kx-opt-toggle + .kx-opt-toggle { padding-top: 14px; border-top: 1px solid var(--hair); }
+  .kx-opt-savebar { position: sticky; bottom: 12px; z-index: 3; display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: var(--radius-2xl); background: var(--glass-strong); -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%); box-shadow: var(--edge-float); }
+  .kx-opt :is(button, a, input, textarea):focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+
+  /* Popup footer: one quiet row to the side panel and the options */
+  .kx-pop-foot { display: flex; align-items: center; gap: 4px; padding: 8px 12px 10px; border-top: 1px solid var(--hair); background: var(--lum-1); }
+}

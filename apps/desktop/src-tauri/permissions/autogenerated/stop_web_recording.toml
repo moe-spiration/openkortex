@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-stop-web-recording"
+description = "Enables the stop_web_recording command without any pre-configured scope."
+commands.allow = ["stop_web_recording"]
+
+[[permission]]
+identifier = "deny-stop-web-recording"
+description = "Denies the stop_web_recording command without any pre-configured scope."
+commands.deny = ["stop_web_recording"]

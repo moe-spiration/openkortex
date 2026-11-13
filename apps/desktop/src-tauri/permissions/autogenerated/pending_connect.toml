@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-pending-connect"
+description = "Enables the pending_connect command without any pre-configured scope."
+commands.allow = ["pending_connect"]
+
+[[permission]]
+identifier = "deny-pending-connect"
+description = "Denies the pending_connect command without any pre-configured scope."
+commands.deny = ["pending_connect"]

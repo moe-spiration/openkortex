@@ -1,0 +1,6 @@
+{
+  "reconcile: {n} errors at start": "reconcile: {n} Fehler beim Start",
+  "The server does not know the vault sync yet (web app 0.6.0 or later)": "Der Server kennt den Vault-Sync noch nicht (Web-App ab 0.6.0)",
+  "An md-sync is already running on this vault ({where}). Stop the other one first.": "Auf diesem Vault läuft schon ein md-sync ({where}). Erst den anderen beenden.",
+  "on {host}": "auf {host}"
+}

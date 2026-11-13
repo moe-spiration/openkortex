@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-launcher-ask"
+description = "Enables the launcher_ask command without any pre-configured scope."
+commands.allow = ["launcher_ask"]
+
+[[permission]]
+identifier = "deny-launcher-ask"
+description = "Denies the launcher_ask command without any pre-configured scope."
+commands.deny = ["launcher_ask"]

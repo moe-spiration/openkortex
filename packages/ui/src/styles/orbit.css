@@ -1,0 +1,1162 @@
+/*
+ * Orbit-Bar (Tactile Craft v2, decision 9; click dummy styles.css "Orbit-Bar" + round2.css
+ * "Orbit-Bar, flacher und ausgebaut"). A flat acrylic capsule (Level 2: .tc-float glass, gradient
+ * edge, one drop) of 58 px with an accent glow under it that breathes on focus, voice and drop.
+ * Only accent fill: "Senden" with content and the stop orb while recording. Mic orb = accent ring.
+ * Segment Festhalten | Fragen = inset track with a sliding flat thumb. Lists, popovers and the
+ * answer card float above the capsule (Level 2). Drawer half (Paket C sets data-drawer and
+ * --drawer-w on .kx-main-window): the bar is compact. Below 860 px: full width minus 10 px.
+ * Everything is scoped to .kx-orbit-* (the mobile tab bar's .kx-orb is untouched).
+ */
+@layer components {
+  /* ---------- wrapper, glow, capsule ---------- */
+  .kx-orbit-wrap {
+    position: absolute;
+    left: 50%;
+    bottom: 16px;
+    width: min(860px, calc(100% - 32px));
+    transform: translateX(-50%);
+    container: kx-orbit / inline-size;
+    transition:
+      left 240ms var(--ease-snappy),
+      width 240ms var(--ease-snappy);
+  }
+  .kx-orbit-glow {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -22px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--glow-orbit);
+    filter: blur(8px);
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 300ms var(--ease-snappy);
+  }
+  .kx-orbit-wrap:focus-within .kx-orbit-glow,
+  .kx-orbit-wrap[data-state="voice"] .kx-orbit-glow,
+  .kx-orbit-wrap[data-state="drop"] .kx-orbit-glow {
+    opacity: 1;
+    animation: kxorbitbreathe 6s ease-in-out infinite;
+  }
+  /* Fragen: the glow shifts its hue a little. */
+  .kx-orbit-wrap[data-mode="ask"] .kx-orbit-glow {
+    filter: blur(8px) hue-rotate(18deg);
+  }
+  @keyframes kxorbitbreathe {
+    50% {
+      transform: scaleX(1.06);
+      opacity: 0.85;
+    }
+  }
+
+  .kx-orbit {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 58px;
+    padding: 6px;
+    border-radius: var(--radius-pill);
+    color: var(--t1);
+    transition:
+      min-height 240ms var(--ease-snappy),
+      border-radius 240ms var(--ease-snappy),
+      box-shadow 150ms var(--ease-snappy);
+  }
+  .kx-orbit-wrap:focus-within .kx-orbit {
+    box-shadow:
+      inset 0 1px 0 var(--spec-top),
+      0 0 0 1px var(--accent-line),
+      var(--drop);
+  }
+
+  /* ---------- orbs: mic (accent ring), send (accent fill with content), stop ---------- */
+  .kx-orbit-orb {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--lum-3);
+    color: var(--accent-ink);
+    box-shadow: 0 0 0 1px var(--accent-line);
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition:
+      transform 120ms var(--ease-snappy),
+      background 200ms var(--ease-snappy),
+      color 200ms var(--ease-snappy);
+  }
+  .kx-orbit-orb:hover {
+    transform: scale(1.04);
+  }
+  .kx-orbit-orb:active {
+    transform: scale(0.96);
+  }
+  .kx-orbit-orb:focus-visible {
+    outline: 2px solid var(--accent-line);
+    outline-offset: 2px;
+  }
+  /* Icon scale 14/16/20 (A-04): mic 20, send 16, stop square 14. */
+  .kx-orbit-orb .kx-ico {
+    width: 20px;
+    height: 20px;
+  }
+  .kx-orbit-send .kx-ico {
+    width: 16px;
+    height: 16px;
+  }
+  .kx-orbit-send {
+    background: transparent;
+    color: var(--t3);
+    box-shadow: 0 0 0 1px var(--hair-strong);
+  }
+  .kx-orbit-send[aria-disabled="true"] {
+    cursor: default;
+  }
+  .kx-orbit-send[aria-disabled="true"]:hover {
+    transform: none;
+  }
+  .kx-orbit-send.is-ready,
+  .kx-orbit-orb.is-rec {
+    background: var(--accent-fill);
+    color: var(--on-accent);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.1),
+      0 6px 18px -6px color-mix(in oklch, var(--accent) 80%, transparent);
+  }
+  .kx-orbit-orb.is-rec .kx-ico {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+  .kx-orbit-orb.is-rec::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    pointer-events: none;
+    box-shadow: 0 0 0 1.5px var(--accent-line);
+    animation: kxorbitpulse 1.4s var(--ease-snappy) infinite;
+  }
+  @keyframes kxorbitpulse {
+    from {
+      transform: scale(0.9);
+      opacity: 1;
+    }
+    to {
+      transform: scale(1.25);
+      opacity: 0;
+    }
+  }
+  .kx-orbit-enter {
+    font: 500 calc(14px * var(--kx-fs, 1))/1 var(--font-mono);
+  }
+
+  /* ---------- segment Festhalten | Fragen: inset track, flat sliding thumb ---------- */
+  .kx-orbit-seg {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    flex: none;
+    height: 32px;
+    padding: 3px;
+    box-sizing: border-box;
+    border-radius: var(--radius-pill);
+    background: var(--lum-1);
+    box-shadow:
+      inset 0 1px 1px var(--inset-top),
+      inset 0 0 0 1px var(--hair);
+  }
+  .kx-orbit-thumb {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    border-radius: var(--radius-pill);
+    background: var(--lum-2);
+    box-shadow:
+      inset 0 1px 0 var(--spec-top),
+      0 0 0 1px var(--hair-strong);
+    transition: transform 220ms var(--ease-snappy);
+  }
+  .kx-orbit-seg[data-mode="ask"] .kx-orbit-thumb {
+    transform: translateX(100%);
+  }
+  .kx-orbit-seg button {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--t3);
+    font: inherit;
+    font-size: calc(12px * var(--kx-fs, 1));
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 180ms var(--ease-snappy);
+  }
+  .kx-orbit-seg button .kx-ico {
+    width: 14px;
+    height: 14px;
+  }
+  .kx-orbit-seg button:hover {
+    color: var(--t2);
+  }
+  .kx-orbit-seg button[aria-selected="true"] {
+    color: var(--t1);
+  }
+  .kx-orbit-seg button[aria-selected="true"] .kx-ico {
+    color: var(--accent-ink);
+  }
+  .kx-orbit-seg button:focus-visible {
+    outline: 2px solid var(--accent-line);
+    outline-offset: 1px;
+  }
+
+  /* ---------- field, link chip ---------- */
+  .kx-orbit-ofield {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 6px;
+  }
+  .kx-orbit-field {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--t1);
+    font: inherit;
+    font-size: calc(15px * var(--kx-fs, 1));
+  }
+  .kx-orbit-field::placeholder {
+    color: var(--t3);
+  }
+  .kx-orbit-linkchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 45%;
+    height: 26px;
+    padding: 0 4px 0 3px;
+    border-radius: 8px;
+    background: var(--lum-2);
+    box-shadow:
+      inset 0 1px 0 var(--spec-top),
+      0 0 0 1px var(--hair-strong);
+    color: var(--t1);
+    font-size: calc(12px * var(--kx-fs, 1));
+    white-space: nowrap;
+  }
+  .kx-orbit-x {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--t3);
+    cursor: pointer;
+  }
+  .kx-orbit-x:hover {
+    background: var(--lum-3);
+    color: var(--t1);
+  }
+  .kx-orbit-glyph {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    background: var(--lum-3);
+    color: var(--t2);
+    box-shadow:
+      inset 0 1px 0 var(--spec-top),
+      0 0 0 1px var(--hair);
+    font-size: calc(9px * var(--kx-fs, 1));
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+  .kx-orbit-glyph .kx-ico {
+    width: 11px;
+    height: 11px;
+  }
+  .kx-orbit-glyph.is-avatar {
+    border-radius: 50%;
+  }
+
+  /* ---------- chips: Ziel / Suchbereich / Modell ---------- */
+  .kx-orbit-opt {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: none;
+  }
+  .kx-orbit-optwrap {
+    position: relative;
+    flex: none;
+  }
+  .kx-orbit-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 170px;
+    height: 30px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--t2);
+    font: inherit;
+    font-size: calc(12px * var(--kx-fs, 1));
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .kx-orbit-chip .kx-ico {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--t3);
+  }
+  .kx-orbit-chip:hover,
+  .kx-orbit-chip[aria-expanded="true"] {
+    background: var(--lum-3);
+    color: var(--t1);
+  }
+  .kx-orbit-chip:focus-visible {
+    outline: 2px solid var(--accent-line);
+    outline-offset: 1px;
+  }
+  .kx-orbit-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 6px var(--ok);
+  }
+  .kx-orbit-history {
+    flex: none;
+  }
+
+  /* ---------- recording ---------- */
+  .kx-orbit-rec {
+    gap: 12px;
+  }
+  .kx-orbit-timer {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: none;
+    font-size: calc(13px * var(--kx-fs, 1));
+    font-weight: 500;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--t1);
+  }
+  .kx-orbit-timer::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--crit);
+    box-shadow: 0 0 8px var(--crit);
+  }
+  .kx-orbit-wave {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 0 1 220px;
+    min-width: 0;
+    height: 28px;
+    overflow: hidden;
+  }
+  .kx-orbit-wave i {
+    display: block;
+    flex: none;
+    width: 3px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--accent-ink);
+    opacity: 0.85;
+  }
+  .kx-orbit-rec-hint {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: calc(12px * var(--kx-fs, 1));
+    color: var(--t3);
+  }
+  .kx-orbit-rec-hint em {
+    color: var(--t2);
+    font-style: italic;
+  }
+  .kx-orbit-discard {
+    flex: none;
+    height: 30px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--t2);
+    font: inherit;
+    font-size: calc(12px * var(--kx-fs, 1));
+    cursor: pointer;
+  }
+  .kx-orbit-discard:hover {
+    background: var(--lum-3);
+    color: var(--t1);
+  }
+
+  /* ---------- drag-over: the capsule grows, dashed edge, stacked file glyphs ---------- */
+  .kx-orbit.is-drop {
+    min-height: 116px;
+    border-radius: 26px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    border-width: 1.5px;
+    background-image:
+      linear-gradient(var(--glass-strong), var(--glass-strong)),
+      repeating-linear-gradient(90deg, var(--accent-line) 0 6px, transparent 6px 11px);
+  }
+  .kx-orbit-drop {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    text-align: center;
+    pointer-events: none;
+  }
+  .kx-orbit-dropfiles {
+    display: flex;
+    align-items: center;
+  }
+  .kx-orbit-df {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 42px;
+    border-radius: 7px;
+    background: var(--lum-2);
+    box-shadow:
+      inset 0 1px 0 var(--spec-top),
+      0 0 0 1px var(--hair-strong),
+      var(--drop);
+    color: var(--t2);
+  }
+  .kx-orbit-df:nth-child(1) {
+    transform: rotate(-9deg) translateX(8px);
+  }
+  .kx-orbit-df:nth-child(2) {
+    position: relative;
+    z-index: 1;
+    transform: translateY(-4px);
+    color: var(--accent-ink);
+  }
+  .kx-orbit-df:nth-child(3) {
+    transform: rotate(8deg) translateX(-8px);
+  }
+  .kx-orbit-drop-t {
+    font-size: calc(13px * var(--kx-fs, 1));
+    font-weight: 500;
+    color: var(--t1);
+  }
+  .kx-orbit-drop-t span {
+    font-weight: 400;
+    color: var(--t3);
+  }
+  .kx-orbit-drop-m {
+    font-size: calc(12px * var(--kx-fs, 1));
+    color: var(--t3);
+  }
+
+  /* ---------- above the capsule: commands, @/#, focus quick actions ---------- */
+  .kx-orbit-above {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: calc(100% + 10px);
+    z-index: 2;
+  }
+  .kx-orbit-list {
+    padding: 6px;
+  }
+  .kx-orbit-micro {
+    padding: 4px 8px 6px;
+    font-size: calc(11px * var(--kx-fs, 1));
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--t3);
+  }
+  .kx-orbit-mi {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 34px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--t2);
+    font: inherit;
+    font-size: calc(12px * var(--kx-fs, 1));
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .kx-orbit-mi:hover,
+  .kx-orbit-mi.is-active {
+    background: var(--lum-3);
+    color: var(--t1);
+  }
+  .kx-orbit-mi:focus-visible {
+    outline: 2px solid var(--accent-line);
+    outline-offset: -2px;
+  }
+  .kx-orbit-mi[aria-disabled="true"] {
+    opacity: var(--opacity-disabled, 0.45);
+    cursor: not-allowed;
+  }
+  .kx-orbit-mi[aria-disabled="true"]:hover {
+    background: transparent;
+  }
+  .kx-orbit-mi small {
+    flex: none;
+    margin-left: auto;
+    font-size: calc(11px * var(--kx-fs, 1));
+    color: var(--t3);
+  }
+  .kx-orbit-cmd {
+    flex: none;
+    min-width: 70px;
+    font: 400 calc(12px * var(--kx-fs, 1))/1 var(--font-mono);
+    color: var(--t1);
+  }
+  /* Skill rows of the command list: tinted glyph tile, name and one line, the slash command at the right. */
+  .kx-orbit-mi:has(.kx-orbit-skill) {
+    min-height: 46px;
+    padding-block: 6px;
+  }
+  .kx-orbit-skill {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--gc, var(--accent)) 16%, transparent);
+    color: var(--gc, var(--accent-ink));
+  }
+  .kx-orbit-mi small.kx-orbit-cmd {
+    min-width: 0;
+    font: 400 calc(11px * var(--kx-fs, 1)) / 1 var(--font-mono);
+    color: var(--t3);
+  }
+  /* Running jobs: spinner and count, opens the agent's page. */
+  .kx-orbit-jobchip {
+    flex: none;
+    gap: 6px;
+    color: var(--accent-ink);
+  }
+  .kx-orbit-jobchip .kx-spinner {
+    width: 12px;
+    height: 12px;
+    border-color: currentColor;
+    border-right-color: transparent;
+  }
+  .kx-orbit-mi-dim {
+    color: var(--t2);
+  }
+  .kx-orbit-mi-strong {
+    color: var(--t1);
+  }
+  .kx-orbit-mi-text {
+    display: grid;
+    min-width: 0;
+    line-height: 1.35;
+  }
+  .kx-orbit-mi-help {
+    font-size: calc(11px * var(--kx-fs, 1));
+    color: var(--t3);
+  }
+  .kx-orbit-sugg {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .kx-orbit-suggchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 260px;
+    height: 26px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    color: var(--t2);
+    font: inherit;
+    font-size: calc(12px * var(--kx-fs, 1));
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .kx-orbit-suggchip:hover {
+    color: var(--t1);
+  }
+  .kx-orbit-suggchip .kx-ico {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--t3);
+  }
+  .kx-orbit-keys {
+    display: flex;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    align-items: center;
+    gap: 5px;
+    font-size: calc(11px * var(--kx-fs, 1));
+    color: var(--t3);
+    white-space: nowrap;
+  }
+  /* Footbar measures the chips and switches the hints off (out of flow, still measurable) when they do not fit. */
+  .kx-orbit-keys.is-off {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .kx-orbit-keys .kx-kbd {
+    margin-left: 6px;
+  }
+  .kx-orbit-grow {
+    flex: 1;
+  }
+
+  /* ---------- popovers (Ziel, Suchbereich, Modell) ---------- */
+  .kx-orbit-pop {
+    /* Inside the capsule (its own backdrop root) the glass cannot blur the page: the popover is solid. */
+    --glass-strong: var(--lum-2);
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 14px);
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    width: 280px;
+    max-height: min(420px, 60vh);
+    padding: 6px;
+    border-radius: 12px;
+  }
+  .kx-orbit-pop-q {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    height: 32px;
+    margin-bottom: 4px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: var(--lum-1);
+    box-shadow:
+      inset 0 1px 1px var(--inset-top),
+      0 0 0 1px var(--hair);
+    color: var(--t3);
+  }
+  .kx-orbit-pop-q input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--t1);
+    font: inherit;
+    font-size: calc(12px * var(--kx-fs, 1));
+  }
+  .kx-orbit-pop-q input::placeholder {
+    color: var(--t3);
+  }
+  .kx-orbit-pop-q:focus-within {
+    box-shadow:
+      inset 0 1px 1px var(--inset-top),
+      0 0 0 1px var(--accent-line);
+  }
+  .kx-orbit-pop-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .kx-orbit-pop .kx-orbit-micro {
+    padding: 8px 8px 4px;
+  }
+  .kx-orbit-pop .kx-orbit-mi {
+    padding-block: 5px;
+  }
+  .kx-orbit-pop-tabs {
+    flex: none;
+    margin: 0 2px 4px;
+  }
+  .kx-orbit-pop-note,
+  .kx-orbit-pop-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    font-size: calc(12px * var(--kx-fs, 1));
+    color: var(--t3);
+  }
+  .kx-orbit-pop-link {
+    flex: none;
+    margin-top: 4px;
+    box-shadow: inset 0 1px 0 var(--hair);
+    border-radius: 0 0 8px 8px;
+  }
+
+  /* ---------- answer card (Fragen): floats above the capsule ---------- */
+  .kx-orbit-answer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 86px;
+    z-index: 8; /* above the meeting card (7); the bar (8, later in the DOM) and its popovers stay on top */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(736px, calc(100% - 56px));
+    max-height: min(460px, calc(100% - 150px));
+    margin-inline: auto;
+    padding: 14px 16px;
+    box-sizing: border-box;
+    border-radius: 16px;
+  }
+  .kx-orbit-answer-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .kx-orbit-answer-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--accent-ink);
+  }
+  .kx-orbit-answer-scroll {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .kx-orbit-answer-empty {
+    margin: 0;
+    font-size: calc(13px * var(--kx-fs, 1));
+    line-height: 1.6;
+    color: var(--t3);
+  }
+  .kx-orbit-question {
+    justify-self: end;
+    max-width: 85%;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: var(--lum-3);
+    color: var(--t1);
+    font-size: calc(13px * var(--kx-fs, 1));
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .kx-orbit-answer-body {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    font-size: calc(13px * var(--kx-fs, 1));
+    line-height: 1.6;
+    color: var(--t2);
+  }
+  .kx-orbit-answer-body strong,
+  .kx-orbit-answer-body b {
+    color: var(--t1);
+    font-weight: 500;
+  }
+  .kx-orbit-srcs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .kx-orbit-srcchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 240px;
+    height: 24px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--hair-strong);
+    color: var(--t2);
+    font: inherit;
+    font-size: calc(12px * var(--kx-fs, 1));
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .kx-orbit-srcchip:hover {
+    background: var(--lum-3);
+    color: var(--t1);
+  }
+  .kx-orbit-srcchip:focus-visible {
+    outline: 2px solid var(--accent-line);
+    outline-offset: 1px;
+  }
+  .kx-orbit-srcchip .kx-ico {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--t3);
+  }
+  .kx-orbit-srcn {
+    flex: none;
+    font-size: calc(11px * var(--kx-fs, 1));
+    font-weight: 500;
+    color: var(--accent-ink);
+  }
+  .kx-orbit-answer-error {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px var(--crit);
+    font-size: calc(13px * var(--kx-fs, 1));
+    color: var(--t1);
+  }
+
+  /* ---------- agent: steps, proposal card, results ---------- */
+  .kx-agent-steps {
+    display: grid;
+    gap: 4px;
+    font-size: calc(12px * var(--kx-fs, 1));
+    color: var(--t2);
+  }
+  .kx-agent-steps-head {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    justify-self: start;
+    height: 24px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--lum-2);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .kx-agent-steps-head:hover {
+    background: var(--lum-3);
+    color: var(--t1);
+  }
+  .kx-agent-steps-head:focus-visible,
+  .kx-agent-link:focus-visible {
+    outline: 2px solid var(--accent-line);
+    outline-offset: 1px;
+  }
+  .kx-agent-steps-head[aria-expanded="true"] .kx-ico:last-child {
+    transform: rotate(180deg);
+  }
+  .kx-agent-steps-list,
+  .kx-agent-list {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kx-agent-steps-list {
+    padding-left: 8px;
+  }
+  .kx-agent-steps-list li,
+  .kx-agent-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .kx-agent-steps-list .kx-ico,
+  .kx-agent-list .kx-ico {
+    flex: none;
+    color: var(--t3);
+  }
+  .kx-agent-list li[data-ok="true"] .kx-ico {
+    color: var(--accent-ink);
+  }
+  .kx-agent-list li[data-ok="false"] .kx-ico {
+    color: var(--crit);
+  }
+  .kx-agent-card {
+    display: grid;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px var(--hair-strong);
+    font-size: calc(13px * var(--kx-fs, 1));
+    color: var(--t1);
+  }
+  .kx-agent-card[data-kind="proposal"] {
+    box-shadow: inset 0 0 0 1px var(--accent-line);
+  }
+  .kx-agent-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+    cursor: pointer;
+  }
+  .kx-agent-check input {
+    flex: none;
+    margin-top: 3px;
+    accent-color: var(--accent-ai-solid);
+  }
+  .kx-agent-preview {
+    flex-basis: 100%;
+    padding-left: 22px;
+    font-size: calc(12px * var(--kx-fs, 1));
+    color: var(--t2);
+  }
+  .kx-agent-preview summary {
+    cursor: pointer;
+  }
+  .kx-agent-preview pre {
+    max-height: 220px;
+    margin: 6px 0 0;
+    padding: 8px 10px;
+    overflow: auto;
+    border-radius: var(--radius-control);
+    background: var(--bg-surface-muted);
+    font: inherit;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .kx-agent-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .kx-agent-link {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: var(--hair-strong);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .kx-agent-note {
+    margin: 0;
+    font-size: calc(12px * var(--kx-fs, 1));
+    color: var(--t3);
+  }
+
+  /* ---------- live meeting chip (the 18:42 pill) ---------- */
+  .kx-orbit-livechip {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 10px 0 12px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: color-mix(in oklch, var(--crit) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--crit) 22%, transparent);
+    color: var(--t1);
+    font: inherit;
+    font-size: calc(12px * var(--kx-fs, 1));
+    cursor: pointer;
+  }
+  .kx-orbit-livechip:hover {
+    background: color-mix(in oklch, var(--crit) 20%, transparent);
+  }
+  .kx-orbit-livechip .kx-ico {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--t3);
+  }
+
+  .kx-orbit-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* ---------- compact: a narrow bar (Feinschliff Live: the bar spans list and editor, so an open drawer no longer
+     shrinks it; only its own width does) ---------- */
+  /* The agent level keeps its icon; its label only shows on a wide bar, so the field stays roomy. */
+  .kx-orbit-chip--agent,
+  .kx-orbit-chip--agent .kx-ico:first-child {
+    color: var(--accent-ink);
+  }
+  @container kx-orbit (max-width: 700px) {
+    .kx-orbit-chip--agent .kx-orbit-chip-l {
+      display: none;
+    }
+  }
+  @container kx-orbit (max-width: 600px) {
+    .kx-orbit-chip-l,
+    .kx-orbit-keys {
+      display: none;
+    }
+    .kx-orbit-seg button {
+      padding: 0 10px;
+    }
+  }
+  @container kx-orbit (max-width: 470px) {
+    .kx-orbit-attach,
+    .kx-orbit-seg-label,
+    .kx-orbit-rec-hint,
+    .kx-orbit-discard {
+      display: none;
+    }
+    .kx-orbit-opt .kx-orbit-optwrap:not(:last-child) {
+      display: none;
+    }
+    .kx-orbit-sugg .kx-orbit-suggchip:nth-child(n + 2) {
+      display: none;
+    }
+  }
+  @media (max-width: 1180px) {
+    .kx-orbit-keys {
+      display: none;
+    }
+  }
+  /* Mobile (< 860 px): full width with 10 px margin, no Ziel/Suchbereich chip, model chip = dot. */
+  @media (max-width: 859.98px) {
+    .kx-orbit-wrap {
+      left: 50%;
+      bottom: 10px;
+      width: calc(100% - 20px);
+    }
+    .kx-orbit-opt .kx-orbit-optwrap:not(:last-child) {
+      display: none;
+    }
+    .kx-orbit-sugg .kx-orbit-suggchip:nth-child(n + 2) {
+      display: none;
+    }
+    .kx-orbit-seg button {
+      padding: 0 10px;
+    }
+    .kx-orbit-answer {
+      bottom: 76px;
+      width: calc(100% - 20px);
+    }
+  }
+  @media (max-width: 520px) {
+    .kx-orbit {
+      gap: 4px;
+      min-height: 54px;
+    }
+    .kx-orbit-orb {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  /* ---------- reduced motion: no breathing glow, static ring, no sliding thumb ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .kx-orbit-wrap,
+    .kx-orbit,
+    .kx-orbit-thumb,
+    .kx-orbit-orb {
+      transition: none;
+    }
+    .kx-orbit-wrap .kx-orbit-glow {
+      animation: none;
+    }
+    .kx-orbit-orb.is-rec::after {
+      animation: none;
+      transform: scale(1.12);
+      opacity: 0.5;
+    }
+  }
+  html[data-motion="reduced"] .kx-orbit-wrap,
+  html[data-motion="reduced"] .kx-orbit,
+  html[data-motion="reduced"] .kx-orbit-thumb,
+  html[data-motion="reduced"] .kx-orbit-orb {
+    transition: none;
+  }
+  html[data-motion="reduced"] .kx-orbit-wrap .kx-orbit-glow {
+    animation: none;
+  }
+  html[data-motion="reduced"] .kx-orbit-orb.is-rec::after {
+    animation: none;
+    transform: scale(1.12);
+    opacity: 0.5;
+  }
+}
+
+/* Ghost context: "Kontext: N verlinkte Items" next to the scope chip */
+.kx-orbit-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  height: 24px;
+  border-radius: 12px;
+  font-size: calc(11px * var(--kx-fs, 1));
+  color: var(--text-muted);
+  white-space: nowrap;
+}

@@ -1,0 +1,31 @@
+From: Max Miller <max@example.com>
+To: k7x2mqa4vd5tbe3pwn6r@in.kortex.example.com
+Subject: Fwd: Protokoll Kickoff
+Date: Sun, 01 Nov 2026 10:00:00 +0000
+Message-ID: <outlook-fwd-7@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="m1"
+
+--m1
+Content-Type: text/plain; charset=utf-8
+
+FYI
+--m1
+Content-Type: message/rfc822
+Content-Disposition: attachment; filename="Protokoll Kickoff.eml"
+
+From: "Bernd Beispiel" <bernd@kunde.de>
+To: max@example.com
+Subject: Protokoll Kickoff
+Date: Thu, 29 Oct 2026 11:00:00 +0000
+Message-ID: <inner-42@kunde.de>
+Content-Type: text/plain; charset=utf-8
+
+Ergebnisse vom Kickoff: Max schickt die Roadmap bis 06.11.
+--m1
+Content-Type: application/pdf; name="roadmap.pdf"
+Content-Disposition: attachment; filename="roadmap.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKJcOkw7zDtsOfCjEgMCBvYmoKPDwvVHlwZS9DYXRhbG9nPj4KZW5kb2JqCnRyYWlsZXIKPDwvUm9vdCAxIDAgUj4+CiUlRU9GCg==
+--m1--

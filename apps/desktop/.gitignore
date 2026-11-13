@@ -1,0 +1,7 @@
+# Rust / Tauri build output
+src-tauri/target/
+src-tauri/gen/
+
+# Vault sync sidecar (scripts/build-sidecar.mjs)
+src-tauri/sidecar/*
+!src-tauri/sidecar/README.md

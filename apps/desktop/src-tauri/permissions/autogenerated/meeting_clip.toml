@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-meeting-clip"
+description = "Enables the meeting_clip command without any pre-configured scope."
+commands.allow = ["meeting_clip"]
+
+[[permission]]
+identifier = "deny-meeting-clip"
+description = "Denies the meeting_clip command without any pre-configured scope."
+commands.deny = ["meeting_clip"]

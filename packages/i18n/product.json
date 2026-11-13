@@ -1,0 +1,8 @@
+{
+  "//": "Display name of the product. The private build says Kortex; `pnpm oss:export` writes the public name (oss/export.json `name`) here and into the static manifests. Technical ids (package names, URL scheme, DB schema, vault folder) never change with it.",
+  "name": "OpenKortex",
+  "//features": "Surfaces only the private build shows. `pnpm oss:export` overwrites them with oss/export.json `features`. griply: the Griply hand-over (task board, settings card, life areas, /api/connections/griply, /api/mobile/griply).",
+  "features": {
+    "griply": false
+  }
+}

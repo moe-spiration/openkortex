@@ -1,0 +1,7 @@
+# Added by init.mjs (COMPOSE_FILE in .env) when Kortex itself answers on an https domain:
+# Caddy gets the certificate from Let's Encrypt and needs ports 80 and 443.
+services:
+  gateway:
+    ports:
+      - "${KORTEX_BIND:-0.0.0.0}:443:443"
+      - "${KORTEX_BIND:-0.0.0.0}:443:443/udp"

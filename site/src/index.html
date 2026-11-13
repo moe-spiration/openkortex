@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{meta.title}}</title>
+<meta name="description" content="{{meta.description}}">
+<meta property="og:title" content="{{meta.title}}">
+<meta property="og:description" content="{{meta.description}}">
+<meta property="og:type" content="website">
+<meta property="og:image" content="{{siteUrl}}/img/home.jpg">
+<meta property="og:url" content="{{canonical}}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="{{canonical}}">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="/site/mark.svg" type="image/svg+xml">
+<link rel="alternate" hreflang="en" href="{{siteUrl}}/">
+<link rel="alternate" hreflang="de" href="{{siteUrl}}/de/">
+<link rel="alternate" hreflang="x-default" href="{{siteUrl}}/">
+{{fonts}}
+<link rel="stylesheet" href="/site/site.css">
+{{autolang}}
+</head>
+<body>
+<a class="skip" href="#main">{{nav.skip}}</a>
+<header class="top">
+  <a class="brand" href="{{home}}" aria-label="OpenKortex">{{mark}}<span>OpenKortex</span></a>
+  <nav aria-label="{{nav.label}}">
+    <a href="#flow">{{nav.how}}</a>
+    <a href="#apps">{{nav.apps}}</a>
+    <a href="#selfhost">{{nav.selfhost}}</a>
+    <a href="{{codeUrl}}">GitHub</a>
+    <a class="lang" href="{{otherHref}}" hreflang="{{otherLang}}" data-lang="{{otherLang}}">{{otherLabel}}</a>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- Hero: the one orchestrated moment. Captures travel from every app into the brain and come back as Markdown. -->
+  <section class="hero">
+    <div class="hero-copy">
+      <h1>{{hero.title}}</h1>
+      <p class="lead">{{hero.lead}}</p>
+      <div class="cta">
+        <a class="btn primary" href="/home">{{icon:play}}{{hero.demo}}</a>
+        <a class="btn" href="{{codeUrl}}">{{icon:code}}{{hero.github}}</a>
+      </div>
+      <p class="fine">{{hero.note}}</p>
+    </div>
+
+    <figure class="orbit" aria-label="{{orbit.label}}">
+      <svg viewBox="0 0 560 560" role="img" aria-labelledby="orbit-desc">
+        <desc id="orbit-desc">{{orbit.label}}</desc>
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--indigo)" stop-opacity=".55" />
+            <stop offset="60%" stop-color="var(--indigo)" stop-opacity=".08" />
+            <stop offset="100%" stop-color="var(--indigo)" stop-opacity="0" />
+          </radialGradient>
+          <!-- Paths the captures travel on: each app to the center, the center out to the folder and the agents. -->
+          <path id="p-clip" d="M280 280 L82 168" />
+          <path id="p-android" d="M280 280 L118 430" />
+          <path id="p-windows" d="M280 280 L280 50" />
+          <path id="p-web" d="M280 280 L478 168" />
+          <path id="p-md" d="M280 280 L442 430" />
+          <path id="p-mcp" d="M280 280 L280 514" />
+        </defs>
+        <circle class="o-glow" cx="280" cy="280" r="200" fill="url(#glow)" />
+        <circle class="o-ring r1" cx="280" cy="280" r="130" />
+        <circle class="o-ring r2" cx="280" cy="280" r="232" />
+        <g class="o-spokes">
+          <use href="#p-clip" /><use href="#p-android" /><use href="#p-windows" /><use href="#p-web" /><use href="#p-md" /><use href="#p-mcp" />
+        </g>
+        <!-- outbound: sorted Markdown to the folder, answers to the agents -->
+        <g class="o-pulses out">
+          <rect x="-5" y="-6" width="10" height="12" rx="2"><animateMotion dur="2.4s" begin="4.2s;out1.end+1.6s" id="out1" calcMode="linear" fill="freeze"><mpath href="#p-md" /></animateMotion></rect>
+          <rect x="-5" y="-6" width="10" height="12" rx="2"><animateMotion dur="2.4s" begin="5.4s;out2.end+2.2s" id="out2" calcMode="linear" fill="freeze"><mpath href="#p-mcp" /></animateMotion></rect>
+        </g>
+        <g class="o-core">
+          <circle cx="280" cy="280" r="58" class="o-core-bg" />
+          <g transform="translate(244 244) scale(1.125)">
+            <path d="M30 14a18 18 0 0 0 0 36z" fill="#fff" />
+            <path class="o-arc" d="M36 16.6a15.6 15.6 0 0 1 0 30.8" stroke="var(--arc)" stroke-width="5" stroke-linecap="round" fill="none" />
+          </g>
+        </g>
+      </svg>
+      <!-- Node labels live in HTML so they scale, wrap and translate like text. Positions match the path ends. -->
+      <ul class="o-nodes">
+        <li style="--x:82;--y:168;--d:0">{{icon:scissors}}<span>{{orbit.clipper}}</span></li>
+        <li style="--x:118;--y:430;--d:1">{{icon:smartphone}}<span>{{orbit.mobile}}</span></li>
+        <li style="--x:280;--y:50;--d:2">{{icon:monitor}}<span>{{orbit.windows}}</span></li>
+        <li style="--x:478;--y:168;--d:3">{{icon:app-window}}<span>{{orbit.web}}</span></li>
+        <li class="out" style="--x:442;--y:430;--d:4">{{icon:folder-open}}<span>{{orbit.md}}</span></li>
+        <li class="out" style="--x:280;--y:514;--d:5">{{icon:bot}}<span>{{orbit.mcp}}</span></li>
+      </ul>
+      <!-- What can be captured: one chip at a time travels from its app into the center (site.js). -->
+      <ul class="o-kinds" aria-label="{{orbit.kinds}}">
+        <li data-x="82" data-y="168">{{icon:globe}}<span>{{kind.website}}</span></li>
+        <li data-x="118" data-y="430">{{icon:image}}<span>{{kind.photo}}</span></li>
+        <li data-x="478" data-y="168">{{icon:book-open}}<span>{{kind.ebook}}</span></li>
+        <li data-x="280" data-y="50">{{icon:users}}<span>{{kind.meeting}}</span></li>
+        <li data-x="82" data-y="168">{{icon:chef-hat}}<span>{{kind.recipe}}</span></li>
+        <li data-x="118" data-y="430">{{icon:mic}}<span>{{kind.voice}}</span></li>
+        <li data-x="478" data-y="168">{{icon:file-text}}<span>{{kind.pdf}}</span></li>
+        <li data-x="280" data-y="50">{{icon:scan-text}}<span>{{kind.screenshot}}</span></li>
+        <li data-x="82" data-y="168">{{icon:shopping-bag}}<span>{{kind.product}}</span></li>
+        <li data-x="478" data-y="168">{{icon:square-play}}<span>{{kind.video}}</span></li>
+        <li data-x="118" data-y="430">{{icon:lightbulb}}<span>{{kind.thought}}</span></li>
+        <li data-x="82" data-y="168">{{icon:terminal}}<span>{{kind.prompt}}</span></li>
+        <li data-x="478" data-y="168">{{icon:mic-signal}}<span>{{kind.podcast}}</span></li>
+        <li data-x="82" data-y="168">{{icon:message-square}}<span>{{kind.chat}}</span></li>
+      </ul>
+    </figure>
+  </section>
+
+  <section class="principles" aria-label="{{principles.label}}">
+    <p><strong>{{p1.title}}</strong> {{p1.text}}</p>
+    <p><strong>{{p2.title}}</strong> {{p2.text}}</p>
+    <p><strong>{{p3.title}}</strong> {{p3.text}}</p>
+  </section>
+
+  <!-- A real sequence, so the steps are numbered. The stage shows a small live-built piece of the app per step. -->
+  <section id="flow" class="flow">
+    <div class="section-head">
+      <h2>{{flow.title}}</h2>
+      <p>{{flow.lead}}</p>
+    </div>
+    <div class="flow-body" data-steps>
+      <ol class="steps" role="tablist" aria-label="{{flow.title}}">
+        <li><button role="tab" aria-selected="true" aria-controls="stage-1" id="step-1"><span class="n">1</span><span class="t"><b>{{s1.title}}</b><span>{{s1.text}}</span></span><i class="bar"></i></button></li>
+        <li><button role="tab" aria-selected="false" aria-controls="stage-2" id="step-2"><span class="n">2</span><span class="t"><b>{{s2.title}}</b><span>{{s2.text}}</span></span><i class="bar"></i></button></li>
+        <li><button role="tab" aria-selected="false" aria-controls="stage-3" id="step-3"><span class="n">3</span><span class="t"><b>{{s3.title}}</b><span>{{s3.text}}</span></span><i class="bar"></i></button></li>
+        <li><button role="tab" aria-selected="false" aria-controls="stage-4" id="step-4"><span class="n">4</span><span class="t"><b>{{s4.title}}</b><span>{{s4.text}}</span></span><i class="bar"></i></button></li>
+      </ol>
+
+      <div class="stage">
+        <div class="pane is-on" role="tabpanel" id="stage-1" aria-labelledby="step-1">
+          <div class="ui inbox">
+            <div class="ui-head">{{icon:inbox}}<b>{{ui.inbox}}</b><span class="count">4</span></div>
+            <ul>
+              <li style="--i:0">{{icon:square-play}}<span><b>{{ui.c1}}</b><small>{{ui.c1m}}</small></span></li>
+              <li style="--i:1">{{icon:file-text}}<span><b>{{ui.c2}}</b><small>{{ui.c2m}}</small></span></li>
+              <li style="--i:2">{{icon:mic}}<span><b>{{ui.c3}}</b><small>{{ui.c3m}}</small></span><span class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></li>
+              <li style="--i:3">{{icon:link}}<span><b>{{ui.c4}}</b><small>{{ui.c4m}}</small></span></li>
+            </ul>
+            <div class="ui-orbit">{{icon:plus}}<span>{{ui.orbit}}</span><kbd>Alt</kbd><kbd>Space</kbd></div>
+          </div>
+        </div>
+
+        <div class="pane" role="tabpanel" id="stage-2" aria-labelledby="step-2" hidden>
+          <div class="ui entry">
+            <div class="ui-head">{{icon:square-play}}<b>{{ui.c1}}</b></div>
+            <p class="label">{{icon:sparkles}}{{ui.summary}}</p>
+            <p class="line" style="--i:0">{{ui.sum1}}</p>
+            <p class="line" style="--i:1">{{ui.sum2}}</p>
+            <div class="chips">
+              <span style="--i:0">#local-first</span><span style="--i:1">#sync</span><span style="--i:2">#talks</span>
+            </div>
+            <p class="task" style="--i:3">{{icon:square-check}}{{ui.task}}</p>
+            <p class="path" style="--i:4">{{icon:folder}}30_Clippings / Talks</p>
+          </div>
+        </div>
+
+        <div class="pane" role="tabpanel" id="stage-3" aria-labelledby="step-3" hidden>
+          <div class="ui graph">
+            <svg viewBox="0 0 420 260" aria-hidden="true">
+              <g class="edges">
+                <line x1="210" y1="130" x2="90" y2="60" style="--i:0" /><line x1="210" y1="130" x2="340" y2="70" style="--i:1" />
+                <line x1="210" y1="130" x2="100" y2="205" style="--i:2" /><line x1="210" y1="130" x2="330" y2="200" style="--i:3" />
+                <line x1="90" y1="60" x2="100" y2="205" style="--i:4" /><line x1="340" y1="70" x2="330" y2="200" style="--i:5" />
+              </g>
+              <g class="nodes">
+                <circle cx="210" cy="130" r="14" class="hub" /><circle cx="90" cy="60" r="8" /><circle cx="340" cy="70" r="8" />
+                <circle cx="100" cy="205" r="8" class="obj" /><circle cx="330" cy="200" r="8" class="obj" />
+              </g>
+            </svg>
+            <span class="g-label hub" style="left:50%;top:50%">{{ui.g0}}</span>
+            <span class="g-label" style="left:21%;top:16%">{{ui.g1}}</span>
+            <span class="g-label" style="left:81%;top:19%">{{ui.g2}}</span>
+            <span class="g-label obj" style="left:24%;top:88%">{{icon:user}}{{ui.g3}}</span>
+            <span class="g-label obj" style="left:79%;top:87%">{{icon:folder-kanban}}{{ui.g4}}</span>
+          </div>
+        </div>
+
+        <div class="pane" role="tabpanel" id="stage-4" aria-labelledby="step-4" hidden>
+          <div class="ui ask">
+            <p class="q">{{ui.q}}</p>
+            <div class="a">
+              <p class="label">{{icon:sparkles}}{{ui.copilot}}</p>
+              <p class="type">{{ui.a}}</p>
+              <div class="sources">
+                <span>{{icon:square-play}}<b>1</b> {{ui.c1}}</span>
+                <span>{{icon:file-text}}<b>2</b> {{ui.src2}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Real screens from the live demo, stacked; the front one cross-fades to the next. -->
+  <section class="gallery" data-deck>
+    <div class="section-head">
+      <h2>{{gallery.title}}</h2>
+      <p>{{gallery.lead}}</p>
+    </div>
+    <div class="deck-tabs" role="tablist" aria-label="{{gallery.title}}">
+      <button role="tab" aria-selected="true" data-i="0">{{icon:sun}}{{g.today}}</button>
+      <button role="tab" aria-selected="false" data-i="1">{{icon:book-open}}{{g.journal}}</button>
+      <button role="tab" aria-selected="false" data-i="2">{{icon:waypoints}}{{g.graph}}</button>
+      <button role="tab" aria-selected="false" data-i="3">{{icon:sparkles}}{{g.agent}}</button>
+      <button role="tab" aria-selected="false" data-i="4">{{icon:square-kanban}}{{g.tasks}}</button>
+    </div>
+    <div class="deck">
+      <a href="/home" class="card is-on"><img src="/img/home.jpg" width="1440" height="900" alt="{{g.todayAlt}}"></a>
+      <a href="/journal/week" class="card"><img src="/img/journal.jpg" width="1440" height="900" alt="{{g.journalAlt}}" loading="lazy"></a>
+      <a href="/graph" class="card"><img src="/img/graph.jpg" width="1440" height="900" alt="{{g.graphAlt}}" loading="lazy"></a>
+      <a href="/agent" class="card"><img src="/img/agent.jpg" width="1440" height="900" alt="{{g.agentAlt}}" loading="lazy"></a>
+      <a href="/tasks" class="card"><img src="/img/tasks.jpg" width="1440" height="900" alt="{{g.tasksAlt}}" loading="lazy"></a>
+    </div>
+    <p class="deck-caption" aria-live="polite">{{g.todayCap}}</p>
+    <template data-captions>{{g.todayCap}}|{{g.journalCap}}|{{g.graphCap}}|{{g.agentCap}}|{{g.tasksCap}}</template>
+  </section>
+
+  <section id="apps" class="apps">
+    <div class="section-head">
+      <h2>{{apps.title}}</h2>
+      <p>{{apps.lead}}</p>
+    </div>
+    <ul class="app-list">
+      <li>{{icon:app-window}}<div><h3>{{apps.web}}</h3><p>{{apps.webText}}</p></div></li>
+      <li>{{icon:monitor}}<div><h3>{{apps.windows}}</h3><p>{{apps.windowsText}}</p></div></li>
+      <li>{{icon:smartphone}}<div><h3>{{apps.mobile}}</h3><p>{{apps.mobileText}}</p></div></li>
+      <li>{{icon:scissors}}<div><h3>{{apps.extension}}</h3><p>{{apps.extensionText}}</p></div></li>
+      <li>{{icon:bot}}<div><h3>{{apps.mcp}}</h3><p>{{apps.mcpText}}</p></div></li>
+      <li>{{icon:folder-open}}<div><h3>{{apps.md}}</h3><p>{{apps.mdText}}</p></div></li>
+    </ul>
+  </section>
+
+  <section id="selfhost" class="selfhost">
+    <div>
+      <h2>{{selfhost.title}}</h2>
+      <p>{{selfhost.lead}}</p>
+      <ul class="needs">
+        <li>{{icon:container}}{{selfhost.need1}}</li>
+        <li>{{icon:key-round}}{{selfhost.need2}}</li>
+        <li>{{icon:globe}}{{selfhost.need3}}</li>
+      </ul>
+      <p><a class="more" href="{{guideUrl}}">{{selfhost.guide}}</a></p>
+    </div>
+    <pre class="term" aria-label="{{selfhost.codeLabel}}"><code><span class="p">$</span> git clone {{repoUrl}}.git
+<span class="p">$</span> cd {{repoName}}
+<span class="p">$</span> node selfhost/init.mjs --url http://localhost:8000 \
+    --email you@example.com
+<span class="c"># {{selfhost.key}}</span>
+<span class="p">$</span> cd selfhost &amp;&amp; docker compose up -d --build</code></pre>
+  </section>
+
+  <section class="closing">
+    {{markLarge}}
+    <h2>{{open.title}}</h2>
+    <p>{{open.text}}</p>
+    <div class="cta">
+      <a class="btn primary" href="/home">{{icon:play}}{{hero.demo}}</a>
+      <a class="btn" href="{{contributeUrl}}">{{icon:git-pull-request}}{{open.contribute}}</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>{{footer.text}}</p>
+  <p class="links"><a href="{{codeUrl}}">GitHub</a><a href="{{licenseUrl}}">AGPL-3.0</a><a href="/home">{{footer.demo}}</a>{{imprintLink}}<a href="{{otherHref}}" hreflang="{{otherLang}}" data-lang="{{otherLang}}">{{otherLabel}}</a></p>
+</footer>
+<script src="/site/site.js" defer></script>
+</body>
+</html>

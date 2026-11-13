@@ -1,0 +1,307 @@
+# Kortex, self-hosted: the web app, the MCP server and the Supabase services they need
+# (Postgres, Auth, REST, Realtime, Storage) behind one Caddy gateway on one address.
+#
+#   node selfhost/init.mjs --url http://localhost:8000 --email you@example.com   # writes selfhost/.env
+#   cd selfhost && docker compose up -d --build
+#
+# Guide: selfhost/README.md. Every value comes from selfhost/.env (see .env.example); nothing in
+# this file is specific to one installation.
+
+name: kortex
+
+services:
+  # --- database ---------------------------------------------------------------------------------
+  db:
+    image: supabase/postgres:17.6.1.136
+    restart: unless-stopped
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - db-config:/etc/postgresql-custom
+      - ./db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:ro
+      - ./db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:ro
+      - ./db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:ro
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      JWT_EXP: ${JWT_EXPIRY:-3600}
+    command:
+      [
+        "postgres",
+        "-c",
+        "config_file=/etc/postgresql/postgresql.conf",
+        "-c",
+        "log_min_messages=fatal",
+      ]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # --- Supabase Auth ----------------------------------------------------------------------------
+  auth:
+    image: supabase/gotrue:v2.197.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: ${KORTEX_URL}
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: ${KORTEX_URL}
+      GOTRUE_URI_ALLOW_LIST: ${ADDITIONAL_REDIRECT_URLS:-}
+      GOTRUE_DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: ${JWT_EXPIRY:-3600}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_ISSUER: ${KORTEX_URL}/auth/v1
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "false"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      # Without a mail server nobody can confirm an address, so sign-ups are confirmed at once.
+      # With SMTP set, switch ENABLE_EMAIL_AUTOCONFIRM to false (see README, "More than one user").
+      GOTRUE_MAILER_AUTOCONFIRM: ${ENABLE_EMAIL_AUTOCONFIRM:-true}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL:-}
+      GOTRUE_SMTP_HOST: ${SMTP_HOST:-}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT:-587}
+      GOTRUE_SMTP_USER: ${SMTP_USER:-}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS:-}
+      GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME:-Kortex}
+      GOTRUE_MAILER_URLPATHS_INVITE: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # --- Supabase Storage (files on a volume) -----------------------------------------------------
+  storage:
+    image: supabase/storage-api:v1.89.12
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - storage-data:/var/lib/storage
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      POSTGREST_URL: http://rest:3000
+      AUTH_JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgres://supabase_storage_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      STORAGE_PUBLIC_URL: ${KORTEX_URL}
+      REQUEST_ALLOW_X_FORWARDED_PATH: "true"
+      FILE_SIZE_LIMIT: ${STORAGE_FILE_SIZE_LIMIT:-524288000}
+      STORAGE_BACKEND: file
+      GLOBAL_S3_BUCKET: kortex
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: kortex
+      REGION: local
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://storage:5000/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  # --- Kortex schema: applies every migration that is not applied yet, then exits ---------------
+  migrate:
+    image: supabase/postgres:17.6.1.136
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
+    volumes:
+      - ../packages/db/supabase/migrations:/migrations:ro
+      - ./migrate.sh:/migrate.sh:ro
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGOPTIONS: "-c client_min_messages=warning"
+    entrypoint: ["/bin/sh", "/migrate.sh"]
+
+  # --- Supabase REST (PostgREST). Starts after the migrations: it refuses a missing schema ------
+  rest:
+    image: postgrest/postgrest:v14.18
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public,kortex
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_EXTRA_SEARCH_PATH: public,extensions
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
+      PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXPIRY:-3600}
+      PGRST_ADMIN_SERVER_PORT: 3001
+      PGRST_ADMIN_SERVER_HOST: localhost
+    healthcheck:
+      test: ["CMD", "postgrest", "--ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # --- Supabase Realtime ------------------------------------------------------------------------
+  realtime:
+    image: supabase/realtime:v2.148.3
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: supabase_admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: "SET search_path TO _realtime"
+      DB_ENC_KEY: ${REALTIME_DB_ENC_KEY}
+      API_JWT_SECRET: ${JWT_SECRET}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      METRICS_JWT_SECRET: ${JWT_SECRET}
+      ERL_AFLAGS: -proto_dist inet_tcp
+      DNS_NODES: "''"
+      RLIMIT_NOFILE: "10000"
+      APP_NAME: realtime
+      SEED_SELF_HOST: "true"
+      RUN_JANITOR: "true"
+      DISABLE_HEALTHCHECK_LOGGING: "true"
+
+  # --- Kortex web app ---------------------------------------------------------------------------
+  web:
+    image: kortex-web:selfhost
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${KORTEX_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+    restart: unless-stopped
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    env_file:
+      - path: ./.env.web
+        required: false
+    environment:
+      NEXT_PUBLIC_SUPABASE_URL: ${KORTEX_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+      # The web server itself reaches the Supabase API over the container network: from inside
+      # this container the public address may lead nowhere ("localhost") or back to the host.
+      SUPABASE_INTERNAL_URL: http://gateway:8001
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      SUPABASE_JWT_SECRET: ${JWT_SECRET}
+      KORTEX_CRON_SECRET: ${KORTEX_CRON_SECRET}
+      KORTEX_TIMEZONE: ${KORTEX_TIMEZONE:-UTC}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      EDENAI_API_KEY: ${EDENAI_API_KEY:-}
+
+  # --- Gateway: one address for the web app, the Supabase API and the MCP server ---------------
+  gateway:
+    image: caddy:2.11.9-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "${KORTEX_BIND:-0.0.0.0}:${KORTEX_HTTP_PORT:-8000}:${KORTEX_HTTP_PORT:-8000}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      KORTEX_SITE_ADDRESS: ${KORTEX_SITE_ADDRESS:-:8000}
+
+  # --- First start: creates the owner account from KORTEX_OWNER_EMAIL / KORTEX_OWNER_PASSWORD ---
+  setup:
+    image: kortex-web:selfhost
+    restart: "no"
+    depends_on:
+      auth:
+        condition: service_healthy
+      rest:
+        condition: service_healthy
+    volumes:
+      - ./setup-owner.mjs:/selfhost/setup-owner.mjs:ro
+    environment:
+      AUTH_URL: http://auth:9999
+      REST_URL: http://rest:3000
+      SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      KORTEX_USER_ID: ${KORTEX_USER_ID}
+      KORTEX_OWNER_EMAIL: ${KORTEX_OWNER_EMAIL}
+      KORTEX_OWNER_PASSWORD: ${KORTEX_OWNER_PASSWORD:-}
+    healthcheck:
+      disable: true
+    command: ["node", "/selfhost/setup-owner.mjs"]
+
+  # --- Hourly jobs: weekly digests, standing orders of the agent, watched pages ----------------
+  cron:
+    image: kortex-web:selfhost
+    restart: unless-stopped
+    depends_on:
+      - web
+    volumes:
+      - ./cron.mjs:/selfhost/cron.mjs:ro
+    environment:
+      KORTEX_INTERNAL_URL: http://web:3000
+      KORTEX_CRON_SECRET: ${KORTEX_CRON_SECRET}
+    healthcheck:
+      disable: true
+    command: ["node", "/selfhost/cron.mjs"]
+
+  # --- MCP server (remote mode, OAuth). Needs an https address, so it is a profile: -------------
+  #     init.mjs adds COMPOSE_PROFILES=mcp when KORTEX_URL is https (or http://localhost).
+  mcp:
+    image: kortex-mcp:selfhost
+    profiles: ["mcp"]
+    build:
+      context: ..
+      dockerfile: packages/mcp-server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    environment:
+      MCP_PUBLIC_URL: ${KORTEX_URL}
+      MCP_OAUTH_SECRET: ${MCP_OAUTH_SECRET}
+      MCP_TRUST_PROXY: "true"
+      KORTEX_USER_ID: ${KORTEX_USER_ID}
+      SUPABASE_URL: http://gateway:8001
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_JWT_SECRET: ${JWT_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      EDENAI_API_KEY: ${EDENAI_API_KEY:-}
+
+volumes:
+  db-data:
+  db-config:
+  storage-data:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-connect-token"
+description = "Enables the connect_token command without any pre-configured scope."
+commands.allow = ["connect_token"]
+
+[[permission]]
+identifier = "deny-connect-token"
+description = "Denies the connect_token command without any pre-configured scope."
+commands.deny = ["connect_token"]

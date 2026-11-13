@@ -1,0 +1,10 @@
+# Cloudflare Pages / Netlify response headers for the static site.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  X-Frame-Options: DENY
+
+# Hashed file names: cache for a year.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable

@@ -1,0 +1,115 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /Lang (de-DE) /PageLabels << /Nums [0 << /S /D /St 41 >>] >> >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R 13 0 R] /Count 4 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Title (AI Engineering \226 Chapter 3 \(Excerpt\)) /Author (Demo) /Producer (scripts/make-mock-docs.mjs) /CreationDate (D:20261021213000Z) >>
+endobj
+6 0 obj
+<< /Length 1097 >>
+stream
+BT 0 g /F1 22 Tf 32 434.57 Td (Summary) Tj ET
+BT 0 g /F1 16.5 Tf 32 399.43 Td (Choosing a chunk size stays a trade-off. Small chunks match a question precisely) Tj ET
+BT 0 g /F1 16.5 Tf 32 373.43 Td (but lose the surrounding meaning quickly. Large chunks keep the context but dilute) Tj ET
+BT 0 g /F1 16.5 Tf 32 347.43 Td (the embedding, because they cover several topics at once.) Tj ET
+BT 0 g /F1 16.5 Tf 32 309.43 Td (A starting value of 400 to 800 tokens with ten to twenty percent overlap has proven) Tj ET
+BT 0 g /F1 16.5 Tf 32 283.43 Td (itself. Headings, tables and code blocks should not be cut apart: a splitter that) Tj ET
+BT 0 g /F1 16.5 Tf 32 257.43 Td (breaks at paragraphs and sections almost always finds better matches than a rigid) Tj ET
+BT 0 g /F1 16.5 Tf 32 231.43 Td (window.) Tj ET
+BT 0 g /F1 16.5 Tf 32 193.43 Td (One problem, however, no chunk size solves: every chunk is embedded on its own) Tj ET
+BT 0 g /F1 16.5 Tf 32 167.43 Td (and does not know what comes before it in the document. This is where the next) Tj ET
+BT 0 g /F1 16.5 Tf 32 141.43 Td (chapter starts.) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 620 484] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 1463 >>
+stream
+BT 0.45 g /F2 12 Tf 32 443.95 Td (Chapter 3) Tj ET
+BT 0 g /F1 28 Tf 32 407.55 Td (Contextual Retrieval) Tj ET
+BT 0 g /F1 16.5 Tf 32 367.43 Td (A retrieval system is only as good as the pieces of text it finds. When documents) Tj ET
+BT 0 g /F1 16.5 Tf 32 341.43 Td (are split into chunks, the link to the whole document is often lost: a sentence like) Tj ET
+BT 0 g /F1 16.5 Tf 32 315.43 Td (\223Revenue grew by 3 percent in the second quarter\224 names neither the company nor) Tj ET
+BT 0 g /F1 16.5 Tf 32 289.43 Td (the year.) Tj ET
+BT 0 g /F1 16.5 Tf 32 251.43 Td (Contextual retrieval puts a short, model-written description in front of every chunk) Tj ET
+BT 0 g /F1 16.5 Tf 32 225.43 Td (before it is embedded, placing it within the whole document. The same description) Tj ET
+BT 0 g /F1 16.5 Tf 32 199.43 Td (goes into the BM25 index, so lexical and semantic search gain from the same extra) Tj ET
+BT 0 g /F1 16.5 Tf 32 173.43 Td (context.) Tj ET
+BT 0 g /F1 16.5 Tf 32 135.43 Td (The extra effort comes once, at indexing time, and prompt caching lowers it) Tj ET
+BT 0 g /F1 16.5 Tf 32 109.43 Td (considerably. The length of the added context still matters: too short and it does not) Tj ET
+BT 0 g /F1 16.5 Tf 32 83.43 Td (place the chunk, too long and it dilutes the embedding.) Tj ET
+BT 0 g /F1 16.5 Tf 32 45.43 Td (In practice it pays to compare on a small test set before the whole collection is) Tj ET
+BT 0 g /F1 16.5 Tf 32 19.43 Td (indexed again.) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 620 484] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 1085 >>
+stream
+BT 0 g /F1 22 Tf 32 434.57 Td (Writing the context) Tj ET
+BT 0 g /F1 16.5 Tf 32 399.43 Td (For every chunk the model gets two inputs: the full document and the single chunk.) Tj ET
+BT 0 g /F1 16.5 Tf 32 373.43 Td (The instruction is, in essence, to describe in one or two sentences where this section) Tj ET
+BT 0 g /F1 16.5 Tf 32 347.43 Td (sits in the document and what it is about. Nothing more is needed.) Tj ET
+BT 0 g /F1 16.5 Tf 32 309.43 Td (Because the document stays the same for all of its chunks, it is ideal for prompt) Tj ET
+BT 0 g /F1 16.5 Tf 32 283.43 Td (caching. The document is loaded into the cache once; every further call only pays) Tj ET
+BT 0 g /F1 16.5 Tf 32 257.43 Td (for the short chunk and the answer. For long manuals the cost drops to a fraction.) Tj ET
+BT 0 g /F1 16.5 Tf 32 219.43 Td (The generated context is put in front of the chunk, and only this combined text is) Tj ET
+BT 0 g /F1 16.5 Tf 32 193.43 Td (embedded and written to the BM25 index. The original chunk is kept for display in) Tj ET
+BT 0 g /F1 16.5 Tf 32 167.43 Td (the search result.) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 620 484] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 981 >>
+stream
+BT 0 g /F1 22 Tf 32 434.57 Td (Reranking as a second stage) Tj ET
+BT 0 g /F1 16.5 Tf 32 399.43 Td (Contextual retrieval improves which candidates are found at all. A reranker then) Tj ET
+BT 0 g /F1 16.5 Tf 32 373.43 Td (decides which of them really fit the question. For this, the best 150 hits from vector) Tj ET
+BT 0 g /F1 16.5 Tf 32 347.43 Td (and BM25 search are merged and scored again by a cross-encoder.) Tj ET
+BT 0 g /F1 16.5 Tf 32 309.43 Td (Only the top 20 chunks then go into the prompt. That costs one extra request per) Tj ET
+BT 0 g /F1 16.5 Tf 32 283.43 Td (search but noticeably lowers the retrieval error rate, especially for questions that) Tj ET
+BT 0 g /F1 16.5 Tf 32 257.43 Td (touch several sections of a document.) Tj ET
+BT 0 g /F1 16.5 Tf 32 219.43 Td (Context, hybrid search and reranking can be introduced step by step: first the) Tj ET
+BT 0 g /F1 16.5 Tf 32 193.43 Td (context, then BM25, finally the reranker. Each stage can be measured on its own.) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 620 484] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 12 0 R >>
+endobj
+xref
+0 14
+0000000000 65535 f 
+0000000015 00000 n 
+0000000125 00000 n 
+0000000202 00000 n 
+0000000301 00000 n 
+0000000396 00000 n 
+0000000556 00000 n 
+0000001705 00000 n 
+0000001841 00000 n 
+0000003356 00000 n 
+0000003492 00000 n 
+0000004630 00000 n 
+0000004768 00000 n 
+0000005801 00000 n 
+trailer
+<< /Size 14 /Root 1 0 R /Info 5 0 R >>
+startxref
+5939
+%%EOF

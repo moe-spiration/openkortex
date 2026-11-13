@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{pageTitle}} · OpenKortex</title>
+<meta name="robots" content="{{robots}}">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="/site/mark.svg" type="image/svg+xml">
+{{fonts}}
+<link rel="stylesheet" href="/site/site.css">
+</head>
+<body class="plain">
+<header class="top">
+  <a class="brand" href="{{home}}" aria-label="OpenKortex">{{mark}}<span>OpenKortex</span></a>
+  <nav aria-label="{{nav.label}}">
+    <a href="{{home}}">{{soon.back}}</a>
+  </nav>
+</header>
+<main id="main" class="notice">
+  {{body}}
+</main>
+<footer>
+  <p>{{footer.text}}</p>
+  <p class="links"><a href="{{home}}">OpenKortex</a><a href="/home">{{footer.demo}}</a>{{imprintLink}}</p>
+</footer>
+</body>
+</html>

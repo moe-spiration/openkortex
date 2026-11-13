@@ -1,0 +1,53 @@
+# Kortex gateway. KORTEX_SITE_ADDRESS is ":8000" (plain http on a port) or a domain name
+# (Caddy then serves https with a certificate from Let's Encrypt).
+
+(supabase_api) {
+	handle_path /auth/v1/* {
+		reverse_proxy auth:9999
+	}
+	handle_path /rest/v1/* {
+		reverse_proxy rest:3000
+	}
+	# Realtime picks its tenant from the first label of the host name.
+	handle_path /realtime/v1/api/* {
+		rewrite * /api{uri}
+		reverse_proxy realtime:4000 {
+			header_up Host realtime-dev.kortex
+		}
+	}
+	handle_path /realtime/v1/* {
+		rewrite * /socket{uri}
+		reverse_proxy realtime:4000 {
+			header_up Host realtime-dev.kortex
+		}
+	}
+	handle_path /storage/v1/* {
+		reverse_proxy storage:5000 {
+			header_up X-Forwarded-Prefix /storage/v1
+		}
+	}
+}
+
+{$KORTEX_SITE_ADDRESS} {
+	encode zstd gzip
+	request_body {
+		max_size 600MB
+	}
+
+	import supabase_api
+
+	# MCP server (only running with the "mcp" profile)
+	@mcp path /mcp /mcp/* /oauth/* /.well-known/oauth-protected-resource* /.well-known/oauth-authorization-server*
+	handle @mcp {
+		reverse_proxy mcp:3333
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+# Supabase API for the other containers (web server, MCP server). Not published to the host.
+http://:8001 {
+	import supabase_api
+}

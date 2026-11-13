@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><title>RAG und Chunking - Claude</title></head>
+<body><main>
+<div>
+  <div data-test-render-count="1"><div data-testid="user-message" class="font-user-message"><p class="whitespace-pre-wrap">Wie chunke ich lange PDFs für ein RAG-System?</p></div></div>
+  <div data-is-streaming="false">
+    <div class="font-claude-response">
+      <div class="standard-markdown">
+        <p>Nutze <em>Contextual Retrieval</em> und respektiere <strong>Kapitelgrenzen</strong>.</p>
+        <ol><li>Chunks bilden</li><li>Kontext voranstellen</li></ol>
+        <pre class="code-block__code"><code class="language-ts">const n: number = 3;
+console.log(n);
+</code></pre>
+        <h1>Fazit</h1>
+        <p>Messen statt raten.</p>
+      </div>
+      <div data-testid="action-bar"><button>Retry</button><button>Copy</button></div>
+    </div>
+  </div>
+  <div><div data-testid="user-message" class="font-user-message"><p>Danke!</p></div></div>
+  <div><div class="font-claude-response"><div class="standard-markdown"><p>Gern geschehen.</p></div></div></div>
+</div>
+</main></body></html>

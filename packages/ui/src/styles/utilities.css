@@ -1,0 +1,47 @@
+/* Base styles and Tailwind utilities from ds/kortex/components/bundle.css (refine overrides applied). */
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: calc(13px * var(--kx-fs, 1));
+    line-height: 1.4;
+    font-weight: 400;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    background: var(--bg-main-window);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  strong, b { font-weight: 500; }
+  :focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+  ::selection { background: var(--accent-ai-soft); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0ms !important; animation: none !important; }
+  }
+}
+
+/* Surface recipes (glass-sidebar, card-3d-flat, kx-row, ...) live in components.css as the DS component layer. */
+
+/* Typography scale of spec 2026-10-25 (see tokens.css). Old names stay as aliases onto the new steps. */
+@utility type-display { font: var(--type-display); font-variant-numeric: tabular-nums; letter-spacing: var(--type-display-tracking); }
+@utility type-h1 { font: var(--type-h1); font-variant-numeric: tabular-nums; letter-spacing: var(--type-h1-tracking); }
+@utility type-h2 { font: var(--type-h2); font-variant-numeric: tabular-nums; letter-spacing: var(--type-h2-tracking); }
+@utility type-h3 { font: var(--type-h3); font-variant-numeric: tabular-nums; letter-spacing: var(--type-h3-tracking); }
+@utility type-read { font: var(--type-read); font-variant-numeric: tabular-nums; letter-spacing: var(--type-read-tracking); color: var(--text-secondary); }
+@utility type-micro { font: var(--type-micro); font-variant-numeric: tabular-nums; letter-spacing: var(--type-micro-tracking); text-transform: uppercase; color: var(--text-muted); }
+@utility type-body { font: var(--type-body); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+@utility type-meta { font: var(--type-meta); font-variant-numeric: tabular-nums; letter-spacing: 0; color: var(--text-muted); }
+@utility type-greeting { font: var(--type-display); font-variant-numeric: tabular-nums; letter-spacing: var(--type-display-tracking); }
+@utility type-page { font: var(--type-h1); font-variant-numeric: tabular-nums; letter-spacing: var(--type-h1-tracking); }
+@utility type-section { font: var(--type-h2); font-variant-numeric: tabular-nums; letter-spacing: var(--type-h2-tracking); }
+@utility type-card { font: var(--type-h3); font-variant-numeric: tabular-nums; letter-spacing: var(--type-h3-tracking); }
+@utility type-small { font: var(--type-meta); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+@utility type-mono { font-family: var(--font-mono); font-weight: 400; letter-spacing: 0; font-size: calc(12px * var(--kx-fs, 1)); }
+@utility type-num { font-family: var(--font-sans); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+@utility type-label { font-size: calc(12px * var(--kx-fs, 1)); line-height: 1.4; font-weight: 500; letter-spacing: 0; }
+
+@utility ease-snappy { transition-timing-function: var(--ease-snappy); }

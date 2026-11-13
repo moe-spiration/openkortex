@@ -1,0 +1,57 @@
+/*
+ * Split reader: the pdf.js text layer (subset of pdfjs-dist/web/pdf_viewer.css, scoped to the
+ * page cards), highlight boxes over the canvas and the epubjs highlight marks.
+ */
+
+.kx-reader-page .textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  opacity: 1;
+  line-height: 1;
+  text-align: initial;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  caret-color: CanvasText;
+  z-index: 0;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.kx-reader-page .textLayer :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+.kx-reader-page .textLayer > :not(.markedContent),
+.kx-reader-page .textLayer .markedContent span:not(.markedContent) {
+  z-index: 1;
+  --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1;
+  --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+.kx-reader-page .textLayer .markedContent { display: contents; }
+.kx-reader-page .textLayer ::selection { background: color-mix(in srgb, var(--accent-ai) 30%, transparent); color: transparent; }
+.kx-reader-page .textLayer br::selection { background: transparent; }
+.kx-reader-page .textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none;
+}
+.kx-reader-page .textLayer.selecting .endOfContent { top: 0; }
+
+.kx-reader-marks { position: absolute; inset: 0; pointer-events: none; }
+.kx-reader-marks > div { position: absolute; }
+
+/* epubjs draws marks as SVG over the section iframes (host document, so tokens apply). */
+.kx-epub-host .kx-epub-hl { fill: var(--status-processing); fill-opacity: 0.32; mix-blend-mode: normal; pointer-events: none; }
+.kx-epub-host .kx-epub-flash { fill: var(--status-processing); mix-blend-mode: normal; pointer-events: none; animation: kx-epub-flash 900ms var(--ease-snappy) 1 both; }
+@keyframes kx-epub-flash { 0%, 100% { fill-opacity: 0.32; } 40% { fill-opacity: 0.85; } }

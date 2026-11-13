@@ -1,0 +1,128 @@
+/* Tailwind v4 theme bound to the Kortex CSS variables (tokens.css). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #fff;
+  --color-black: #000;
+
+  /* Tactile Craft v2 (tokens.css): luminance steps, text steps, accent family, edges. */
+  --color-lum-0: var(--lum-0);
+  --color-lum-1: var(--lum-1);
+  --color-lum-2: var(--lum-2);
+  --color-lum-3: var(--lum-3);
+  --color-lum-4: var(--lum-4);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-t1: var(--t1);
+  --color-t2: var(--t2);
+  --color-t3: var(--t3);
+  --color-t4: var(--t4);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-accent-fill: var(--accent-fill);
+  --color-on-accent: var(--on-accent);
+  --color-hair: var(--hair);
+  --color-hair-strong: var(--hair-strong);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-crit: var(--crit);
+  --color-info: var(--info);
+
+  --color-app-shell: var(--bg-app-shell);
+  --color-glass-sidebar: var(--bg-glass-sidebar);
+  --color-main-window: var(--bg-main-window);
+  --color-surface-flat: var(--bg-surface-flat);
+  --color-surface-muted: var(--bg-surface-muted);
+  --color-floating-glass: var(--bg-floating-glass);
+  --color-hover: var(--bg-hover);
+  --color-scrim: var(--bg-scrim);
+  --color-inverse: var(--bg-inverse);
+
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+
+  --color-ai: var(--accent-ai);
+  --color-ai-solid: var(--accent-ai-solid);
+  --color-ai-soft: var(--accent-ai-soft);
+  --color-on-ai: var(--on-accent-ai);
+  --color-checkin: var(--accent-checkin);
+  --color-on-checkin: var(--on-accent-checkin);
+
+  --color-subtle: var(--border-subtle);
+  --color-focus: var(--border-focus);
+  --color-corner-3d: var(--corner-3d-light);
+
+  --color-synced: var(--status-synced);
+  --color-processing: var(--status-processing);
+  --color-urgent: var(--status-urgent);
+  --color-urgent-text: var(--status-urgent-text);
+
+  --color-tag-ai-fg: var(--tag-ai-fg);
+  --color-tag-ai-bg: var(--tag-ai-bg);
+  --color-tag-ai-border: var(--tag-ai-border);
+  --color-tag-ai-dot: var(--tag-ai-dot);
+  --color-tag-auto-fg: var(--tag-auto-fg);
+  --color-tag-auto-bg: var(--tag-auto-bg);
+  --color-tag-auto-border: var(--tag-auto-border);
+  --color-tag-auto-dot: var(--tag-auto-dot);
+  --color-tag-health-fg: var(--tag-health-fg);
+  --color-tag-health-bg: var(--tag-health-bg);
+  --color-tag-health-border: var(--tag-health-border);
+  --color-tag-health-dot: var(--tag-health-dot);
+  --color-tag-food-fg: var(--tag-food-fg);
+  --color-tag-food-bg: var(--tag-food-bg);
+  --color-tag-food-border: var(--tag-food-border);
+  --color-tag-food-dot: var(--tag-food-dot);
+  --color-tag-finance-fg: var(--tag-finance-fg);
+  --color-tag-finance-bg: var(--tag-finance-bg);
+  --color-tag-finance-border: var(--tag-finance-border);
+  --color-tag-finance-dot: var(--tag-finance-dot);
+  --color-tag-strategy-fg: var(--tag-strategy-fg);
+  --color-tag-strategy-bg: var(--tag-strategy-bg);
+  --color-tag-strategy-border: var(--tag-strategy-border);
+  --color-tag-strategy-dot: var(--tag-strategy-dot);
+
+  --shadow-*: initial;
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-main-window: var(--shadow-main-window);
+  --shadow-glass-sidebar: var(--shadow-glass-sidebar);
+  --shadow-floating: var(--shadow-floating);
+  --shadow-glow-ai: var(--shadow-glow-ai);
+  --shadow-glow-checkin: var(--shadow-glow-checkin);
+  --shadow-btn-primary: var(--shadow-btn-primary);
+  --shadow-inset: var(--shadow-inset);
+  --shadow-pressed: var(--shadow-pressed);
+  --shadow-surface: var(--edge-surface);
+  --shadow-raised: var(--edge-raised);
+  --shadow-recessed: var(--edge-inset);
+  --shadow-float: var(--edge-float);
+
+  --radius-*: initial;
+  --radius-xs: 4px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-pill: 9999px;
+  --radius-canvas: 14px;
+  --radius-full: 9999px;
+
+  --blur-glass: 24px;
+  --blur-floating: 24px;
+  --blur-overlay: 16px;
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+
+  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+}

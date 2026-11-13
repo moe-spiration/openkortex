@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-select-audio-device"
+description = "Enables the select_audio_device command without any pre-configured scope."
+commands.allow = ["select_audio_device"]
+
+[[permission]]
+identifier = "deny-select-audio-device"
+description = "Denies the select_audio_device command without any pre-configured scope."
+commands.deny = ["select_audio_device"]

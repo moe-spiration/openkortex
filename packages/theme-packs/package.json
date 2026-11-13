@@ -1,0 +1,26 @@
+{
+  "name": "@kortex/theme-packs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "gen": "node scripts/gen-manifest.mjs",
+    "verify": "node scripts/verify-media.mjs",
+    "sync:web": "node scripts/sync-web.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "gen:android": "node scripts/gen-android.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "vitest": "^5.0.5"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./media/*": "./media/*"
+  },
+  "license": "AGPL-3.0-only"
+}

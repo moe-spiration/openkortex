@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-confirm-connect"
+description = "Enables the confirm_connect command without any pre-configured scope."
+commands.allow = ["confirm_connect"]
+
+[[permission]]
+identifier = "deny-confirm-connect"
+description = "Denies the confirm_connect command without any pre-configured scope."
+commands.deny = ["confirm_connect"]

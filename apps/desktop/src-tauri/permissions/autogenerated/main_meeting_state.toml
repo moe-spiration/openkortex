@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-main-meeting-state"
+description = "Enables the main_meeting_state command without any pre-configured scope."
+commands.allow = ["main_meeting_state"]
+
+[[permission]]
+identifier = "deny-main-meeting-state"
+description = "Denies the main_meeting_state command without any pre-configured scope."
+commands.deny = ["main_meeting_state"]

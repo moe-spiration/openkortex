@@ -1,0 +1,109 @@
+{
+  "expo": {
+    "name": "OpenKortex",
+    "slug": "kortex",
+    "scheme": "kortex",
+    "version": "0.6.4",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/brand/icon.png",
+    "newArchEnabled": true,
+    "android": {
+      "package": "io.github.moe_spiration.openkortex",
+      "versionCode": 12,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/adaptive-foreground.png",
+        "monochromeImage": "./assets/brand/adaptive-monochrome.png",
+        "backgroundColor": "#4F46E5"
+      },
+      "permissions": [
+        "RECORD_AUDIO",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/brand/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-share-intent",
+        {
+          "androidIntentFilters": [
+            "text/*",
+            "image/*",
+            "*/*"
+          ],
+          "androidMainActivityAttributes": {
+            "android:launchMode": "singleTask"
+          }
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/splash-icon.png",
+          "imageWidth": 128,
+          "resizeMode": "contain",
+          "backgroundColor": "#FAF9F6",
+          "dark": {
+            "image": "./assets/brand/splash-icon.png",
+            "backgroundColor": "#101014"
+          }
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "OpenKortex records voice memos while you hold the orb."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand/adaptive-monochrome.png",
+          "color": "#6366F1",
+          "defaultChannel": "reminders"
+        }
+      ],
+      "expo-background-task",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "KortexCapture",
+              "label": "OpenKortex Capture",
+              "description": "Capture a voice memo, note or photo right away",
+              "minWidth": "250dp",
+              "minHeight": "56dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 1,
+              "resizeMode": "horizontal",
+              "updatePeriodMillis": 0
+            },
+            {
+              "name": "KortexToday",
+              "label": "OpenKortex Today",
+              "description": "Due reminders and tasks",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ]
+    ],
+    "ios": {
+      "bundleIdentifier": "io.github.moe_spiration.openkortex",
+      "icon": "./assets/brand/icon.png",
+      "supportsTablet": false
+    }
+  }
+}

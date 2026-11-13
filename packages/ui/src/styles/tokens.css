@@ -1,0 +1,223 @@
+/* Kortex design tokens.
+
+   TACTILE CRAFT v2 (2026-10-29; plan: design/audit/2026-10-29-tactile-craft-phase2-plan.md, values from the
+   accepted click dummy design/mockups/2026-10-29-tactile-craft/opus/src/styles.css). It replaces the flat look
+   (W3/W4 of the spec 2026-10-25): five luminance steps and a 1px edge rule instead of large tone jumps, and
+   everything coloured derives from ONE user accent. The old token names stay as aliases onto the new steps, so
+   existing components re-colour themselves.
+
+   SURFACES                                   EDGES
+   --lum-0  frame (shell, sidebar, titlebar)  --hair / --hair-strong   1px hairlines (rings, dividers)
+   --lum-1  canvas island, inputs, tracks     --spec-top               top-lit specular (level 1 and 2)
+   --lum-2  card, row, active segment         --spec-bottom            dark lower edge, pressed shade
+   --lum-3  hover, raised, popover base       --inset-top              dark upper edge = recessed
+   --lum-4  active, pressed, bar track        --drop                   the only drop shadow (level 2)
+   --glass / --glass-strong  glass fills (blur 24px)
+   Rule: light upper edge = floats, dark upper edge = recessed. Level 1 (card, row) = --spec-top + --hair ring and
+   no drop shadow. Level 2 (orbit, menu, popover, drawer, HUD) = glass + gradient edge + --drop. Recessed (canvas,
+   segment track, input) = --lum-1 + --inset-top. Utility classes: .tc-surface, .tc-float, .tc-inset (tactile.css).
+
+   ACCENT: one input, --kx-accent (user pref: preset or any #rrggbb, set on <html> by lib/shell/prefs.ts).
+   --accent is the raw colour; --accent-ink (text, icons), --accent-soft (tint), --accent-line (1px ring),
+   --accent-fill (filled controls) and the glow strengths --glow-a/b/c (dark stronger than light) derive from it.
+   --accent-fill and --on-accent (text on it) come from JS (--kx-accent-fill, --kx-on-accent; @kortex/ui/accent
+   accentFill): white or dark ink, whichever reaches 4.5:1 on the fill; mid-tones get a darker fill. The
+   color-mix below is only the fallback before the script ran (and the formula the JS starts from).
+
+   TYPOGRAPHY (spec 2026-10-25, W1; unchanged by Tactile Craft). One family (Geist, variable), six sizes
+   (32/24/15/13/12/11), three weights (300/400/500). Font shorthand = weight size/line-height family.
+   | role    | token          | size/line | weight | tracking | colour   | class (.kx-*) / utility                    |
+   | Display | --type-display | 32/1.15   | 300    | -0.02em  | Text 1   | .kx-h-display / type-display               |
+   | Titel   | --type-h1      | 24/1.15   | 500    | -0.015em | Text 1   | .kx-h-page    / type-h1                    |
+   | Sektion | --type-h2      | 15/1.5    | 500    | -0.01em  | Text 1   | .kx-h-section / type-h2                    |
+   | Lesen   | --type-read    | 15/1.7    | 400    |  0       | Text 2   | .kx-read      / type-read                  |
+   | UI      | --type-body    | 13/1.4    | 400    |  0       | Text 1/2 | .kx-body      / type-body                  |
+   | UI 500  | --type-h3      | 13/1.4    | 500    |  0       | Text 1   | .kx-h-card    / type-h3 (active, card titles) |
+   | Meta    | --type-meta    | 12/1.5    | 400    |  0       | Text 3   | .kx-meta      / type-meta                  |
+   | Micro   | --type-micro   | 11/1.4    | 500    | +0.06em  | Text 3   | .kx-eyebrow   / type-micro (UPPERCASE only) |
+   Tactile Craft: sidebar tree rows (Life, Spaces, Objects) use 12/500; the main navigation stays 13.
+   Numbers: Geist with tabular-nums (.kx-num). Mono (--font-mono) only for paths, shortcuts and code.
+   ICONS (W2): stroke --icon-stroke 1.5 (--icon-stroke-thin 1.25 for avatars), sizes --icon-s/m/l = 14/16/20. */
+
+/* ---------- Dark (default) ---------- */
+:root, [data-theme="dark"], .dark {
+  --lum-0: #0B0B0E; --lum-1: #121216; --lum-2: #18181D; --lum-3: #1F1F25; --lum-4: #27272E;
+  --glass: rgb(28 28 34 / 0.60); --glass-strong: rgb(24 24 30 / 0.86);
+  --t1: #F4F4F6; --t2: #C6C6CE; --t3: #9898A2; --t4: #62626C;
+  --hair: rgb(255 255 255 / 0.06); --hair-strong: rgb(255 255 255 / 0.10);
+  --spec-top: rgb(255 255 255 / 0.085); --spec-bottom: rgb(0 0 0 / 0.45); --inset-top: rgb(0 0 0 / 0.55);
+  --drop: 0 1px 2px rgb(0 0 0 / 0.5), 0 24px 48px -20px rgb(0 0 0 / 0.75);
+  --glow-a: 16%; --glow-b: 24%; --glow-c: 34%;
+  --accent-ink: color-mix(in oklch, var(--accent) 66%, white);
+  --accent-soft: color-mix(in oklch, var(--accent) 15%, transparent);
+  --accent-line: color-mix(in oklch, var(--accent) 42%, transparent);
+  --ok: #34D399; --warn: #FBBF24; --crit: #F87171; --info: #60A5FA;
+  --node: #C6C6CE; --edge: #9898A2; /* knowledge graph: node fill, edge stroke (accent marks the selection) */
+  --photo-scrim: linear-gradient(180deg, rgb(10 10 14 / 0.66), rgb(10 10 14 / 0.84) 70%);
+  --scrollbar: color-mix(in srgb, var(--t3) 32%, transparent); --scrollbar-hover: color-mix(in srgb, var(--t3) 55%, transparent);
+  --bg-scrim: rgba(4, 4, 6, 0.62); --bg-inverse: #F4F4F6; --text-inverse: #18181B;
+  --on-accent-checkin: #04201C; --accent-checkin: #14B8A6;
+  --status-synced: #10B981; --status-processing: #F59E0B; --status-urgent: #EF4444; --status-urgent-text: #FCA5A5;
+  --tag-auto-fg: #7DD3FC; --tag-auto-bg: rgba(14, 165, 233, 0.12); --tag-auto-border: rgba(14, 165, 233, 0.25); --tag-auto-dot: #0EA5E9;
+  --tag-health-fg: #6EE7B7; --tag-health-bg: rgba(16, 185, 129, 0.12); --tag-health-border: rgba(16, 185, 129, 0.25); --tag-health-dot: #10B981;
+  --tag-food-fg: #FCD34D; --tag-food-bg: rgba(245, 158, 11, 0.12); --tag-food-border: rgba(245, 158, 11, 0.25); --tag-food-dot: #F59E0B;
+  --tag-finance-fg: #FDA4AF; --tag-finance-bg: rgba(244, 63, 94, 0.12); --tag-finance-border: rgba(244, 63, 94, 0.25); --tag-finance-dot: #F43F5E;
+  --tag-strategy-fg: #D8B4FE; --tag-strategy-bg: rgba(168, 85, 247, 0.12); --tag-strategy-border: rgba(168, 85, 247, 0.25); --tag-strategy-dot: #A855F7;
+  --shadow-glow-checkin: 0 0 0 1px rgba(20, 184, 166, 0.30), 0 10px 40px -8px rgba(20, 184, 166, 0.36);
+  color-scheme: dark;
+}
+
+/* ---------- Light ("Alabaster") ---------- */
+/* Text 3 is #66666E (dummy: #6A6A72): keeps 4.5:1 for meta text on --lum-0 (sidebar) in light mode. */
+[data-theme="light"], .light {
+  --lum-0: #E7E5DF; --lum-1: #F8F7F3; --lum-2: #FEFDFB; --lum-3: #F1F0EB; --lum-4: #E8E6E0;
+  --glass: rgb(251 250 247 / 0.66); --glass-strong: rgb(252 251 249 / 0.86);
+  --t1: #18181B; --t2: #4E4E56; --t3: #66666E; --t4: #A1A1A8;
+  --hair: rgb(24 24 27 / 0.075); --hair-strong: rgb(24 24 27 / 0.13);
+  --spec-top: rgb(255 255 255 / 1); --spec-bottom: rgb(24 24 27 / 0.06); --inset-top: rgb(24 24 27 / 0.075);
+  --drop: 0 1px 2px rgb(24 24 27 / 0.05), 0 18px 40px -20px rgb(24 24 27 / 0.30);
+  --glow-a: 10%; --glow-b: 15%; --glow-c: 22%;
+  --accent-ink: color-mix(in oklch, var(--accent) 76%, black);
+  --accent-soft: color-mix(in oklch, var(--accent) 10%, transparent);
+  --accent-line: color-mix(in oklch, var(--accent) 34%, transparent);
+  --ok: #0E8F62; --warn: #A86A12; --crit: #C9303A; --info: #2C6FC4;
+  --node: #4E4E56; --edge: #66666E;
+  --photo-scrim: linear-gradient(180deg, rgb(250 249 246 / 0.74), rgb(250 249 246 / 0.88) 70%);
+  --scrollbar: color-mix(in srgb, var(--t3) 38%, transparent); --scrollbar-hover: color-mix(in srgb, var(--t3) 60%, transparent);
+  --bg-scrim: rgba(24, 24, 27, 0.32); --bg-inverse: #18181B; --text-inverse: #F4F4F6;
+  --on-accent-checkin: #FFFFFF; --accent-checkin: #0F766E;
+  --status-synced: #10B981; --status-processing: #F59E0B; --status-urgent: #EF4444; --status-urgent-text: #B91C1C;
+  --tag-auto-fg: #0369A1; --tag-auto-bg: rgba(14, 165, 233, 0.12); --tag-auto-border: rgba(14, 165, 233, 0.25); --tag-auto-dot: #0284C7;
+  --tag-health-fg: #047857; --tag-health-bg: rgba(16, 185, 129, 0.12); --tag-health-border: rgba(16, 185, 129, 0.25); --tag-health-dot: #059669;
+  --tag-food-fg: #92400E; --tag-food-bg: rgba(245, 158, 11, 0.12); --tag-food-border: rgba(245, 158, 11, 0.25); --tag-food-dot: #D97706;
+  --tag-finance-fg: #BE123C; --tag-finance-bg: rgba(244, 63, 94, 0.12); --tag-finance-border: rgba(244, 63, 94, 0.25); --tag-finance-dot: #F43F5E;
+  --tag-strategy-fg: #7E22CE; --tag-strategy-bg: rgba(168, 85, 247, 0.12); --tag-strategy-border: rgba(168, 85, 247, 0.25); --tag-strategy-dot: #A855F7;
+  --shadow-glow-checkin: 0 0 0 1px rgba(13, 148, 136, 0.20), 0 10px 36px -10px rgba(13, 148, 136, 0.34);
+  color-scheme: light;
+}
+
+/* ---------- Derivations (declared on every theme scope, so they resolve against the theme of that scope) ---------- */
+:root, [data-theme], .dark, .light {
+  --accent: var(--kx-accent, #6366F1);
+  --on-accent: var(--kx-on-accent, #FFFFFF);
+  --accent-fill: var(--kx-accent-fill, color-mix(in oklch, var(--accent) 90%, black));
+  /* Short names of the click dummy, so its CSS ports 1:1. */
+  --hair-2: var(--hair-strong); --spec-bot: var(--spec-bottom);
+  /* Status colours as text on their own 12 % tint (pills, confidence): pulled 22 % towards Text 1, so they keep 4.5:1 in
+     light (darker) and dark (lighter) mode. Dots, bars and icons keep the raw --ok / --warn / --crit. */
+  --ok-ink: color-mix(in srgb, var(--ok) 78%, var(--t1));
+  --warn-ink: color-mix(in srgb, var(--warn) 78%, var(--t1));
+  --crit-ink: color-mix(in srgb, var(--crit) 78%, var(--t1));
+
+  /* Edge recipes (see the rule in the header). */
+  --edge-surface: inset 0 1px 0 var(--spec-top), 0 0 0 1px var(--hair);
+  --edge-surface-hover: inset 0 1px 0 var(--spec-top), 0 0 0 1px var(--hair-strong), 0 8px 24px -16px var(--spec-bottom);
+  --edge-raised: inset 0 1px 0 var(--spec-top), 0 0 0 1px var(--hair-strong), 0 1px 2px var(--spec-bottom);
+  --edge-inset: inset 0 1px 0 var(--inset-top), 0 0 0 1px var(--hair), 0 1px 0 var(--spec-top);
+  --edge-canvas: inset 0 1px 0 var(--inset-top), inset 0 0 0 1px var(--hair), 0 1px 0 var(--spec-top);
+  --edge-float: inset 0 1px 0 var(--spec-top), 0 0 0 1px var(--hair-strong), var(--drop);
+
+  /* Glows: the frame's ambient light (backdrop "glow", the default), the home hero and the orbit bar. */
+  --glow-shell:
+    radial-gradient(42% 38% at 6% -6%, color-mix(in oklch, var(--accent) var(--glow-b), transparent), transparent 72%),
+    radial-gradient(40% 30% at 100% 108%, color-mix(in oklch, var(--accent) var(--glow-a), transparent), transparent 70%);
+  --glow-hero:
+    radial-gradient(820px 360px at 30% 0, color-mix(in oklch, var(--accent) var(--glow-c), transparent), transparent 72%),
+    radial-gradient(520px 260px at 88% 0, color-mix(in oklch, var(--accent) var(--glow-a), transparent), transparent 72%);
+  --glow-orbit: radial-gradient(50% 50% at 50% 50%, color-mix(in oklch, var(--accent) var(--glow-c), transparent), transparent 72%);
+
+  /* Legacy names (flat look) as aliases onto the tactile steps. */
+  --bg-app-shell: var(--lum-0);
+  --bg-glass-sidebar: var(--glass);
+  --bg-main-window: var(--lum-1);
+  --bg-surface-flat: var(--lum-2);
+  --bg-surface-muted: var(--lum-3);
+  --bg-floating-glass: var(--glass-strong);
+  --bg-hover: color-mix(in srgb, var(--lum-3) 55%, var(--lum-4));
+  --bg-sidebar: transparent;
+  --text-primary: var(--t1);
+  --text-secondary: var(--t2);
+  --text-muted: var(--t3);
+  --text-faint: var(--t4);
+  --border-subtle: var(--hair);
+  --border-hairline: var(--hair);
+  --corner-3d-light: var(--spec-top);
+
+  /* Shadows: the flat 'none' values are gone (Tactile Craft decision 1). Level 1 = edge without a drop shadow. */
+  --shadow-card: var(--edge-surface);
+  --shadow-card-hover: var(--edge-surface-hover);
+  --shadow-main-window: var(--edge-canvas);
+  --shadow-glass-sidebar: none;
+  --shadow-floating: var(--edge-float);
+  --shadow-glow-ai: 0 0 0 1px var(--accent-line), 0 10px 40px -8px color-mix(in oklch, var(--accent) 38%, transparent);
+  --shadow-btn-primary: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 0 0 1px rgb(0 0 0 / 0.12);
+  --shadow-inset: var(--edge-inset);
+  --shadow-pressed: inset 0 1px 2px var(--spec-bottom), 0 0 0 1px var(--hair-strong);
+
+  /* Accent onto the legacy names. */
+  --accent-ai: var(--accent);
+  --accent-ai-solid: var(--accent-fill);
+  --on-accent-ai: var(--on-accent);
+  --accent-ai-soft: var(--accent-soft);
+  --tag-ai-fg: var(--accent-ink);
+  --tag-ai-bg: color-mix(in oklch, var(--accent) 12%, transparent);
+  --tag-ai-border: color-mix(in oklch, var(--accent) 26%, transparent);
+  --tag-ai-dot: var(--accent);
+  --border-focus: var(--accent-line);
+}
+/* Light: accent as text/icon colour needs the darker ink. */
+[data-theme="light"], .light {
+  --accent-ai: var(--accent-ink);
+  --border-focus: color-mix(in oklch, var(--accent) 60%, transparent);
+}
+
+/* ---------- Density scale (audit 3.4) ----------
+   The global default sits on <html data-density> (Settings > Erscheinungsbild > Standard-Dichte); a container may
+   set its own data-density (collections, Life; the open drawer forces "dicht"). Views read the tokens. */
+:root, [data-density="kompakt"] {
+  --density-row-h: 36px; --table-row-h: 44px; --card-min: 200px; --card-pad: 11px 12px 12px; --card-cover: 56px; --gap: 10px; --takeaway-lines: 2;
+}
+[data-density="komfort"] {
+  --density-row-h: 40px; --table-row-h: 56px; --card-min: 240px; --card-pad: 13px 14px 14px; --card-cover: 88px; --gap: 14px; --takeaway-lines: 3;
+}
+[data-density="dicht"] {
+  --density-row-h: 32px; --table-row-h: 36px; --card-min: 172px; --card-pad: 10px 11px; --card-cover: 0px; --gap: 8px; --takeaway-lines: 0;
+}
+
+:root {
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px;
+  --layout-sidebar: 236px; --layout-copilot: 340px; --layout-cover: 180px; --layout-editor-max: 768px;
+  --layout-titlebar: 46px; --radius-canvas: 14px;
+  --radius-xs: 4px; --radius-lg: 8px; --radius-xl: 12px; --radius-2xl: 16px; --radius-pill: 9999px;
+  /* V2-11F: three surface radii. Controls 8 (--radius-lg), rows 12 (--radius-xl), cards 16 (--radius-2xl).
+     --radius-xs (4) only for glyph-sized things (checkbox, inline code, heat cells). Pills only for chips,
+     switches and the footbar dock. The canvas island is 14 (--radius-canvas). Semantic aliases: */
+  --radius-control: var(--radius-lg); --radius-row: var(--radius-xl); --radius-card: var(--radius-2xl);
+  --opacity-quiet: 0.65; --opacity-disabled: 0.45;
+  --blur-glass: 24px; --blur-floating: 24px; --blur-overlay: 16px; --saturate-glass: 140%;
+  --font-sans: var(--font-geist-sans, "Geist"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans); /* Typography v2: no serif. Alias kept so old references resolve to Geist. */
+  --font-mono: var(--font-jetbrains-mono, "JetBrains Mono"), "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Schriftgröße (Settings > Erscheinungsbild, per device): every font size is calc(Npx * var(--kx-fs, 1)), so one factor
+   on <html> scales all text and leaves the layout (spacing, icons, hit areas) as it is. rem-based sizes follow via html. */
+:root { --kx-fs: 1; }
+html { font-size: calc(100% * var(--kx-fs, 1)); }
+
+/* Additions from bundle.css / tokens.json */
+:root {
+  --type-display: 300 calc(32px * var(--kx-fs, 1))/1.15 var(--font-sans); --type-display-tracking: -0.02em;
+  --type-h1: 500 calc(24px * var(--kx-fs, 1))/1.15 var(--font-sans); --type-h1-tracking: -0.015em;
+  --type-h2: 500 calc(15px * var(--kx-fs, 1))/1.5 var(--font-sans); --type-h2-tracking: -0.01em;
+  --type-h3: 500 calc(13px * var(--kx-fs, 1))/1.4 var(--font-sans); --type-h3-tracking: 0em;
+  --type-read: 400 calc(15px * var(--kx-fs, 1))/1.7 var(--font-sans); --type-read-tracking: 0em;
+  --type-body: 400 calc(13px * var(--kx-fs, 1))/1.4 var(--font-sans);
+  --type-meta: 400 calc(12px * var(--kx-fs, 1))/1.5 var(--font-sans);
+  --type-micro: 500 calc(11px * var(--kx-fs, 1))/1.4 var(--font-sans); --type-micro-tracking: 0.06em;
+  --icon-stroke: 1.5; --icon-stroke-thin: 1.25;
+  --icon-s: 14px; --icon-m: 16px; --icon-l: 20px;
+  --space-2\.5: 10px;
+  --dur-fast: 120ms; --dur: 150ms;
+}

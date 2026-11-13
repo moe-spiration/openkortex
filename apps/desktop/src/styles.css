@@ -1,0 +1,47 @@
+@import "tailwindcss";
+@import "@kortex/ui/styles";
+/* Tactile Craft v2: the desktop's own windows (quick capture orbit capsule, HUD, titlebars). */
+@import "./tactile.css";
+
+/* Tailwind must scan the shared UI package for utility classes. */
+@source "../../../packages/ui/src";
+
+/* Bundled fonts (works offline inside Tauri); @fontsource registers the variable families under these names. */
+:root {
+  --font-geist-sans: "Geist Variable";
+  --font-jetbrains-mono: "JetBrains Mono Variable";
+}
+
+@layer base {
+  /* Same as apps/web: the prototype runs without Tailwind preflight, so form controls keep the browser letter-spacing. */
+  button,
+  input,
+  select,
+  textarea,
+  a.kxb {
+    letter-spacing: normal;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  /* Overlay windows (HUD, pill, quick capture, tray) are transparent, frameless Tauri windows. */
+  html.kx-transparent,
+  html.kx-transparent body {
+    background: transparent;
+    /* H1: the overlay windows are sized to their content; never show window scrollbars. */
+    overflow: hidden;
+    /* fx3: nothing runs out of a small window on the right: long words (paths, e-mails, URLs, device and
+       file names) break instead of widening their box. `anywhere` also lowers the min-content width, so
+       grid and flex parents can shrink to the window. Single-line labels keep .kx-truncate (ellipsis). */
+    overflow-wrap: anywhere;
+  }
+  /* Rows and columns inside the windows may shrink below their content; a nowrap child (.kx-truncate)
+     then ellipsises instead of pushing the whole column wider than the window. */
+  html.kx-transparent .kxh-row > div,
+  html.kx-transparent .kxh-col,
+  html.kx-transparent .kx-scroll div {
+    min-width: 0;
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "extDescription": { "message": "Web clipper, inline highlighter and ChatGPT/Claude saver for your OpenKortex second brain." },
+  "commandOpenClipper": { "message": "Open OpenKortex Clipper" }
+}

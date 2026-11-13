@@ -1,0 +1,41 @@
+name: Bug report
+description: Something does not work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Security problems do not belong here, see SECURITY.md.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what happened instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where?
+      multiple: true
+      options:
+        [
+          Web app,
+          Windows app,
+          Android app,
+          Browser extension,
+          MCP server,
+          Markdown sync,
+          Self-hosting stack,
+        ]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant output, for example `docker compose logs web`. Remove keys and personal data first.
+      render: text

@@ -1,0 +1,142 @@
+/*
+ * Feinschliff Live (2026-11-07), area 6: global look, titlebar, Neu menu, Scratchpad popover and Orbit-Bar as in the
+ * approved live prototype ("Highlights" section + r4 "titlebar scratchpad + Neu menu"). Loaded after tactile.css and
+ * orbit.css, so it wins at equal specificity. Flat: no top-light edges or inset shadows, hairlines and soft accent
+ * tints, glows only under the orbit bar and in the frame.
+ */
+
+/* ================= Global: flat edges ================= */
+/* The prototype sets its --spec / --inset to transparent: the edge recipes keep their hairline, the 3D top light and the
+   dark inset edge go. Unlayered and after tokens.css (same selectors), so it overrides both themes. */
+:root, [data-theme="dark"], .dark, [data-theme="light"], .light {
+  --spec-top: transparent;
+  --inset-top: transparent;
+}
+
+@layer components {
+  /* ================= Global: canvas, primary buttons, active rows ================= */
+  /* Canvas: slightly translucent, so the frame glow shows through a little (prototype .canvas). */
+  .kx-main-window {
+    background: color-mix(in oklch, var(--lum-1) 92%, transparent);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    box-shadow: 0 0 0 1px var(--hair);
+  }
+  /* Primary = solid accent, a soft accent glow on hover (prototype .btn-acc). */
+  .kx-btn--primary, .kx-btn--primary:active { box-shadow: none; }
+  .kx-btn--primary:hover { box-shadow: 0 6px 22px -6px color-mix(in oklch, var(--accent) 70%, transparent); }
+  /* Active sidebar row: accent tint (already) with the accent icon (prototype .row.is-on .i). Life rows keep their colour. */
+  .kx-sidebar .kx-row.is-active .kx-ico { color: var(--accent-ink); }
+
+  /* ================= Titlebar ================= */
+  .tc-tab:hover { background: var(--lum-2); }
+  .tc-tab[aria-selected="true"] { background: var(--hair-strong); box-shadow: none; }
+  .tc-titlebar .tc-search { width: 260px; min-width: 0; padding: 0 6px 0 10px; border-radius: 8px; background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair); }
+  .tc-titlebar .tc-search:hover { color: var(--t2); }
+  .tc-titlebar .kx-kbd, .tc-newmenu .kx-kbd {
+    height: 18px; min-width: 0; padding: 0 5px; border-radius: 5px; font-size: calc(10px * var(--kx-fs, 1)); font-weight: 400;
+    color: var(--t3); background: var(--lum-3); box-shadow: 0 0 0 1px var(--hair-strong);
+  }
+  .tc-scratch-btn.is-on { background: var(--hair-strong); color: var(--t1); }
+  /* "Neu" split: solid accent (round 5), 8 px radius, a glow on hover like the prototype's .btn-acc. */
+  .tc-newbtn { border-radius: 8px; transition: box-shadow 160ms var(--ease-snappy); }
+  .tc-newbtn:hover { box-shadow: 0 6px 22px -6px color-mix(in oklch, var(--accent) 70%, transparent); }
+  .tc-newbtn .tc-nb-main { padding: 0 12px; }
+  .tc-newbtn .tc-nb-more { width: 28px; }
+
+  /* Neu menu (prototype .pop.nmenu): 260 px, flat rows, icon in Text 3, shortcut right. */
+  .tc-newmenu.kx-menu {
+    width: 260px; padding: 6px; border-radius: 14px;
+    background: var(--glass-strong); background-image: none; border: 0;
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 24px 64px rgb(0 0 0 / 0.45);
+  }
+  [data-theme="light"] .tc-newmenu.kx-menu { box-shadow: 0 0 0 1px var(--hair-strong), 0 24px 64px rgb(24 24 27 / 0.16); }
+  .tc-newmenu .kx-menu-item { min-height: 34px; padding: 8px 10px; gap: 10px; border-radius: 8px; color: var(--t1); }
+  .tc-newmenu .kx-menu-item:hover, .tc-newmenu .kx-menu-item:focus-visible { background: var(--hair-strong); outline: none; }
+  .tc-newmenu .fs-nm-ico { width: 14px; height: 14px; flex: none; color: var(--t3); }
+  .tc-newmenu .tc-mi-text { display: block; flex: 1; }
+  .tc-newmenu [role="group"] + [role="group"] { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--hair); }
+  .tc-newmenu .kx-menu-label { padding: 6px 10px 2px; }
+
+  /* ================= Scratchpad popover (prototype .pop.sp) ================= */
+  .fs-sp.tc-float {
+    width: min(400px, calc(100vw - 24px)); display: flex; flex-direction: column; padding: 0; border: 0; border-radius: 14px;
+    background: var(--glass-strong); background-image: none;
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 24px 64px rgb(0 0 0 / 0.45);
+  }
+  [data-theme="light"] .fs-sp.tc-float { box-shadow: 0 0 0 1px var(--hair-strong), 0 24px 64px rgb(24 24 27 / 0.16); }
+  .fs-grow { flex: 1; min-width: 0; }
+  .fs-sp-h { display: flex; align-items: center; gap: 8px; padding: 12px 12px 8px 16px; }
+  .fs-sp-h strong { font-weight: 500; font-size: calc(13px * var(--kx-fs, 1)); }
+  .fs-sp-hico { color: var(--accent-ink); flex: none; }
+  .fs-sp-btn {
+    display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border: 0; border-radius: 8px;
+    background: var(--hair); color: var(--t2); font: inherit; font-size: calc(12px * var(--kx-fs, 1)); font-weight: 500; cursor: pointer;
+  }
+  .fs-sp-btn:hover { background: var(--hair-strong); color: var(--t1); }
+  .fs-sp-btn:disabled { opacity: 0.45; cursor: default; }
+  .fs-sp-btn--acc { background: var(--accent-fill); color: var(--on-accent); }
+  .fs-sp-btn--acc:hover { background: var(--accent-fill); color: var(--on-accent); box-shadow: 0 6px 22px -6px color-mix(in oklch, var(--accent) 70%, transparent); }
+  .fs-sp-all { display: flex; align-items: center; gap: 8px; margin: 0 12px 6px; padding: 6px 8px 6px 10px; border-radius: 9px; background: var(--accent-soft); color: var(--accent-ink); font-size: calc(12px * var(--kx-fs, 1)); }
+  .fs-sp-list { list-style: none; margin: 0; padding: 0 8px; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+  .fs-sp-empty { padding: 16px 8px; text-align: center; color: var(--t3); font-size: calc(12px * var(--kx-fs, 1)); }
+  .fs-sp-e { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px; border-radius: 9px; }
+  .fs-sp-e:hover { background: var(--hair); }
+  .fs-sp-e[data-pending] { opacity: 0.6; }
+  .fs-sp-body pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: inherit; font-size: calc(13px * var(--kx-fs, 1)); line-height: 1.5; color: var(--t1); }
+  .fs-sp-body pre.is-code { font-family: var(--font-mono); font-size: calc(12px * var(--kx-fs, 1)); color: var(--t2); background: var(--hair); padding: 6px 8px; border-radius: 6px; }
+  .fs-sp-when { display: block; margin-top: 3px; font-size: calc(12px * var(--kx-fs, 1)); color: var(--t3); }
+  .fs-sp-sug { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: calc(12px * var(--kx-fs, 1)); color: var(--accent-ink); }
+  .fs-sp-acts { display: flex; gap: 2px; opacity: 0; transition: opacity 120ms var(--ease-snappy); }
+  .fs-sp-e:hover .fs-sp-acts, .fs-sp-e:focus-within .fs-sp-acts { opacity: 1; }
+  @media (hover: none) { .fs-sp-acts { opacity: 1; } }
+  .fs-sp-in { margin: 8px 12px 12px; padding: 8px 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair-strong); }
+  .fs-sp-in:focus-within { box-shadow: 0 0 0 1px color-mix(in oklch, var(--accent) 55%, transparent), 0 0 0 4px var(--accent-soft); }
+  .fs-sp-in textarea { width: 100%; min-height: 58px; resize: none; border: 0; outline: none; padding: 0; background: transparent; color: var(--t1); font: inherit; font-size: calc(13px * var(--kx-fs, 1)); line-height: 1.5; }
+  .fs-sp-in textarea:focus-visible { outline: none; }
+  .fs-sp-in textarea::placeholder { color: var(--t4); }
+  .fs-sp-foot { display: flex; align-items: center; gap: 6px; }
+  .fs-sp-path { font-family: var(--font-mono); font-size: calc(11px * var(--kx-fs, 1)); color: var(--t3); }
+
+  /* ================= Orbit-Bar (prototype .orbit-wrap / .orbit, Highlights) ================= */
+  /* Centred over list and editor (AppShell renders it in the row holding both). */
+  .kx-orbit-wrap { width: min(860px, calc(100% - 32px)); }
+  .kx-orbit.tc-float {
+    min-height: 58px; padding: 0 8px; gap: 6px; border: 0; border-radius: 29px;
+    background: var(--glass-strong); background-image: none;
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 16px 40px rgb(0 0 0 / 0.4);
+  }
+  [data-theme="light"] .kx-orbit.tc-float { box-shadow: 0 0 0 1px var(--hair-strong), 0 16px 40px rgb(24 24 27 / 0.14); }
+  .kx-orbit-wrap:focus-within .kx-orbit.tc-float { box-shadow: 0 0 0 1px var(--accent-line), 0 16px 40px rgb(0 0 0 / 0.4); }
+  [data-theme="light"] .kx-orbit-wrap:focus-within .kx-orbit.tc-float { box-shadow: 0 0 0 1px var(--accent-line), 0 16px 40px rgb(24 24 27 / 0.14); }
+  /* Glow: a bit stronger in "Fragen", with a clearer hue shift. */
+  .kx-orbit-wrap[data-mode="ask"] .kx-orbit-glow { filter: blur(8px) hue-rotate(40deg); opacity: 0.85; }
+
+  /* Orbs: mic = accent ring, send = quiet until there is content, then the solid accent. */
+  .kx-orbit-orb { width: 40px; height: 40px; }
+  .kx-orbit-mic { background: transparent; color: var(--accent-ink); box-shadow: 0 0 0 1.5px color-mix(in oklch, var(--accent) 70%, transparent); }
+  .kx-orbit-mic:not(.is-rec):hover { background: var(--accent-soft); }
+  .kx-orbit-mic.is-rec, .kx-orbit-mic.is-rec:hover { background: var(--accent-fill); color: var(--on-accent); }
+  .kx-orbit-mic .kx-ico { width: 18px; height: 18px; }
+  .kx-orbit-send { background: var(--hair); color: var(--t3); box-shadow: none; }
+  .kx-orbit-send.is-ready, .kx-orbit-orb.is-rec { box-shadow: 0 6px 20px -6px color-mix(in oklch, var(--accent) 80%, transparent); }
+
+  /* Segment Festhalten | Fragen: hairline track, the active half in the accent tint. */
+  .kx-orbit-seg { height: 36px; padding: 3px; border-radius: 20px; background: var(--hair); box-shadow: none; }
+  .kx-orbit-thumb { top: 3px; bottom: 3px; background: var(--accent-soft); box-shadow: none; }
+  .kx-orbit-seg button { height: 30px; padding: 0 12px; border-radius: 16px; }
+  .kx-orbit-seg button[aria-selected="true"] .kx-ico { color: inherit; }
+  .kx-orbit-ofield { height: 40px; }
+  .kx-orbit-field { padding: 0 6px; font-size: calc(14px * var(--kx-fs, 1)); }
+
+  /* Target / model pickers and attach. */
+  .kx-orbit-chip { height: 30px; padding: 0 9px; gap: 6px; border-radius: 15px; }
+  .kx-orbit-chip:hover, .kx-orbit-chip[aria-expanded="true"] { background: var(--hair-strong); }
+  .kx-orbit-dot { box-shadow: none; }
+  .kx-orbit-attach { width: 34px; height: 34px; border-radius: 50%; }
+  .kx-orbit-attach:hover { background: var(--hair-strong); }
+
+  /* A-15 contrast: counts on the tinted active sidebar row, Home date and Anpassen over the backdrop image. */
+  .kx-sidebar .kx-row.is-active .kx-count { color: var(--t2); }
+  .fs-home .hm-hero .e-micro, .fs-home .hm-adjust .e-btn--ghost { color: var(--t1); }
+  [data-theme="dark"] .fs-home-bg { filter: brightness(0.62) saturate(0.9); }
+}

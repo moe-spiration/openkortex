@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-upload-recording"
+description = "Enables the upload_recording command without any pre-configured scope."
+commands.allow = ["upload_recording"]
+
+[[permission]]
+identifier = "deny-upload-recording"
+description = "Denies the upload_recording command without any pre-configured scope."
+commands.deny = ["upload_recording"]

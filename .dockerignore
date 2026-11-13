@@ -1,0 +1,18 @@
+.git
+**/node_modules
+**/.next
+**/.turbo
+**/.output
+**/.wxt
+**/dist
+**/coverage
+.env*
+!.env.example
+design
+docs
+apps/desktop/src-tauri/target
+*.log
+
+# never send local env files of any folder into an image build
+**/.env*
+!**/.env.example

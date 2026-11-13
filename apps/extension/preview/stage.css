@@ -1,0 +1,37 @@
+@import "../src/styles/ext.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource/instrument-serif";
+
+/*
+ * Staging chrome for the dev preview only (browser window, tabs, chat page). Ported from
+ * design/reference/ds/kortex/components/bundle.css so the real extension components can be compared
+ * side by side with Extension.dc.html. Never part of the extension build.
+ */
+@source "./";
+body { margin: 0; }
+.kx-display { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.02em; }
+.kx-mono { font-family: var(--font-mono); font-weight: 400; letter-spacing: 0; font-size: 12.5px; }
+.kx-eyebrow { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 400; letter-spacing: 0; color: var(--text-muted); }
+/* selected / highlighted text and the "ask AI" answer of the prototype page (preview only) */
+.kx-hl { background: color-mix(in srgb, var(--status-processing) 32%, transparent); border-radius: 3px; padding: 0 1px; }
+.kx-sel { background: var(--accent-ai-soft); box-shadow: inset 0 -2px 0 0 var(--accent-ai); }
+.kx-callout { position: relative; padding: 12px 14px; border-radius: var(--radius-xl); background: var(--accent-ai-soft); font: var(--type-body); letter-spacing: 0; color: var(--text-primary); }
+.kx-callout-head { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--tag-ai-fg); letter-spacing: 0.02em; margin-bottom: 4px; }
+.kx-keys { display: inline-flex; align-items: center; gap: 3px; }
+.kx-scroll { overflow: auto; scrollbar-width: thin; scrollbar-color: rgba(128, 128, 128, 0.32) transparent; }
+
+.kx-window { position: relative; display: flex; flex-direction: column; border-radius: 10px; background: var(--bg-app-shell); box-shadow: 0 0 0 1px var(--border-subtle), 0 24px 60px -20px rgba(0, 0, 0, 0.7); overflow: hidden; }
+.kx-doctabs { display: flex; align-items: flex-end; gap: 2px; height: 36px; padding: 0 8px; }
+.kx-doctab { display: inline-flex; align-items: center; gap: 8px; height: 30px; max-width: 200px; padding: 0 6px 0 10px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; color: var(--text-muted); font-size: 12px; cursor: pointer; transition: background var(--dur) var(--ease-snappy), color var(--dur) var(--ease-snappy); }
+.kx-doctab:hover { background: var(--bg-hover); color: var(--text-primary); }
+.kx-doctab[aria-selected="true"] { background: var(--bg-main-window); color: var(--text-primary); box-shadow: 0 -1px 0 0 var(--border-subtle); }
+
+.kx-modelpill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px 0 6px; border: 0; border-radius: var(--radius-pill); background: var(--bg-surface-flat); box-shadow: inset 0 0 0 1px var(--border-subtle); color: var(--text-primary); font: inherit; font-size: 12px; cursor: pointer; }
+.kx-modelpill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-ai); box-shadow: 0 0 0 3px var(--accent-ai-soft); }
+.kx-bubble { padding: 10px 12px; border-radius: var(--radius-xl); background: var(--bg-surface-flat); box-shadow: inset 0 0 0 1px var(--border-subtle); font-size: 13.5px; line-height: 21px; font-weight: 400; letter-spacing: 0; color: var(--text-primary); }
+.kx-bubble--me { align-self: flex-end; max-width: 85%; background: var(--accent-ai-soft); box-shadow: inset 0 0 0 1px var(--tag-ai-border); border-bottom-right-radius: 6px; }
+.kx-composer { display: grid; gap: 6px; padding: 8px; border-radius: var(--radius-xl); background: var(--bg-surface-flat); box-shadow: inset 0 0 0 1px var(--border-subtle); }
+.kx-composer:focus-within { box-shadow: inset 0 0 0 1px var(--border-focus), 0 0 0 3px var(--accent-ai-soft); }
+.kx-composer textarea { min-height: 40px; border: 0; outline: 0; resize: none; background: transparent; color: var(--text-primary); font: inherit; font-size: 13.5px; font-weight: 400; letter-spacing: 0; padding: 2px 4px; }
+.kx-composer textarea::placeholder { color: var(--text-muted); }

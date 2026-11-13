@@ -1,0 +1,4 @@
+/* Same bundled fonts the extension uses; compare.ts injects this into the prototype (it loads Google Fonts, unreachable offline). */
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource/instrument-serif";

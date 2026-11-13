@@ -1,0 +1,63 @@
+@import "tailwindcss";
+@import "@kortex/ui/styles";
+@import "./ui-primitives.css";
+
+/* Tailwind must scan the shared UI package for utility classes. */
+@source "../../../../packages/ui/src";
+
+@layer base {
+  /*
+   * The prototype runs without Tailwind's preflight, so form controls keep the browser default
+   * letter-spacing instead of inheriting body's -0.01em. Restore that so text widths match 1:1.
+   * Links styled as buttons (.kxb) and the div-based doc tabs (buttons in the prototype) behave the same way.
+   */
+  button, input, select, textarea, a.kxb, div.kx-doctab {
+    letter-spacing: normal;
+  }
+  a.kxb {
+    text-decoration: none;
+  }
+}
+
+/*
+ * Shell additions on top of the DS component layer.
+ * Tab close: the prototype's tabs carry no close button, so the type icon slot turns into the
+ * DS .kx-x on hover / keyboard focus. Tabs keep the prototype's exact width at rest.
+ */
+@layer components {
+  .kx-doctab-ico { position: relative; display: inline-flex; width: 14px; height: 14px; flex: none; }
+  .kx-doctab .kx-doctab-ico .kx-x { position: absolute; left: -2px; top: -2px; opacity: 0; color: var(--text-primary); }
+  .kx-doctab:hover .kx-doctab-ico .kx-x, .kx-doctab:focus-visible .kx-doctab-ico .kx-x { opacity: 1; background: var(--bg-hover); }
+  .kx-doctab:hover .kx-doctab-ico > .kx-ico, .kx-doctab:focus-visible .kx-doctab-ico > .kx-ico { opacity: 0; }
+
+  /* Preflight removes list markers; the prototype's editor lists keep the browser defaults. */
+  ul.kx-ed-ul { list-style: disc; }
+  ol.kx-ed-ul { list-style: decimal; }
+
+  /* Note body: the static Markdown first paint gives way once the BlockNote editor has mounted. */
+  .kx-note-body:has(.kx-editor) > .kx-note-static { display: none; }
+  /* BlockNote's click-to-append strip after the last block: hidden while the editor is idle. */
+  .kx-note-body:not(:focus-within) .bn-trailing-block { display: none; }
+}
+
+/* Settings > Erscheinungsbild device prefs (lib/settings/store.tsx sets these on <html>). */
+@layer base {
+  [data-motion="reduced"] *, [data-motion="reduced"] *::before, [data-motion="reduced"] *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+@layer components {
+  /* "Hero-Bilder in Listen" off: list views (grid, timeline) drop their cover images. */
+  [data-heroes="off"] [data-hero-list] :is(.kx-hero-img, .kx-hero-fade, .kx-pack-tile) { display: none; }
+}
+
+/* Skeleton bars (W12): a quiet level-1 tone with a slow fade; reduced motion switches the animation off globally. */
+.kx-skel { display: block; border-radius: var(--radius-lg); background: var(--bg-hover); animation: kx-skel 1.4s ease-in-out infinite alternate; }
+@keyframes kx-skel { from { opacity: 0.45; } to { opacity: 0.9; } }
+
+/* A route skeleton that shows only if the navigation is still pending after 150 ms: fast navigations never flash it. */
+.kx-skel-late { opacity: 0; animation: kx-skel-late 1ms linear 150ms forwards; }
+@keyframes kx-skel-late { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .kx-skel-late { opacity: 1; animation: none; } }

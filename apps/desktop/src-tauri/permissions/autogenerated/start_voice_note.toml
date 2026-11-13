@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-start-voice-note"
+description = "Enables the start_voice_note command without any pre-configured scope."
+commands.allow = ["start_voice_note"]
+
+[[permission]]
+identifier = "deny-start-voice-note"
+description = "Denies the start_voice_note command without any pre-configured scope."
+commands.deny = ["start_voice_note"]

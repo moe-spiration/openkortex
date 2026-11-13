@@ -1,0 +1,39 @@
+{
+  "name": "kortex",
+  "private": true,
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "e2e": "pnpm --filter @kortex/web e2e",
+    "check": "turbo run typecheck lint test --concurrency=2 && pnpm test:scripts && pnpm denylist && pnpm i18n:check && pnpm vault:completeness",
+    "typecheck": "turbo run typecheck --concurrency=2",
+    "lint": "turbo run lint --concurrency=2",
+    "test": "turbo run test --concurrency=2",
+    "format": "prettier --write .",
+    "prepare": "lefthook install",
+    "test:scripts": "node --test \"scripts/**/*.test.mjs\" \"site/**/*.test.mjs\"",
+    "denylist": "node scripts/denylist.mjs",
+    "vault:completeness": "node scripts/vault-completeness.mjs",
+    "i18n:check": "node scripts/i18n-check.mjs",
+    "site:build": "node site/scripts/build.mjs",
+    "site:serve": "node site/scripts/serve.mjs site/dist",
+    "site:deploy": "node site/scripts/deploy.mjs"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "lefthook": "^2.2.2",
+    "prettier": "^3.9.10",
+    "sharp": "0.35.5",
+    "turbo": "^2.11.10",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.0"
+  },
+  "license": "AGPL-3.0-only"
+}

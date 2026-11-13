@@ -1,0 +1,7548 @@
+{
+ "version": 1,
+ "topics": [
+  "home",
+  "health",
+  "career",
+  "finance",
+  "ventures",
+  "relations",
+  "growth",
+  "notes",
+  "meetings",
+  "books",
+  "ai",
+  "review",
+  "insights",
+  "articles",
+  "video",
+  "recipes",
+  "all"
+ ],
+ "themes": [
+  "dark",
+  "light"
+ ],
+ "packs": {
+  "air": {
+   "dark": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "air/dark/home-full.avif",
+       "bytes": 1131,
+       "gzip": 1114,
+       "sha": "ed522b52043f"
+      },
+      "webp": {
+       "file": "air/dark/home-full.webp",
+       "bytes": 904,
+       "gzip": 927,
+       "sha": "7953f209991b"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "air/dark/home-full-lum.avif",
+       "bytes": 870,
+       "gzip": 835,
+       "sha": "526e12b2ec14"
+      },
+      "webp": {
+       "file": "air/dark/home-full-lum.webp",
+       "bytes": 618,
+       "gzip": 641,
+       "sha": "4ea12b90272b"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/health-tile.svg",
+       "bytes": 3972,
+       "gzip": 1214,
+       "sha": "208606dba4e0"
+      },
+      "webp": {
+       "file": "air/dark/health-tile.webp",
+       "bytes": 6922,
+       "gzip": 6826,
+       "sha": "5800f28567e5"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/health-full.avif",
+       "bytes": 1192,
+       "gzip": 1179,
+       "sha": "500b6a0016a0"
+      },
+      "webp": {
+       "file": "air/dark/health-full.webp",
+       "bytes": 940,
+       "gzip": 963,
+       "sha": "7e775fa1828d"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/career-tile.svg",
+       "bytes": 4394,
+       "gzip": 1338,
+       "sha": "89bc27c57bd8"
+      },
+      "webp": {
+       "file": "air/dark/career-tile.webp",
+       "bytes": 6388,
+       "gzip": 6382,
+       "sha": "a70fdcf0f8ca"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/career-full.avif",
+       "bytes": 1215,
+       "gzip": 1203,
+       "sha": "90af011a25fa"
+      },
+      "webp": {
+       "file": "air/dark/career-full.webp",
+       "bytes": 942,
+       "gzip": 965,
+       "sha": "3cfebac02575"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/finance-tile.svg",
+       "bytes": 4271,
+       "gzip": 1268,
+       "sha": "c75d72a91aa1"
+      },
+      "webp": {
+       "file": "air/dark/finance-tile.webp",
+       "bytes": 6392,
+       "gzip": 6412,
+       "sha": "d978bf37752b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/finance-full.avif",
+       "bytes": 1150,
+       "gzip": 1132,
+       "sha": "927f92981f2f"
+      },
+      "webp": {
+       "file": "air/dark/finance-full.webp",
+       "bytes": 852,
+       "gzip": 875,
+       "sha": "58224ea3f2f9"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/ventures-tile.svg",
+       "bytes": 4403,
+       "gzip": 1332,
+       "sha": "93f1b8416b53"
+      },
+      "webp": {
+       "file": "air/dark/ventures-tile.webp",
+       "bytes": 5922,
+       "gzip": 5864,
+       "sha": "4341876a869d"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/ventures-full.avif",
+       "bytes": 1101,
+       "gzip": 1079,
+       "sha": "51258d694866"
+      },
+      "webp": {
+       "file": "air/dark/ventures-full.webp",
+       "bytes": 864,
+       "gzip": 887,
+       "sha": "144e1bc2a96c"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/relations-tile.svg",
+       "bytes": 3902,
+       "gzip": 1192,
+       "sha": "32505f82defd"
+      },
+      "webp": {
+       "file": "air/dark/relations-tile.webp",
+       "bytes": 7176,
+       "gzip": 7189,
+       "sha": "4ce85586b469"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/relations-full.avif",
+       "bytes": 1213,
+       "gzip": 1200,
+       "sha": "288d873dd935"
+      },
+      "webp": {
+       "file": "air/dark/relations-full.webp",
+       "bytes": 1010,
+       "gzip": 1033,
+       "sha": "5a0b7db6d0cd"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/growth-tile.svg",
+       "bytes": 4342,
+       "gzip": 1261,
+       "sha": "cee70d2e6d58"
+      },
+      "webp": {
+       "file": "air/dark/growth-tile.webp",
+       "bytes": 6704,
+       "gzip": 6725,
+       "sha": "6669d50a25a6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/growth-full.avif",
+       "bytes": 1206,
+       "gzip": 1193,
+       "sha": "915260829437"
+      },
+      "webp": {
+       "file": "air/dark/growth-full.webp",
+       "bytes": 990,
+       "gzip": 1013,
+       "sha": "9cb71cfa354f"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/notes-tile.svg",
+       "bytes": 4384,
+       "gzip": 1301,
+       "sha": "8dfc9911b710"
+      },
+      "webp": {
+       "file": "air/dark/notes-tile.webp",
+       "bytes": 6070,
+       "gzip": 6093,
+       "sha": "a9cd1a879e79"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/notes-full.avif",
+       "bytes": 1119,
+       "gzip": 1100,
+       "sha": "be925c1292da"
+      },
+      "webp": {
+       "file": "air/dark/notes-full.webp",
+       "bytes": 894,
+       "gzip": 917,
+       "sha": "2e1ef82f675e"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/meetings-tile.svg",
+       "bytes": 4066,
+       "gzip": 1258,
+       "sha": "a2058994be2f"
+      },
+      "webp": {
+       "file": "air/dark/meetings-tile.webp",
+       "bytes": 6326,
+       "gzip": 6274,
+       "sha": "a3e7f07c441c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/meetings-full.avif",
+       "bytes": 1200,
+       "gzip": 1186,
+       "sha": "42dfbddac580"
+      },
+      "webp": {
+       "file": "air/dark/meetings-full.webp",
+       "bytes": 986,
+       "gzip": 1009,
+       "sha": "263086b4ce90"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/books-tile.svg",
+       "bytes": 4757,
+       "gzip": 1404,
+       "sha": "7bacb58e07a4"
+      },
+      "webp": {
+       "file": "air/dark/books-tile.webp",
+       "bytes": 6900,
+       "gzip": 6882,
+       "sha": "1d2cba28879c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/books-full.avif",
+       "bytes": 1242,
+       "gzip": 1231,
+       "sha": "d90a925df194"
+      },
+      "webp": {
+       "file": "air/dark/books-full.webp",
+       "bytes": 1032,
+       "gzip": 1055,
+       "sha": "208a912804cf"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/ai-tile.svg",
+       "bytes": 5455,
+       "gzip": 1411,
+       "sha": "f9946666d571"
+      },
+      "webp": {
+       "file": "air/dark/ai-tile.webp",
+       "bytes": 6288,
+       "gzip": 6239,
+       "sha": "84470aaf4f77"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/ai-full.avif",
+       "bytes": 1134,
+       "gzip": 1114,
+       "sha": "6a312c2e5472"
+      },
+      "webp": {
+       "file": "air/dark/ai-full.webp",
+       "bytes": 858,
+       "gzip": 881,
+       "sha": "dbdc02cfacfe"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/review-tile.svg",
+       "bytes": 4517,
+       "gzip": 1266,
+       "sha": "91b86e38b570"
+      },
+      "webp": {
+       "file": "air/dark/review-tile.webp",
+       "bytes": 6166,
+       "gzip": 6080,
+       "sha": "cb6a7ac5f31e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/review-full.avif",
+       "bytes": 1182,
+       "gzip": 1170,
+       "sha": "1894befaf132"
+      },
+      "webp": {
+       "file": "air/dark/review-full.webp",
+       "bytes": 910,
+       "gzip": 933,
+       "sha": "b77452ad013b"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "air/dark/review-full-lum.avif",
+       "bytes": 850,
+       "gzip": 814,
+       "sha": "87bcd674ef08"
+      },
+      "webp": {
+       "file": "air/dark/review-full-lum.webp",
+       "bytes": 612,
+       "gzip": 635,
+       "sha": "be117e0a0126"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/insights-tile.svg",
+       "bytes": 4025,
+       "gzip": 1231,
+       "sha": "2ac328e821ad"
+      },
+      "webp": {
+       "file": "air/dark/insights-tile.webp",
+       "bytes": 6728,
+       "gzip": 6751,
+       "sha": "207ed9dd30f9"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/insights-full.avif",
+       "bytes": 1215,
+       "gzip": 1201,
+       "sha": "e1ebdf035c53"
+      },
+      "webp": {
+       "file": "air/dark/insights-full.webp",
+       "bytes": 988,
+       "gzip": 1011,
+       "sha": "8bdf85903dc0"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/articles-tile.svg",
+       "bytes": 4504,
+       "gzip": 1341,
+       "sha": "5b3cb4a76c60"
+      },
+      "webp": {
+       "file": "air/dark/articles-tile.webp",
+       "bytes": 6516,
+       "gzip": 6518,
+       "sha": "237dfa8c4259"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/articles-full.avif",
+       "bytes": 1223,
+       "gzip": 1210,
+       "sha": "9f04ea8a0bf8"
+      },
+      "webp": {
+       "file": "air/dark/articles-full.webp",
+       "bytes": 956,
+       "gzip": 979,
+       "sha": "fe67fd4ec367"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/video-tile.svg",
+       "bytes": 4214,
+       "gzip": 1268,
+       "sha": "5dbccfb03ea2"
+      },
+      "webp": {
+       "file": "air/dark/video-tile.webp",
+       "bytes": 6040,
+       "gzip": 5969,
+       "sha": "27e904b00b6e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/video-full.avif",
+       "bytes": 1123,
+       "gzip": 1101,
+       "sha": "599e5e130282"
+      },
+      "webp": {
+       "file": "air/dark/video-full.webp",
+       "bytes": 880,
+       "gzip": 903,
+       "sha": "f4bee9780bdc"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/recipes-tile.svg",
+       "bytes": 4091,
+       "gzip": 1259,
+       "sha": "6d4ab12f262a"
+      },
+      "webp": {
+       "file": "air/dark/recipes-tile.webp",
+       "bytes": 7082,
+       "gzip": 7081,
+       "sha": "be4b4c2d83f3"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/recipes-full.avif",
+       "bytes": 1245,
+       "gzip": 1234,
+       "sha": "70edb8fb8c65"
+      },
+      "webp": {
+       "file": "air/dark/recipes-full.webp",
+       "bytes": 990,
+       "gzip": 1013,
+       "sha": "778fa7709d31"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "air/dark/all-tile.svg",
+       "bytes": 4822,
+       "gzip": 1263,
+       "sha": "05f619233527"
+      },
+      "webp": {
+       "file": "air/dark/all-tile.webp",
+       "bytes": 5684,
+       "gzip": 5707,
+       "sha": "795edaf8ed83"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/dark/all-full.avif",
+       "bytes": 1135,
+       "gzip": 1119,
+       "sha": "f22d44c2f945"
+      },
+      "webp": {
+       "file": "air/dark/all-full.webp",
+       "bytes": 854,
+       "gzip": 877,
+       "sha": "c55a6ebd5e03"
+      }
+     }
+    }
+   },
+   "light": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "air/light/home-full.avif",
+       "bytes": 1222,
+       "gzip": 1210,
+       "sha": "341b0caaf25c"
+      },
+      "webp": {
+       "file": "air/light/home-full.webp",
+       "bytes": 1094,
+       "gzip": 1117,
+       "sha": "7b580172506c"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "air/light/home-full-lum.avif",
+       "bytes": 1036,
+       "gzip": 1010,
+       "sha": "2b51e45fedb8"
+      },
+      "webp": {
+       "file": "air/light/home-full-lum.webp",
+       "bytes": 828,
+       "gzip": 851,
+       "sha": "bd27a2c033ca"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "air/light/health-tile.svg",
+       "bytes": 3973,
+       "gzip": 1219,
+       "sha": "2aea0985ba1c"
+      },
+      "webp": {
+       "file": "air/light/health-tile.webp",
+       "bytes": 5154,
+       "gzip": 5177,
+       "sha": "fba31c68541f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/health-full.avif",
+       "bytes": 1095,
+       "gzip": 1076,
+       "sha": "f341a9aafc9f"
+      },
+      "webp": {
+       "file": "air/light/health-full.webp",
+       "bytes": 876,
+       "gzip": 899,
+       "sha": "7c0845ff81bd"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "air/light/career-tile.svg",
+       "bytes": 4395,
+       "gzip": 1349,
+       "sha": "a0d677d6d02d"
+      },
+      "webp": {
+       "file": "air/light/career-tile.webp",
+       "bytes": 5424,
+       "gzip": 5441,
+       "sha": "923f219e8c2d"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/career-full.avif",
+       "bytes": 1182,
+       "gzip": 1168,
+       "sha": "6f793d16672e"
+      },
+      "webp": {
+       "file": "air/light/career-full.webp",
+       "bytes": 986,
+       "gzip": 1009,
+       "sha": "48323d24286b"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "air/light/finance-tile.svg",
+       "bytes": 4272,
+       "gzip": 1275,
+       "sha": "265dea9e3be8"
+      },
+      "webp": {
+       "file": "air/light/finance-tile.webp",
+       "bytes": 5248,
+       "gzip": 5184,
+       "sha": "b29eafe6eef1"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/finance-full.avif",
+       "bytes": 1149,
+       "gzip": 1136,
+       "sha": "73be99c29976"
+      },
+      "webp": {
+       "file": "air/light/finance-full.webp",
+       "bytes": 944,
+       "gzip": 967,
+       "sha": "617630f501d7"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "air/light/ventures-tile.svg",
+       "bytes": 4404,
+       "gzip": 1337,
+       "sha": "25ba5bb8be63"
+      },
+      "webp": {
+       "file": "air/light/ventures-tile.webp",
+       "bytes": 5620,
+       "gzip": 5578,
+       "sha": "2cc0609b36b0"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/ventures-full.avif",
+       "bytes": 1215,
+       "gzip": 1201,
+       "sha": "1b8c9cde97f2"
+      },
+      "webp": {
+       "file": "air/light/ventures-full.webp",
+       "bytes": 1060,
+       "gzip": 1083,
+       "sha": "56af36c2b6ba"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "air/light/relations-tile.svg",
+       "bytes": 3903,
+       "gzip": 1192,
+       "sha": "c0aef51ef6f3"
+      },
+      "webp": {
+       "file": "air/light/relations-tile.webp",
+       "bytes": 5288,
+       "gzip": 5303,
+       "sha": "8384641d0e71"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/relations-full.avif",
+       "bytes": 1123,
+       "gzip": 1107,
+       "sha": "966d69d3cdca"
+      },
+      "webp": {
+       "file": "air/light/relations-full.webp",
+       "bytes": 890,
+       "gzip": 913,
+       "sha": "cb64215d1306"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "air/light/growth-tile.svg",
+       "bytes": 4343,
+       "gzip": 1275,
+       "sha": "a8ca78e7ec4c"
+      },
+      "webp": {
+       "file": "air/light/growth-tile.webp",
+       "bytes": 5376,
+       "gzip": 5342,
+       "sha": "62955d50783e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/growth-full.avif",
+       "bytes": 1141,
+       "gzip": 1126,
+       "sha": "a516f4c0b068"
+      },
+      "webp": {
+       "file": "air/light/growth-full.webp",
+       "bytes": 932,
+       "gzip": 955,
+       "sha": "b45b54f9c21d"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "air/light/notes-tile.svg",
+       "bytes": 4385,
+       "gzip": 1308,
+       "sha": "1ce442bd068c"
+      },
+      "webp": {
+       "file": "air/light/notes-tile.webp",
+       "bytes": 5420,
+       "gzip": 5414,
+       "sha": "7d4f9e4ec6ed"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/notes-full.avif",
+       "bytes": 1154,
+       "gzip": 1136,
+       "sha": "c74d4ae4f5f2"
+      },
+      "webp": {
+       "file": "air/light/notes-full.webp",
+       "bytes": 950,
+       "gzip": 973,
+       "sha": "82092554aa1b"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "air/light/meetings-tile.svg",
+       "bytes": 4067,
+       "gzip": 1262,
+       "sha": "4cea5b31f5a4"
+      },
+      "webp": {
+       "file": "air/light/meetings-tile.webp",
+       "bytes": 4984,
+       "gzip": 4966,
+       "sha": "2b17ec8fc5d5"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/meetings-full.avif",
+       "bytes": 1100,
+       "gzip": 1079,
+       "sha": "fd4cf1c3a32b"
+      },
+      "webp": {
+       "file": "air/light/meetings-full.webp",
+       "bytes": 870,
+       "gzip": 893,
+       "sha": "d7c94cd07695"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "air/light/books-tile.svg",
+       "bytes": 4758,
+       "gzip": 1408,
+       "sha": "651e5cfcfe85"
+      },
+      "webp": {
+       "file": "air/light/books-tile.webp",
+       "bytes": 5372,
+       "gzip": 5337,
+       "sha": "d2f2c65772be"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/books-full.avif",
+       "bytes": 1209,
+       "gzip": 1193,
+       "sha": "cd1e33d0c6ee"
+      },
+      "webp": {
+       "file": "air/light/books-full.webp",
+       "bytes": 982,
+       "gzip": 1005,
+       "sha": "115f1c17e5d2"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "air/light/ai-tile.svg",
+       "bytes": 5456,
+       "gzip": 1420,
+       "sha": "4f59569613c5"
+      },
+      "webp": {
+       "file": "air/light/ai-tile.webp",
+       "bytes": 5636,
+       "gzip": 5659,
+       "sha": "156c1ac12642"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/ai-full.avif",
+       "bytes": 1275,
+       "gzip": 1265,
+       "sha": "f0526b4b2d31"
+      },
+      "webp": {
+       "file": "air/light/ai-full.webp",
+       "bytes": 1070,
+       "gzip": 1093,
+       "sha": "c9f6c5d87363"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "air/light/review-tile.svg",
+       "bytes": 4518,
+       "gzip": 1281,
+       "sha": "51fd627e90c5"
+      },
+      "webp": {
+       "file": "air/light/review-tile.webp",
+       "bytes": 6026,
+       "gzip": 6016,
+       "sha": "393fdc8a73be"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/review-full.avif",
+       "bytes": 1315,
+       "gzip": 1306,
+       "sha": "28d50b7dc6fa"
+      },
+      "webp": {
+       "file": "air/light/review-full.webp",
+       "bytes": 1126,
+       "gzip": 1149,
+       "sha": "77d827d45e29"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "air/light/review-full-lum.avif",
+       "bytes": 1058,
+       "gzip": 1032,
+       "sha": "58e2e8edde16"
+      },
+      "webp": {
+       "file": "air/light/review-full-lum.webp",
+       "bytes": 864,
+       "gzip": 887,
+       "sha": "102f7cc8d0bd"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "air/light/insights-tile.svg",
+       "bytes": 4026,
+       "gzip": 1237,
+       "sha": "1f5dc9cb8127"
+      },
+      "webp": {
+       "file": "air/light/insights-tile.webp",
+       "bytes": 5406,
+       "gzip": 5406,
+       "sha": "0f182cede915"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/insights-full.avif",
+       "bytes": 1156,
+       "gzip": 1139,
+       "sha": "2d57cbc46f60"
+      },
+      "webp": {
+       "file": "air/light/insights-full.webp",
+       "bytes": 992,
+       "gzip": 1015,
+       "sha": "7e54063e8140"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "air/light/articles-tile.svg",
+       "bytes": 4505,
+       "gzip": 1350,
+       "sha": "476f20d5f93c"
+      },
+      "webp": {
+       "file": "air/light/articles-tile.webp",
+       "bytes": 5250,
+       "gzip": 5201,
+       "sha": "5d4671e63619"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/articles-full.avif",
+       "bytes": 1142,
+       "gzip": 1124,
+       "sha": "8bf12aae3382"
+      },
+      "webp": {
+       "file": "air/light/articles-full.webp",
+       "bytes": 906,
+       "gzip": 929,
+       "sha": "e995bf8ab7bf"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "air/light/video-tile.svg",
+       "bytes": 4215,
+       "gzip": 1270,
+       "sha": "9432efa74605"
+      },
+      "webp": {
+       "file": "air/light/video-tile.webp",
+       "bytes": 5298,
+       "gzip": 5280,
+       "sha": "9f4e80ac4dfb"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/video-full.avif",
+       "bytes": 1167,
+       "gzip": 1150,
+       "sha": "898cfe547a17"
+      },
+      "webp": {
+       "file": "air/light/video-full.webp",
+       "bytes": 1008,
+       "gzip": 1031,
+       "sha": "fa4a897ceece"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "air/light/recipes-tile.svg",
+       "bytes": 4092,
+       "gzip": 1268,
+       "sha": "92b9164c99de"
+      },
+      "webp": {
+       "file": "air/light/recipes-tile.webp",
+       "bytes": 4790,
+       "gzip": 4756,
+       "sha": "8bf87d9e0f2a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/recipes-full.avif",
+       "bytes": 1098,
+       "gzip": 1078,
+       "sha": "6e2409feccbe"
+      },
+      "webp": {
+       "file": "air/light/recipes-full.webp",
+       "bytes": 798,
+       "gzip": 821,
+       "sha": "c741ae955d15"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "air/light/all-tile.svg",
+       "bytes": 4823,
+       "gzip": 1273,
+       "sha": "ee3488673c26"
+      },
+      "webp": {
+       "file": "air/light/all-tile.webp",
+       "bytes": 4494,
+       "gzip": 4517,
+       "sha": "0947b7603927"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "air/light/all-full.avif",
+       "bytes": 1123,
+       "gzip": 1105,
+       "sha": "396d9e7c8365"
+      },
+      "webp": {
+       "file": "air/light/all-full.webp",
+       "bytes": 884,
+       "gzip": 907,
+       "sha": "9233d9ef704d"
+      }
+     }
+    }
+   }
+  },
+  "energy": {
+   "dark": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "energy/dark/home-full.avif",
+       "bytes": 1101,
+       "gzip": 1081,
+       "sha": "bef635b1b038"
+      },
+      "webp": {
+       "file": "energy/dark/home-full.webp",
+       "bytes": 984,
+       "gzip": 1007,
+       "sha": "f6593bd3416c"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "energy/dark/home-full-lum.avif",
+       "bytes": 884,
+       "gzip": 850,
+       "sha": "4d11ecfe96f6"
+      },
+      "webp": {
+       "file": "energy/dark/home-full-lum.webp",
+       "bytes": 656,
+       "gzip": 679,
+       "sha": "a6c3875529ba"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/health-tile.svg",
+       "bytes": 10361,
+       "gzip": 2033,
+       "sha": "a02491afa5d8"
+      },
+      "webp": {
+       "file": "energy/dark/health-tile.webp",
+       "bytes": 8238,
+       "gzip": 8261,
+       "sha": "413fdda5b951"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/health-full.avif",
+       "bytes": 1190,
+       "gzip": 1174,
+       "sha": "d684c18df43f"
+      },
+      "webp": {
+       "file": "energy/dark/health-full.webp",
+       "bytes": 1124,
+       "gzip": 1147,
+       "sha": "f94510368e06"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/career-tile.svg",
+       "bytes": 10865,
+       "gzip": 2269,
+       "sha": "e07659162527"
+      },
+      "webp": {
+       "file": "energy/dark/career-tile.webp",
+       "bytes": 6122,
+       "gzip": 6145,
+       "sha": "43ce56020dfa"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/career-full.avif",
+       "bytes": 1151,
+       "gzip": 1132,
+       "sha": "c22876403409"
+      },
+      "webp": {
+       "file": "energy/dark/career-full.webp",
+       "bytes": 1054,
+       "gzip": 1077,
+       "sha": "03147ac10fc2"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/finance-tile.svg",
+       "bytes": 10605,
+       "gzip": 2113,
+       "sha": "261d240f0711"
+      },
+      "webp": {
+       "file": "energy/dark/finance-tile.webp",
+       "bytes": 5330,
+       "gzip": 5353,
+       "sha": "46e94379fdd7"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/finance-full.avif",
+       "bytes": 1139,
+       "gzip": 1119,
+       "sha": "67612026d6b6"
+      },
+      "webp": {
+       "file": "energy/dark/finance-full.webp",
+       "bytes": 1002,
+       "gzip": 1025,
+       "sha": "71fdc5b5e0b4"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/ventures-tile.svg",
+       "bytes": 12560,
+       "gzip": 2071,
+       "sha": "5a2d52218389"
+      },
+      "webp": {
+       "file": "energy/dark/ventures-tile.webp",
+       "bytes": 6830,
+       "gzip": 6853,
+       "sha": "b2c66fe29ee5"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/ventures-full.avif",
+       "bytes": 1086,
+       "gzip": 1067,
+       "sha": "b9f5e53748ac"
+      },
+      "webp": {
+       "file": "energy/dark/ventures-full.webp",
+       "bytes": 978,
+       "gzip": 1001,
+       "sha": "b9e305af88dd"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/relations-tile.svg",
+       "bytes": 9146,
+       "gzip": 1916,
+       "sha": "713055e320e5"
+      },
+      "webp": {
+       "file": "energy/dark/relations-tile.webp",
+       "bytes": 8340,
+       "gzip": 8363,
+       "sha": "7c095dcc467f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/relations-full.avif",
+       "bytes": 1170,
+       "gzip": 1155,
+       "sha": "08c3bcbf3189"
+      },
+      "webp": {
+       "file": "energy/dark/relations-full.webp",
+       "bytes": 1148,
+       "gzip": 1171,
+       "sha": "ce9e4cb00be7"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/growth-tile.svg",
+       "bytes": 20931,
+       "gzip": 2592,
+       "sha": "74832e9c7278"
+      },
+      "webp": {
+       "file": "energy/dark/growth-tile.webp",
+       "bytes": 8752,
+       "gzip": 8775,
+       "sha": "b5ce26f1b0df"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/growth-full.avif",
+       "bytes": 1238,
+       "gzip": 1233,
+       "sha": "0d2dca77938a"
+      },
+      "webp": {
+       "file": "energy/dark/growth-full.webp",
+       "bytes": 1206,
+       "gzip": 1229,
+       "sha": "fd83fc677e7d"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/notes-tile.svg",
+       "bytes": 9460,
+       "gzip": 1939,
+       "sha": "b7b747c50bd0"
+      },
+      "webp": {
+       "file": "energy/dark/notes-tile.webp",
+       "bytes": 6268,
+       "gzip": 6291,
+       "sha": "57aa50b73065"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/notes-full.avif",
+       "bytes": 1051,
+       "gzip": 1031,
+       "sha": "e682acc4f501"
+      },
+      "webp": {
+       "file": "energy/dark/notes-full.webp",
+       "bytes": 1008,
+       "gzip": 1031,
+       "sha": "9e09744a0fb3"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/meetings-tile.svg",
+       "bytes": 10273,
+       "gzip": 1993,
+       "sha": "fe8d93847275"
+      },
+      "webp": {
+       "file": "energy/dark/meetings-tile.webp",
+       "bytes": 6934,
+       "gzip": 6957,
+       "sha": "3780022045a0"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/meetings-full.avif",
+       "bytes": 1015,
+       "gzip": 989,
+       "sha": "8765a6e3a6d3"
+      },
+      "webp": {
+       "file": "energy/dark/meetings-full.webp",
+       "bytes": 1008,
+       "gzip": 1031,
+       "sha": "59150dd34205"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/books-tile.svg",
+       "bytes": 9783,
+       "gzip": 1966,
+       "sha": "2acbe6e921db"
+      },
+      "webp": {
+       "file": "energy/dark/books-tile.webp",
+       "bytes": 6304,
+       "gzip": 6327,
+       "sha": "8a2bc4f3aa33"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/books-full.avif",
+       "bytes": 1123,
+       "gzip": 1108,
+       "sha": "8810c08d7d78"
+      },
+      "webp": {
+       "file": "energy/dark/books-full.webp",
+       "bytes": 1062,
+       "gzip": 1085,
+       "sha": "716aac1adf95"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/ai-tile.svg",
+       "bytes": 12119,
+       "gzip": 2081,
+       "sha": "92eca3b49b1b"
+      },
+      "webp": {
+       "file": "energy/dark/ai-tile.webp",
+       "bytes": 5788,
+       "gzip": 5811,
+       "sha": "ac0e473fbb65"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/ai-full.avif",
+       "bytes": 1117,
+       "gzip": 1096,
+       "sha": "44c463754c9d"
+      },
+      "webp": {
+       "file": "energy/dark/ai-full.webp",
+       "bytes": 962,
+       "gzip": 985,
+       "sha": "9ca937ce201a"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/review-tile.svg",
+       "bytes": 9764,
+       "gzip": 1950,
+       "sha": "a42a6b9fa496"
+      },
+      "webp": {
+       "file": "energy/dark/review-tile.webp",
+       "bytes": 5794,
+       "gzip": 5817,
+       "sha": "9f35a31b1d56"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/review-full.avif",
+       "bytes": 1144,
+       "gzip": 1128,
+       "sha": "e1a0c5ffd73f"
+      },
+      "webp": {
+       "file": "energy/dark/review-full.webp",
+       "bytes": 1030,
+       "gzip": 1053,
+       "sha": "592dc8ef9f18"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "energy/dark/review-full-lum.avif",
+       "bytes": 875,
+       "gzip": 841,
+       "sha": "b4af56476fc1"
+      },
+      "webp": {
+       "file": "energy/dark/review-full-lum.webp",
+       "bytes": 680,
+       "gzip": 703,
+       "sha": "1009797a05a4"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/insights-tile.svg",
+       "bytes": 9475,
+       "gzip": 1911,
+       "sha": "9a926cadc1db"
+      },
+      "webp": {
+       "file": "energy/dark/insights-tile.webp",
+       "bytes": 6748,
+       "gzip": 6771,
+       "sha": "a102e25ff5ea"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/insights-full.avif",
+       "bytes": 1082,
+       "gzip": 1062,
+       "sha": "cda0e23f9d3c"
+      },
+      "webp": {
+       "file": "energy/dark/insights-full.webp",
+       "bytes": 1046,
+       "gzip": 1069,
+       "sha": "158bf3e79e5b"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/articles-tile.svg",
+       "bytes": 10146,
+       "gzip": 2003,
+       "sha": "b42e53d0aff6"
+      },
+      "webp": {
+       "file": "energy/dark/articles-tile.webp",
+       "bytes": 5324,
+       "gzip": 5347,
+       "sha": "029fbce5c954"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/articles-full.avif",
+       "bytes": 1010,
+       "gzip": 987,
+       "sha": "c84f57dec4f2"
+      },
+      "webp": {
+       "file": "energy/dark/articles-full.webp",
+       "bytes": 1008,
+       "gzip": 1031,
+       "sha": "64bc3eb1be33"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/video-tile.svg",
+       "bytes": 9390,
+       "gzip": 1967,
+       "sha": "e7670db58da7"
+      },
+      "webp": {
+       "file": "energy/dark/video-tile.webp",
+       "bytes": 5370,
+       "gzip": 5393,
+       "sha": "41481cd31ef4"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/video-full.avif",
+       "bytes": 1079,
+       "gzip": 1056,
+       "sha": "2f2cfe977b4f"
+      },
+      "webp": {
+       "file": "energy/dark/video-full.webp",
+       "bytes": 966,
+       "gzip": 989,
+       "sha": "ee3455a01ca6"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/recipes-tile.svg",
+       "bytes": 10856,
+       "gzip": 2181,
+       "sha": "0e0487330c2c"
+      },
+      "webp": {
+       "file": "energy/dark/recipes-tile.webp",
+       "bytes": 5830,
+       "gzip": 5853,
+       "sha": "dab426725767"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/recipes-full.avif",
+       "bytes": 1058,
+       "gzip": 1037,
+       "sha": "42a42dd6886e"
+      },
+      "webp": {
+       "file": "energy/dark/recipes-full.webp",
+       "bytes": 1026,
+       "gzip": 1049,
+       "sha": "c8e478477a6e"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "energy/dark/all-tile.svg",
+       "bytes": 11198,
+       "gzip": 1995,
+       "sha": "4d01ad0de296"
+      },
+      "webp": {
+       "file": "energy/dark/all-tile.webp",
+       "bytes": 4922,
+       "gzip": 4945,
+       "sha": "c214069bf875"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/dark/all-full.avif",
+       "bytes": 909,
+       "gzip": 877,
+       "sha": "8676d380c894"
+      },
+      "webp": {
+       "file": "energy/dark/all-full.webp",
+       "bytes": 800,
+       "gzip": 823,
+       "sha": "51a891e746c1"
+      }
+     }
+    }
+   },
+   "light": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "energy/light/home-full.avif",
+       "bytes": 1101,
+       "gzip": 1080,
+       "sha": "41b0652df02e"
+      },
+      "webp": {
+       "file": "energy/light/home-full.webp",
+       "bytes": 1028,
+       "gzip": 1051,
+       "sha": "12cbbfecfb1a"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "energy/light/home-full-lum.avif",
+       "bytes": 890,
+       "gzip": 855,
+       "sha": "fc543daa4076"
+      },
+      "webp": {
+       "file": "energy/light/home-full-lum.webp",
+       "bytes": 686,
+       "gzip": 709,
+       "sha": "8e52fcafed91"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/health-tile.svg",
+       "bytes": 10357,
+       "gzip": 2033,
+       "sha": "4d20d1b9de05"
+      },
+      "webp": {
+       "file": "energy/light/health-tile.webp",
+       "bytes": 5720,
+       "gzip": 5743,
+       "sha": "456e67270bd1"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/health-full.avif",
+       "bytes": 985,
+       "gzip": 961,
+       "sha": "6634bd9ec702"
+      },
+      "webp": {
+       "file": "energy/light/health-full.webp",
+       "bytes": 848,
+       "gzip": 871,
+       "sha": "f24c2ac456eb"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/career-tile.svg",
+       "bytes": 10861,
+       "gzip": 2273,
+       "sha": "4e95c2d8a868"
+      },
+      "webp": {
+       "file": "energy/light/career-tile.webp",
+       "bytes": 5504,
+       "gzip": 5527,
+       "sha": "49c06e5ec821"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/career-full.avif",
+       "bytes": 1163,
+       "gzip": 1148,
+       "sha": "1abbbbe0f6f4"
+      },
+      "webp": {
+       "file": "energy/light/career-full.webp",
+       "bytes": 1072,
+       "gzip": 1095,
+       "sha": "e728200e2cea"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/finance-tile.svg",
+       "bytes": 10661,
+       "gzip": 2094,
+       "sha": "dc3ba5846d02"
+      },
+      "webp": {
+       "file": "energy/light/finance-tile.webp",
+       "bytes": 4912,
+       "gzip": 4935,
+       "sha": "57897a2205a8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/finance-full.avif",
+       "bytes": 1047,
+       "gzip": 1024,
+       "sha": "0b627548dc81"
+      },
+      "webp": {
+       "file": "energy/light/finance-full.webp",
+       "bytes": 964,
+       "gzip": 987,
+       "sha": "00d7e2683301"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/ventures-tile.svg",
+       "bytes": 12556,
+       "gzip": 2063,
+       "sha": "a868b12572cf"
+      },
+      "webp": {
+       "file": "energy/light/ventures-tile.webp",
+       "bytes": 7098,
+       "gzip": 7121,
+       "sha": "0c10eec1470e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/ventures-full.avif",
+       "bytes": 1068,
+       "gzip": 1047,
+       "sha": "a599710c0905"
+      },
+      "webp": {
+       "file": "energy/light/ventures-full.webp",
+       "bytes": 1022,
+       "gzip": 1045,
+       "sha": "af57f3430521"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/relations-tile.svg",
+       "bytes": 9142,
+       "gzip": 1896,
+       "sha": "6c1a6a3a4219"
+      },
+      "webp": {
+       "file": "energy/light/relations-tile.webp",
+       "bytes": 6012,
+       "gzip": 6035,
+       "sha": "2af04f7b2321"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/relations-full.avif",
+       "bytes": 1036,
+       "gzip": 1013,
+       "sha": "f8402bc772f0"
+      },
+      "webp": {
+       "file": "energy/light/relations-full.webp",
+       "bytes": 898,
+       "gzip": 921,
+       "sha": "eaae0ad88f37"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/growth-tile.svg",
+       "bytes": 20927,
+       "gzip": 2593,
+       "sha": "781736612885"
+      },
+      "webp": {
+       "file": "energy/light/growth-tile.webp",
+       "bytes": 8558,
+       "gzip": 8581,
+       "sha": "87a5847db582"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/growth-full.avif",
+       "bytes": 1177,
+       "gzip": 1163,
+       "sha": "416065b6945b"
+      },
+      "webp": {
+       "file": "energy/light/growth-full.webp",
+       "bytes": 1118,
+       "gzip": 1141,
+       "sha": "b77ca6790c31"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/notes-tile.svg",
+       "bytes": 9456,
+       "gzip": 1942,
+       "sha": "60d2786ff6fc"
+      },
+      "webp": {
+       "file": "energy/light/notes-tile.webp",
+       "bytes": 5872,
+       "gzip": 5895,
+       "sha": "0a66ac2239b0"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/notes-full.avif",
+       "bytes": 1103,
+       "gzip": 1084,
+       "sha": "afe4695070b2"
+      },
+      "webp": {
+       "file": "energy/light/notes-full.webp",
+       "bytes": 1074,
+       "gzip": 1097,
+       "sha": "86008bfe40b5"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/meetings-tile.svg",
+       "bytes": 10269,
+       "gzip": 1993,
+       "sha": "3a550b01fb69"
+      },
+      "webp": {
+       "file": "energy/light/meetings-tile.webp",
+       "bytes": 5432,
+       "gzip": 5455,
+       "sha": "32ea8fbfb67c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/meetings-full.avif",
+       "bytes": 890,
+       "gzip": 856,
+       "sha": "80e51573df68"
+      },
+      "webp": {
+       "file": "energy/light/meetings-full.webp",
+       "bytes": 782,
+       "gzip": 805,
+       "sha": "1909e848012b"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/books-tile.svg",
+       "bytes": 9779,
+       "gzip": 1952,
+       "sha": "3aa231165d01"
+      },
+      "webp": {
+       "file": "energy/light/books-tile.webp",
+       "bytes": 5724,
+       "gzip": 5747,
+       "sha": "3ab4e0d079a2"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/books-full.avif",
+       "bytes": 1054,
+       "gzip": 1029,
+       "sha": "11b5850a3f85"
+      },
+      "webp": {
+       "file": "energy/light/books-full.webp",
+       "bytes": 980,
+       "gzip": 1003,
+       "sha": "d0963d7f249b"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/ai-tile.svg",
+       "bytes": 12115,
+       "gzip": 2073,
+       "sha": "082ecf716dfb"
+      },
+      "webp": {
+       "file": "energy/light/ai-tile.webp",
+       "bytes": 5684,
+       "gzip": 5707,
+       "sha": "b97b1c273da3"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/ai-full.avif",
+       "bytes": 1115,
+       "gzip": 1099,
+       "sha": "52571ece1f9f"
+      },
+      "webp": {
+       "file": "energy/light/ai-full.webp",
+       "bytes": 1006,
+       "gzip": 1029,
+       "sha": "1db7da537506"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/review-tile.svg",
+       "bytes": 9760,
+       "gzip": 1946,
+       "sha": "05ee2dc5d443"
+      },
+      "webp": {
+       "file": "energy/light/review-tile.webp",
+       "bytes": 5706,
+       "gzip": 5729,
+       "sha": "fdac76f1a946"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/review-full.avif",
+       "bytes": 1122,
+       "gzip": 1104,
+       "sha": "223e15fd5906"
+      },
+      "webp": {
+       "file": "energy/light/review-full.webp",
+       "bytes": 1022,
+       "gzip": 1045,
+       "sha": "08389e0c9511"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "energy/light/review-full-lum.avif",
+       "bytes": 924,
+       "gzip": 890,
+       "sha": "efe31f2c8539"
+      },
+      "webp": {
+       "file": "energy/light/review-full-lum.webp",
+       "bytes": 710,
+       "gzip": 733,
+       "sha": "f233f9f6bcbe"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/insights-tile.svg",
+       "bytes": 9471,
+       "gzip": 1906,
+       "sha": "3a010df9361f"
+      },
+      "webp": {
+       "file": "energy/light/insights-tile.webp",
+       "bytes": 6582,
+       "gzip": 6605,
+       "sha": "e82b458abb1f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/insights-full.avif",
+       "bytes": 1005,
+       "gzip": 983,
+       "sha": "a48e07f13c71"
+      },
+      "webp": {
+       "file": "energy/light/insights-full.webp",
+       "bytes": 1030,
+       "gzip": 1053,
+       "sha": "f27fd868e2ff"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/articles-tile.svg",
+       "bytes": 10142,
+       "gzip": 2004,
+       "sha": "29b80ee34bb2"
+      },
+      "webp": {
+       "file": "energy/light/articles-tile.webp",
+       "bytes": 4696,
+       "gzip": 4719,
+       "sha": "2af32371cbf6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/articles-full.avif",
+       "bytes": 958,
+       "gzip": 932,
+       "sha": "c4ce5419cabd"
+      },
+      "webp": {
+       "file": "energy/light/articles-full.webp",
+       "bytes": 904,
+       "gzip": 927,
+       "sha": "3114a016aaa4"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/video-tile.svg",
+       "bytes": 9386,
+       "gzip": 1959,
+       "sha": "7dfdd649dca5"
+      },
+      "webp": {
+       "file": "energy/light/video-tile.webp",
+       "bytes": 4910,
+       "gzip": 4933,
+       "sha": "4b5f0b793f75"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/video-full.avif",
+       "bytes": 1057,
+       "gzip": 1035,
+       "sha": "36a93b7a4230"
+      },
+      "webp": {
+       "file": "energy/light/video-full.webp",
+       "bytes": 986,
+       "gzip": 1009,
+       "sha": "6b82555b2ea3"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/recipes-tile.svg",
+       "bytes": 10852,
+       "gzip": 2180,
+       "sha": "cd2740b5867a"
+      },
+      "webp": {
+       "file": "energy/light/recipes-tile.webp",
+       "bytes": 4646,
+       "gzip": 4669,
+       "sha": "d2ce0ae6844e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/recipes-full.avif",
+       "bytes": 911,
+       "gzip": 882,
+       "sha": "bf4b3c01c7e3"
+      },
+      "webp": {
+       "file": "energy/light/recipes-full.webp",
+       "bytes": 788,
+       "gzip": 811,
+       "sha": "8b313ae9136b"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "energy/light/all-tile.svg",
+       "bytes": 11194,
+       "gzip": 1999,
+       "sha": "b8f8da3ebf96"
+      },
+      "webp": {
+       "file": "energy/light/all-tile.webp",
+       "bytes": 4264,
+       "gzip": 4287,
+       "sha": "e50bb955c483"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "energy/light/all-full.avif",
+       "bytes": 1006,
+       "gzip": 985,
+       "sha": "95d072a26ff7"
+      },
+      "webp": {
+       "file": "energy/light/all-full.webp",
+       "bytes": 890,
+       "gzip": 913,
+       "sha": "a39eb9924c06"
+      }
+     }
+    }
+   }
+  },
+  "calm": {
+   "dark": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "calm/dark/home-full.avif",
+       "bytes": 1039,
+       "gzip": 1017,
+       "sha": "959daa4537dd"
+      },
+      "webp": {
+       "file": "calm/dark/home-full.webp",
+       "bytes": 812,
+       "gzip": 835,
+       "sha": "ca8b10e3093d"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "calm/dark/home-full-lum.avif",
+       "bytes": 882,
+       "gzip": 850,
+       "sha": "10a69536e700"
+      },
+      "webp": {
+       "file": "calm/dark/home-full-lum.webp",
+       "bytes": 600,
+       "gzip": 623,
+       "sha": "ac8eb609903f"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/health-tile.svg",
+       "bytes": 4680,
+       "gzip": 1432,
+       "sha": "afbc9cc267cc"
+      },
+      "webp": {
+       "file": "calm/dark/health-tile.webp",
+       "bytes": 4110,
+       "gzip": 3983,
+       "sha": "cd93e611b8ea"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/health-full.avif",
+       "bytes": 849,
+       "gzip": 818,
+       "sha": "52910ecab141"
+      },
+      "webp": {
+       "file": "calm/dark/health-full.webp",
+       "bytes": 702,
+       "gzip": 725,
+       "sha": "bd0c5e56b21c"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/career-tile.svg",
+       "bytes": 5365,
+       "gzip": 1515,
+       "sha": "74463f90398f"
+      },
+      "webp": {
+       "file": "calm/dark/career-tile.webp",
+       "bytes": 3706,
+       "gzip": 3619,
+       "sha": "8f5b2c281b86"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/career-full.avif",
+       "bytes": 917,
+       "gzip": 887,
+       "sha": "405071b06ec1"
+      },
+      "webp": {
+       "file": "calm/dark/career-full.webp",
+       "bytes": 696,
+       "gzip": 719,
+       "sha": "4105ebf757a9"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/finance-tile.svg",
+       "bytes": 4877,
+       "gzip": 1419,
+       "sha": "a3afb9998c80"
+      },
+      "webp": {
+       "file": "calm/dark/finance-tile.webp",
+       "bytes": 3478,
+       "gzip": 3363,
+       "sha": "6a988f31788b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/finance-full.avif",
+       "bytes": 968,
+       "gzip": 940,
+       "sha": "746960af33b8"
+      },
+      "webp": {
+       "file": "calm/dark/finance-full.webp",
+       "bytes": 756,
+       "gzip": 779,
+       "sha": "26821f8c3bc8"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/ventures-tile.svg",
+       "bytes": 4267,
+       "gzip": 1410,
+       "sha": "a7213d0503c0"
+      },
+      "webp": {
+       "file": "calm/dark/ventures-tile.webp",
+       "bytes": 3488,
+       "gzip": 3339,
+       "sha": "dd6b4aad3680"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/ventures-full.avif",
+       "bytes": 978,
+       "gzip": 952,
+       "sha": "5ce499598fe2"
+      },
+      "webp": {
+       "file": "calm/dark/ventures-full.webp",
+       "bytes": 724,
+       "gzip": 747,
+       "sha": "83b1a8955b48"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/relations-tile.svg",
+       "bytes": 4374,
+       "gzip": 1333,
+       "sha": "b53eec9dd5c5"
+      },
+      "webp": {
+       "file": "calm/dark/relations-tile.webp",
+       "bytes": 4268,
+       "gzip": 4165,
+       "sha": "7ae5ab1e273b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/relations-full.avif",
+       "bytes": 1004,
+       "gzip": 980,
+       "sha": "f7301d30e80c"
+      },
+      "webp": {
+       "file": "calm/dark/relations-full.webp",
+       "bytes": 828,
+       "gzip": 851,
+       "sha": "0789e1358f00"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/growth-tile.svg",
+       "bytes": 4452,
+       "gzip": 1358,
+       "sha": "0a0c2f625d76"
+      },
+      "webp": {
+       "file": "calm/dark/growth-tile.webp",
+       "bytes": 4450,
+       "gzip": 4344,
+       "sha": "f6c45628e2ac"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/growth-full.avif",
+       "bytes": 858,
+       "gzip": 825,
+       "sha": "dac6b4fe88ee"
+      },
+      "webp": {
+       "file": "calm/dark/growth-full.webp",
+       "bytes": 704,
+       "gzip": 725,
+       "sha": "f4ecad6c6647"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/notes-tile.svg",
+       "bytes": 4770,
+       "gzip": 1436,
+       "sha": "250e392ddfe6"
+      },
+      "webp": {
+       "file": "calm/dark/notes-tile.webp",
+       "bytes": 3540,
+       "gzip": 3456,
+       "sha": "6000a46cce7d"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/notes-full.avif",
+       "bytes": 919,
+       "gzip": 889,
+       "sha": "f41077a49d5b"
+      },
+      "webp": {
+       "file": "calm/dark/notes-full.webp",
+       "bytes": 732,
+       "gzip": 755,
+       "sha": "c9c86d16eb91"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/meetings-tile.svg",
+       "bytes": 4568,
+       "gzip": 1386,
+       "sha": "dcbf0b2e8838"
+      },
+      "webp": {
+       "file": "calm/dark/meetings-tile.webp",
+       "bytes": 3872,
+       "gzip": 3775,
+       "sha": "3cd6dd0dcec8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/meetings-full.avif",
+       "bytes": 956,
+       "gzip": 931,
+       "sha": "a0e4312bff85"
+      },
+      "webp": {
+       "file": "calm/dark/meetings-full.webp",
+       "bytes": 760,
+       "gzip": 783,
+       "sha": "1f5310dea70d"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/books-tile.svg",
+       "bytes": 5257,
+       "gzip": 1483,
+       "sha": "125c3b14d01e"
+      },
+      "webp": {
+       "file": "calm/dark/books-tile.webp",
+       "bytes": 3492,
+       "gzip": 3397,
+       "sha": "4250196cc1d7"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/books-full.avif",
+       "bytes": 964,
+       "gzip": 940,
+       "sha": "d8592599a66c"
+      },
+      "webp": {
+       "file": "calm/dark/books-full.webp",
+       "bytes": 754,
+       "gzip": 777,
+       "sha": "250fd56141fa"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/ai-tile.svg",
+       "bytes": 6626,
+       "gzip": 1563,
+       "sha": "1277b423ed02"
+      },
+      "webp": {
+       "file": "calm/dark/ai-tile.webp",
+       "bytes": 4074,
+       "gzip": 3844,
+       "sha": "ffb9789ac5f1"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/ai-full.avif",
+       "bytes": 980,
+       "gzip": 955,
+       "sha": "b6c17d918e9a"
+      },
+      "webp": {
+       "file": "calm/dark/ai-full.webp",
+       "bytes": 774,
+       "gzip": 797,
+       "sha": "e6a2997b8231"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/review-tile.svg",
+       "bytes": 5919,
+       "gzip": 1547,
+       "sha": "82427b3069ce"
+      },
+      "webp": {
+       "file": "calm/dark/review-tile.webp",
+       "bytes": 3904,
+       "gzip": 3795,
+       "sha": "731ec5721934"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/review-full.avif",
+       "bytes": 1063,
+       "gzip": 1040,
+       "sha": "c7672e09eb5a"
+      },
+      "webp": {
+       "file": "calm/dark/review-full.webp",
+       "bytes": 798,
+       "gzip": 821,
+       "sha": "740186ad0a75"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "calm/dark/review-full-lum.avif",
+       "bytes": 859,
+       "gzip": 823,
+       "sha": "5b4d93740d4a"
+      },
+      "webp": {
+       "file": "calm/dark/review-full-lum.webp",
+       "bytes": 582,
+       "gzip": 605,
+       "sha": "cfeffed77419"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/insights-tile.svg",
+       "bytes": 4610,
+       "gzip": 1419,
+       "sha": "7b1f8c4d7737"
+      },
+      "webp": {
+       "file": "calm/dark/insights-tile.webp",
+       "bytes": 5148,
+       "gzip": 5055,
+       "sha": "e91da5453a74"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/insights-full.avif",
+       "bytes": 1091,
+       "gzip": 1069,
+       "sha": "f1b17518f102"
+      },
+      "webp": {
+       "file": "calm/dark/insights-full.webp",
+       "bytes": 842,
+       "gzip": 865,
+       "sha": "ac0915b6a422"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/articles-tile.svg",
+       "bytes": 4777,
+       "gzip": 1443,
+       "sha": "5a7386d10cd7"
+      },
+      "webp": {
+       "file": "calm/dark/articles-tile.webp",
+       "bytes": 3654,
+       "gzip": 3522,
+       "sha": "caf0c4e00355"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/articles-full.avif",
+       "bytes": 1015,
+       "gzip": 989,
+       "sha": "67483e1e5243"
+      },
+      "webp": {
+       "file": "calm/dark/articles-full.webp",
+       "bytes": 786,
+       "gzip": 809,
+       "sha": "e55f2ce1153c"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/video-tile.svg",
+       "bytes": 4352,
+       "gzip": 1359,
+       "sha": "5d1de29cff09"
+      },
+      "webp": {
+       "file": "calm/dark/video-tile.webp",
+       "bytes": 4188,
+       "gzip": 4036,
+       "sha": "ea619b8bd25f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/video-full.avif",
+       "bytes": 999,
+       "gzip": 972,
+       "sha": "360c30c59259"
+      },
+      "webp": {
+       "file": "calm/dark/video-full.webp",
+       "bytes": 838,
+       "gzip": 861,
+       "sha": "b2c1482e721d"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/recipes-tile.svg",
+       "bytes": 5113,
+       "gzip": 1484,
+       "sha": "11f0b1acf50c"
+      },
+      "webp": {
+       "file": "calm/dark/recipes-tile.webp",
+       "bytes": 4570,
+       "gzip": 4494,
+       "sha": "29021c9ae111"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/recipes-full.avif",
+       "bytes": 1030,
+       "gzip": 1009,
+       "sha": "844a4f0f4cc3"
+      },
+      "webp": {
+       "file": "calm/dark/recipes-full.webp",
+       "bytes": 838,
+       "gzip": 861,
+       "sha": "dd8f36d24128"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "calm/dark/all-tile.svg",
+       "bytes": 6228,
+       "gzip": 1512,
+       "sha": "138d3de1dc80"
+      },
+      "webp": {
+       "file": "calm/dark/all-tile.webp",
+       "bytes": 3758,
+       "gzip": 3650,
+       "sha": "310f0bfd60c6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/dark/all-full.avif",
+       "bytes": 997,
+       "gzip": 970,
+       "sha": "d528e0b82336"
+      },
+      "webp": {
+       "file": "calm/dark/all-full.webp",
+       "bytes": 722,
+       "gzip": 745,
+       "sha": "ed06946fc3a1"
+      }
+     }
+    }
+   },
+   "light": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "calm/light/home-full.avif",
+       "bytes": 878,
+       "gzip": 846,
+       "sha": "27acea84a608"
+      },
+      "webp": {
+       "file": "calm/light/home-full.webp",
+       "bytes": 710,
+       "gzip": 733,
+       "sha": "dd02282f6179"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "calm/light/home-full-lum.avif",
+       "bytes": 780,
+       "gzip": 737,
+       "sha": "f1c1fa3b2067"
+      },
+      "webp": {
+       "file": "calm/light/home-full-lum.webp",
+       "bytes": 530,
+       "gzip": 553,
+       "sha": "f7b0390b613d"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/health-tile.svg",
+       "bytes": 4682,
+       "gzip": 1437,
+       "sha": "a91d758942a9"
+      },
+      "webp": {
+       "file": "calm/light/health-tile.webp",
+       "bytes": 2590,
+       "gzip": 2519,
+       "sha": "7e905f43f0a3"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/health-full.avif",
+       "bytes": 678,
+       "gzip": 632,
+       "sha": "abaab4b0632b"
+      },
+      "webp": {
+       "file": "calm/light/health-full.webp",
+       "bytes": 538,
+       "gzip": 561,
+       "sha": "c0f53c9acda9"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/career-tile.svg",
+       "bytes": 5367,
+       "gzip": 1513,
+       "sha": "8ba8ace4f89a"
+      },
+      "webp": {
+       "file": "calm/light/career-tile.webp",
+       "bytes": 3308,
+       "gzip": 3187,
+       "sha": "984705296958"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/career-full.avif",
+       "bytes": 829,
+       "gzip": 794,
+       "sha": "95c0d57cfe29"
+      },
+      "webp": {
+       "file": "calm/light/career-full.webp",
+       "bytes": 670,
+       "gzip": 693,
+       "sha": "33a699d63d9b"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/finance-tile.svg",
+       "bytes": 4879,
+       "gzip": 1411,
+       "sha": "4561867a2f6d"
+      },
+      "webp": {
+       "file": "calm/light/finance-tile.webp",
+       "bytes": 3178,
+       "gzip": 3085,
+       "sha": "9f8e91dd4bf6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/finance-full.avif",
+       "bytes": 826,
+       "gzip": 792,
+       "sha": "a8186c87a376"
+      },
+      "webp": {
+       "file": "calm/light/finance-full.webp",
+       "bytes": 664,
+       "gzip": 687,
+       "sha": "3795c16fa776"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/ventures-tile.svg",
+       "bytes": 4269,
+       "gzip": 1426,
+       "sha": "2a9b14de7504"
+      },
+      "webp": {
+       "file": "calm/light/ventures-tile.webp",
+       "bytes": 3034,
+       "gzip": 2981,
+       "sha": "6dfd91626078"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/ventures-full.avif",
+       "bytes": 833,
+       "gzip": 801,
+       "sha": "743935e8327d"
+      },
+      "webp": {
+       "file": "calm/light/ventures-full.webp",
+       "bytes": 678,
+       "gzip": 701,
+       "sha": "6f0931556fb0"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/relations-tile.svg",
+       "bytes": 4376,
+       "gzip": 1328,
+       "sha": "a26d5a5d3dce"
+      },
+      "webp": {
+       "file": "calm/light/relations-tile.webp",
+       "bytes": 2724,
+       "gzip": 2613,
+       "sha": "f4353d44555c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/relations-full.avif",
+       "bytes": 803,
+       "gzip": 766,
+       "sha": "81d8e328d137"
+      },
+      "webp": {
+       "file": "calm/light/relations-full.webp",
+       "bytes": 606,
+       "gzip": 629,
+       "sha": "157979dffe9b"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/growth-tile.svg",
+       "bytes": 4454,
+       "gzip": 1361,
+       "sha": "d109c71e765c"
+      },
+      "webp": {
+       "file": "calm/light/growth-tile.webp",
+       "bytes": 2808,
+       "gzip": 2726,
+       "sha": "e623bfc247cb"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/growth-full.avif",
+       "bytes": 718,
+       "gzip": 678,
+       "sha": "c0f8af5b324e"
+      },
+      "webp": {
+       "file": "calm/light/growth-full.webp",
+       "bytes": 564,
+       "gzip": 587,
+       "sha": "f7908eb7d91d"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/notes-tile.svg",
+       "bytes": 4772,
+       "gzip": 1439,
+       "sha": "2c6036479e3f"
+      },
+      "webp": {
+       "file": "calm/light/notes-tile.webp",
+       "bytes": 2764,
+       "gzip": 2680,
+       "sha": "0c190c048284"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/notes-full.avif",
+       "bytes": 764,
+       "gzip": 723,
+       "sha": "86db789b51e3"
+      },
+      "webp": {
+       "file": "calm/light/notes-full.webp",
+       "bytes": 636,
+       "gzip": 659,
+       "sha": "3f7825671f31"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/meetings-tile.svg",
+       "bytes": 4570,
+       "gzip": 1390,
+       "sha": "5bb7de44ee90"
+      },
+      "webp": {
+       "file": "calm/light/meetings-tile.webp",
+       "bytes": 2832,
+       "gzip": 2764,
+       "sha": "2ed06f645ba6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/meetings-full.avif",
+       "bytes": 779,
+       "gzip": 739,
+       "sha": "65af4d674d28"
+      },
+      "webp": {
+       "file": "calm/light/meetings-full.webp",
+       "bytes": 600,
+       "gzip": 623,
+       "sha": "edc5a0fbdef4"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/books-tile.svg",
+       "bytes": 5259,
+       "gzip": 1480,
+       "sha": "f19b2efb4a4d"
+      },
+      "webp": {
+       "file": "calm/light/books-tile.webp",
+       "bytes": 2954,
+       "gzip": 2793,
+       "sha": "c6cf6b595340"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/books-full.avif",
+       "bytes": 761,
+       "gzip": 721,
+       "sha": "afb6c0ff49f6"
+      },
+      "webp": {
+       "file": "calm/light/books-full.webp",
+       "bytes": 588,
+       "gzip": 611,
+       "sha": "2ccf6aa9140c"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/ai-tile.svg",
+       "bytes": 6628,
+       "gzip": 1568,
+       "sha": "778c90027d46"
+      },
+      "webp": {
+       "file": "calm/light/ai-tile.webp",
+       "bytes": 2658,
+       "gzip": 2563,
+       "sha": "e58f1f05ca92"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/ai-full.avif",
+       "bytes": 746,
+       "gzip": 706,
+       "sha": "a5d05f6e891c"
+      },
+      "webp": {
+       "file": "calm/light/ai-full.webp",
+       "bytes": 572,
+       "gzip": 595,
+       "sha": "4cbcfca2dc27"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/review-tile.svg",
+       "bytes": 5921,
+       "gzip": 1560,
+       "sha": "7ba4c14794c1"
+      },
+      "webp": {
+       "file": "calm/light/review-tile.webp",
+       "bytes": 3326,
+       "gzip": 3247,
+       "sha": "805267f0bf6b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/review-full.avif",
+       "bytes": 952,
+       "gzip": 925,
+       "sha": "3de0ae234917"
+      },
+      "webp": {
+       "file": "calm/light/review-full.webp",
+       "bytes": 750,
+       "gzip": 773,
+       "sha": "d09ac8941b54"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "calm/light/review-full-lum.avif",
+       "bytes": 846,
+       "gzip": 810,
+       "sha": "34a913162f8f"
+      },
+      "webp": {
+       "file": "calm/light/review-full-lum.webp",
+       "bytes": 558,
+       "gzip": 581,
+       "sha": "5edcf8ae1528"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/insights-tile.svg",
+       "bytes": 4612,
+       "gzip": 1427,
+       "sha": "0f8013d3c875"
+      },
+      "webp": {
+       "file": "calm/light/insights-tile.webp",
+       "bytes": 3604,
+       "gzip": 3555,
+       "sha": "d93ba8daa8ea"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/insights-full.avif",
+       "bytes": 839,
+       "gzip": 806,
+       "sha": "5aef9e312c0f"
+      },
+      "webp": {
+       "file": "calm/light/insights-full.webp",
+       "bytes": 710,
+       "gzip": 733,
+       "sha": "d5fbc45786e2"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/articles-tile.svg",
+       "bytes": 4779,
+       "gzip": 1449,
+       "sha": "b11ede206e9b"
+      },
+      "webp": {
+       "file": "calm/light/articles-tile.webp",
+       "bytes": 2724,
+       "gzip": 2672,
+       "sha": "86873d96962f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/articles-full.avif",
+       "bytes": 793,
+       "gzip": 754,
+       "sha": "38b2668ff836"
+      },
+      "webp": {
+       "file": "calm/light/articles-full.webp",
+       "bytes": 620,
+       "gzip": 643,
+       "sha": "8cd724e9ddcf"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/video-tile.svg",
+       "bytes": 4354,
+       "gzip": 1357,
+       "sha": "bdafa6d0de74"
+      },
+      "webp": {
+       "file": "calm/light/video-tile.webp",
+       "bytes": 3416,
+       "gzip": 3325,
+       "sha": "97a1e723d248"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/video-full.avif",
+       "bytes": 862,
+       "gzip": 831,
+       "sha": "16748286646f"
+      },
+      "webp": {
+       "file": "calm/light/video-full.webp",
+       "bytes": 748,
+       "gzip": 771,
+       "sha": "98c9f5f0ecd9"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/recipes-tile.svg",
+       "bytes": 5115,
+       "gzip": 1490,
+       "sha": "779d3dda7dda"
+      },
+      "webp": {
+       "file": "calm/light/recipes-tile.webp",
+       "bytes": 3280,
+       "gzip": 3199,
+       "sha": "df9c3ed18765"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/recipes-full.avif",
+       "bytes": 794,
+       "gzip": 757,
+       "sha": "adfb0b9dc879"
+      },
+      "webp": {
+       "file": "calm/light/recipes-full.webp",
+       "bytes": 652,
+       "gzip": 675,
+       "sha": "a73e180be862"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "calm/light/all-tile.svg",
+       "bytes": 6230,
+       "gzip": 1519,
+       "sha": "15e448bd4f37"
+      },
+      "webp": {
+       "file": "calm/light/all-tile.webp",
+       "bytes": 3196,
+       "gzip": 3083,
+       "sha": "12b36b3055fb"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "calm/light/all-full.avif",
+       "bytes": 806,
+       "gzip": 772,
+       "sha": "dde2ad4452cb"
+      },
+      "webp": {
+       "file": "calm/light/all-full.webp",
+       "bytes": 634,
+       "gzip": 657,
+       "sha": "5dab634de5d0"
+      }
+     }
+    }
+   }
+  },
+  "nature": {
+   "dark": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "nature/dark/home-full.avif",
+       "bytes": 1066,
+       "gzip": 1045,
+       "sha": "81bf709c2933"
+      },
+      "webp": {
+       "file": "nature/dark/home-full.webp",
+       "bytes": 914,
+       "gzip": 937,
+       "sha": "8d8da9dd4501"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "nature/dark/home-full-lum.avif",
+       "bytes": 809,
+       "gzip": 767,
+       "sha": "1eec25c81bdf"
+      },
+      "webp": {
+       "file": "nature/dark/home-full-lum.webp",
+       "bytes": 558,
+       "gzip": 581,
+       "sha": "d0d9b0c6c142"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/health-tile.svg",
+       "bytes": 13453,
+       "gzip": 3239,
+       "sha": "70ee1dc1270d"
+      },
+      "webp": {
+       "file": "nature/dark/health-tile.webp",
+       "bytes": 5846,
+       "gzip": 5782,
+       "sha": "78e98e3d52ab"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/health-full.avif",
+       "bytes": 1021,
+       "gzip": 997,
+       "sha": "6822eb293857"
+      },
+      "webp": {
+       "file": "nature/dark/health-full.webp",
+       "bytes": 924,
+       "gzip": 947,
+       "sha": "f4038708d846"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/career-tile.svg",
+       "bytes": 9986,
+       "gzip": 3212,
+       "sha": "328679bd8a1e"
+      },
+      "webp": {
+       "file": "nature/dark/career-tile.webp",
+       "bytes": 5082,
+       "gzip": 4991,
+       "sha": "5196c2fb48b2"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/career-full.avif",
+       "bytes": 897,
+       "gzip": 866,
+       "sha": "eb0fdb9adaf9"
+      },
+      "webp": {
+       "file": "nature/dark/career-full.webp",
+       "bytes": 798,
+       "gzip": 821,
+       "sha": "4a616fc70bba"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/finance-tile.svg",
+       "bytes": 10455,
+       "gzip": 3426,
+       "sha": "a06ccf592275"
+      },
+      "webp": {
+       "file": "nature/dark/finance-tile.webp",
+       "bytes": 5278,
+       "gzip": 5262,
+       "sha": "aab2c3b0e993"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/finance-full.avif",
+       "bytes": 999,
+       "gzip": 972,
+       "sha": "ed4400db28be"
+      },
+      "webp": {
+       "file": "nature/dark/finance-full.webp",
+       "bytes": 822,
+       "gzip": 845,
+       "sha": "eb7a9e5d1428"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/ventures-tile.svg",
+       "bytes": 15674,
+       "gzip": 3638,
+       "sha": "0e8b4b5f147a"
+      },
+      "webp": {
+       "file": "nature/dark/ventures-tile.webp",
+       "bytes": 5918,
+       "gzip": 5873,
+       "sha": "2dc45a01b0d6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/ventures-full.avif",
+       "bytes": 916,
+       "gzip": 885,
+       "sha": "2a6f9b627001"
+      },
+      "webp": {
+       "file": "nature/dark/ventures-full.webp",
+       "bytes": 714,
+       "gzip": 737,
+       "sha": "a45edec66e9c"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/relations-tile.svg",
+       "bytes": 11606,
+       "gzip": 3379,
+       "sha": "d971a9d77f0e"
+      },
+      "webp": {
+       "file": "nature/dark/relations-tile.webp",
+       "bytes": 6284,
+       "gzip": 6138,
+       "sha": "5abbf1bf8c10"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/relations-full.avif",
+       "bytes": 1070,
+       "gzip": 1048,
+       "sha": "6f3d11f7c3cc"
+      },
+      "webp": {
+       "file": "nature/dark/relations-full.webp",
+       "bytes": 900,
+       "gzip": 923,
+       "sha": "92d6601917be"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/growth-tile.svg",
+       "bytes": 13391,
+       "gzip": 4001,
+       "sha": "05ecd86d54fd"
+      },
+      "webp": {
+       "file": "nature/dark/growth-tile.webp",
+       "bytes": 6962,
+       "gzip": 6795,
+       "sha": "23f8c9a18996"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/growth-full.avif",
+       "bytes": 1062,
+       "gzip": 1039,
+       "sha": "f6c5c0ece283"
+      },
+      "webp": {
+       "file": "nature/dark/growth-full.webp",
+       "bytes": 908,
+       "gzip": 931,
+       "sha": "d18e65e8b3f9"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/notes-tile.svg",
+       "bytes": 10971,
+       "gzip": 3105,
+       "sha": "a1a22ebf8124"
+      },
+      "webp": {
+       "file": "nature/dark/notes-tile.webp",
+       "bytes": 5016,
+       "gzip": 4994,
+       "sha": "26b8c9c4cddc"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/notes-full.avif",
+       "bytes": 1033,
+       "gzip": 1008,
+       "sha": "1239025c1208"
+      },
+      "webp": {
+       "file": "nature/dark/notes-full.webp",
+       "bytes": 848,
+       "gzip": 871,
+       "sha": "92b5cfcdd9c7"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/meetings-tile.svg",
+       "bytes": 9974,
+       "gzip": 2998,
+       "sha": "35573e7b4c96"
+      },
+      "webp": {
+       "file": "nature/dark/meetings-tile.webp",
+       "bytes": 5388,
+       "gzip": 5334,
+       "sha": "09859d376ef9"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/meetings-full.avif",
+       "bytes": 1047,
+       "gzip": 1026,
+       "sha": "6acf50ada30c"
+      },
+      "webp": {
+       "file": "nature/dark/meetings-full.webp",
+       "bytes": 904,
+       "gzip": 927,
+       "sha": "421f8721ef7f"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/books-tile.svg",
+       "bytes": 10724,
+       "gzip": 3154,
+       "sha": "c3d94883c3ad"
+      },
+      "webp": {
+       "file": "nature/dark/books-tile.webp",
+       "bytes": 5296,
+       "gzip": 5285,
+       "sha": "ddabbc72aff2"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/books-full.avif",
+       "bytes": 1056,
+       "gzip": 1034,
+       "sha": "7a17514983cf"
+      },
+      "webp": {
+       "file": "nature/dark/books-full.webp",
+       "bytes": 844,
+       "gzip": 867,
+       "sha": "73c5f77ab60a"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/ai-tile.svg",
+       "bytes": 11331,
+       "gzip": 3175,
+       "sha": "7e078027030b"
+      },
+      "webp": {
+       "file": "nature/dark/ai-tile.webp",
+       "bytes": 4692,
+       "gzip": 4589,
+       "sha": "9870b0692750"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/ai-full.avif",
+       "bytes": 912,
+       "gzip": 881,
+       "sha": "3464e7fd449a"
+      },
+      "webp": {
+       "file": "nature/dark/ai-full.webp",
+       "bytes": 674,
+       "gzip": 697,
+       "sha": "46cf641a9f36"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/review-tile.svg",
+       "bytes": 11455,
+       "gzip": 3283,
+       "sha": "d685c42881b4"
+      },
+      "webp": {
+       "file": "nature/dark/review-tile.webp",
+       "bytes": 5318,
+       "gzip": 5238,
+       "sha": "66e103325205"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/review-full.avif",
+       "bytes": 1063,
+       "gzip": 1039,
+       "sha": "109af39eb684"
+      },
+      "webp": {
+       "file": "nature/dark/review-full.webp",
+       "bytes": 806,
+       "gzip": 829,
+       "sha": "1dd2105fff07"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "nature/dark/review-full-lum.avif",
+       "bytes": 718,
+       "gzip": 673,
+       "sha": "b452fbc5f78d"
+      },
+      "webp": {
+       "file": "nature/dark/review-full-lum.webp",
+       "bytes": 508,
+       "gzip": 531,
+       "sha": "6e9f3a819ede"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/insights-tile.svg",
+       "bytes": 9874,
+       "gzip": 3050,
+       "sha": "6f94a3afe57e"
+      },
+      "webp": {
+       "file": "nature/dark/insights-tile.webp",
+       "bytes": 5222,
+       "gzip": 5102,
+       "sha": "aec256ecb2bd"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/insights-full.avif",
+       "bytes": 1053,
+       "gzip": 1032,
+       "sha": "7faa19b45546"
+      },
+      "webp": {
+       "file": "nature/dark/insights-full.webp",
+       "bytes": 854,
+       "gzip": 877,
+       "sha": "d9d4977f64ab"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/articles-tile.svg",
+       "bytes": 10145,
+       "gzip": 3087,
+       "sha": "af0ae13d8456"
+      },
+      "webp": {
+       "file": "nature/dark/articles-tile.webp",
+       "bytes": 4712,
+       "gzip": 4687,
+       "sha": "48355d41c1e0"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/articles-full.avif",
+       "bytes": 1050,
+       "gzip": 1031,
+       "sha": "d8c5b3d8b41d"
+      },
+      "webp": {
+       "file": "nature/dark/articles-full.webp",
+       "bytes": 898,
+       "gzip": 921,
+       "sha": "b7dfbb6a5782"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/video-tile.svg",
+       "bytes": 10071,
+       "gzip": 3021,
+       "sha": "22303097083d"
+      },
+      "webp": {
+       "file": "nature/dark/video-tile.webp",
+       "bytes": 4674,
+       "gzip": 4592,
+       "sha": "d5f3a1cc7bbe"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/video-full.avif",
+       "bytes": 1017,
+       "gzip": 989,
+       "sha": "2cb6ff10dd4a"
+      },
+      "webp": {
+       "file": "nature/dark/video-full.webp",
+       "bytes": 808,
+       "gzip": 831,
+       "sha": "f5c97c4a4671"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/recipes-tile.svg",
+       "bytes": 10437,
+       "gzip": 3325,
+       "sha": "95ff5c564328"
+      },
+      "webp": {
+       "file": "nature/dark/recipes-tile.webp",
+       "bytes": 5778,
+       "gzip": 5759,
+       "sha": "dd31815bd0b6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/recipes-full.avif",
+       "bytes": 1093,
+       "gzip": 1074,
+       "sha": "df30dfd579a3"
+      },
+      "webp": {
+       "file": "nature/dark/recipes-full.webp",
+       "bytes": 982,
+       "gzip": 1005,
+       "sha": "3397766b765b"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "nature/dark/all-tile.svg",
+       "bytes": 11524,
+       "gzip": 3251,
+       "sha": "bfb733918660"
+      },
+      "webp": {
+       "file": "nature/dark/all-tile.webp",
+       "bytes": 4826,
+       "gzip": 4730,
+       "sha": "ce8b19ec30f1"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/dark/all-full.avif",
+       "bytes": 995,
+       "gzip": 971,
+       "sha": "97c1a4c7ad98"
+      },
+      "webp": {
+       "file": "nature/dark/all-full.webp",
+       "bytes": 828,
+       "gzip": 851,
+       "sha": "dd7abac5b12d"
+      }
+     }
+    }
+   },
+   "light": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "nature/light/home-full.avif",
+       "bytes": 1127,
+       "gzip": 1106,
+       "sha": "feff2131fa11"
+      },
+      "webp": {
+       "file": "nature/light/home-full.webp",
+       "bytes": 1164,
+       "gzip": 1187,
+       "sha": "a267f2414126"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "nature/light/home-full-lum.avif",
+       "bytes": 1001,
+       "gzip": 974,
+       "sha": "144507794a7e"
+      },
+      "webp": {
+       "file": "nature/light/home-full-lum.webp",
+       "bytes": 806,
+       "gzip": 829,
+       "sha": "10773fa31bc5"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/health-tile.svg",
+       "bytes": 13454,
+       "gzip": 3254,
+       "sha": "0bfdc1cb8ba5"
+      },
+      "webp": {
+       "file": "nature/light/health-tile.webp",
+       "bytes": 4462,
+       "gzip": 4433,
+       "sha": "011ee92eec2f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/health-full.avif",
+       "bytes": 928,
+       "gzip": 899,
+       "sha": "70dc3062bacd"
+      },
+      "webp": {
+       "file": "nature/light/health-full.webp",
+       "bytes": 772,
+       "gzip": 795,
+       "sha": "7218e4667603"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/career-tile.svg",
+       "bytes": 9987,
+       "gzip": 3225,
+       "sha": "765e9be9e36f"
+      },
+      "webp": {
+       "file": "nature/light/career-tile.webp",
+       "bytes": 5316,
+       "gzip": 5179,
+       "sha": "a8e60995a879"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/career-full.avif",
+       "bytes": 942,
+       "gzip": 915,
+       "sha": "30cb4c601c2b"
+      },
+      "webp": {
+       "file": "nature/light/career-full.webp",
+       "bytes": 846,
+       "gzip": 869,
+       "sha": "2883dee4e8c6"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/finance-tile.svg",
+       "bytes": 10456,
+       "gzip": 3431,
+       "sha": "493ac269e05f"
+      },
+      "webp": {
+       "file": "nature/light/finance-tile.webp",
+       "bytes": 5464,
+       "gzip": 5420,
+       "sha": "0375aaf340d0"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/finance-full.avif",
+       "bytes": 1010,
+       "gzip": 983,
+       "sha": "66213643d4f8"
+      },
+      "webp": {
+       "file": "nature/light/finance-full.webp",
+       "bytes": 932,
+       "gzip": 955,
+       "sha": "ffd9576a42be"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/ventures-tile.svg",
+       "bytes": 15675,
+       "gzip": 3664,
+       "sha": "2a5cbb917109"
+      },
+      "webp": {
+       "file": "nature/light/ventures-tile.webp",
+       "bytes": 5624,
+       "gzip": 5613,
+       "sha": "26fba7a09f78"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/ventures-full.avif",
+       "bytes": 961,
+       "gzip": 934,
+       "sha": "a91e4157977b"
+      },
+      "webp": {
+       "file": "nature/light/ventures-full.webp",
+       "bytes": 820,
+       "gzip": 843,
+       "sha": "89c9ed49ac3b"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/relations-tile.svg",
+       "bytes": 11607,
+       "gzip": 3375,
+       "sha": "d0f7df7ca95c"
+      },
+      "webp": {
+       "file": "nature/light/relations-tile.webp",
+       "bytes": 5404,
+       "gzip": 5348,
+       "sha": "59a63730a2d8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/relations-full.avif",
+       "bytes": 984,
+       "gzip": 957,
+       "sha": "ec5acc3c004e"
+      },
+      "webp": {
+       "file": "nature/light/relations-full.webp",
+       "bytes": 774,
+       "gzip": 797,
+       "sha": "c9f059659c07"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/growth-tile.svg",
+       "bytes": 13392,
+       "gzip": 3997,
+       "sha": "271a42e72e8b"
+      },
+      "webp": {
+       "file": "nature/light/growth-tile.webp",
+       "bytes": 5244,
+       "gzip": 5210,
+       "sha": "55aab83c650b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/growth-full.avif",
+       "bytes": 977,
+       "gzip": 949,
+       "sha": "056a03b69d52"
+      },
+      "webp": {
+       "file": "nature/light/growth-full.webp",
+       "bytes": 818,
+       "gzip": 841,
+       "sha": "8712bac5469a"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/notes-tile.svg",
+       "bytes": 10972,
+       "gzip": 3122,
+       "sha": "1d93065e19c8"
+      },
+      "webp": {
+       "file": "nature/light/notes-tile.webp",
+       "bytes": 4934,
+       "gzip": 4909,
+       "sha": "ef9b021561e8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/notes-full.avif",
+       "bytes": 987,
+       "gzip": 960,
+       "sha": "39c01316e8f4"
+      },
+      "webp": {
+       "file": "nature/light/notes-full.webp",
+       "bytes": 936,
+       "gzip": 959,
+       "sha": "b9b2bf600c15"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/meetings-tile.svg",
+       "bytes": 9975,
+       "gzip": 3012,
+       "sha": "815f12621212"
+      },
+      "webp": {
+       "file": "nature/light/meetings-tile.webp",
+       "bytes": 4606,
+       "gzip": 4600,
+       "sha": "8ef3ab0fcb6b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/meetings-full.avif",
+       "bytes": 1004,
+       "gzip": 979,
+       "sha": "147557fdb2e4"
+      },
+      "webp": {
+       "file": "nature/light/meetings-full.webp",
+       "bytes": 896,
+       "gzip": 919,
+       "sha": "61ee5c6ee86e"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/books-tile.svg",
+       "bytes": 10725,
+       "gzip": 3151,
+       "sha": "92590085ce1b"
+      },
+      "webp": {
+       "file": "nature/light/books-tile.webp",
+       "bytes": 4420,
+       "gzip": 4394,
+       "sha": "86c29b442026"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/books-full.avif",
+       "bytes": 926,
+       "gzip": 899,
+       "sha": "ef20ba5300a3"
+      },
+      "webp": {
+       "file": "nature/light/books-full.webp",
+       "bytes": 802,
+       "gzip": 825,
+       "sha": "7ff1e4cf2b9f"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/ai-tile.svg",
+       "bytes": 11332,
+       "gzip": 3183,
+       "sha": "d161b362fb58"
+      },
+      "webp": {
+       "file": "nature/light/ai-tile.webp",
+       "bytes": 5402,
+       "gzip": 5339,
+       "sha": "8eba3ac7d7ed"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/ai-full.avif",
+       "bytes": 934,
+       "gzip": 905,
+       "sha": "a7048a8641f9"
+      },
+      "webp": {
+       "file": "nature/light/ai-full.webp",
+       "bytes": 844,
+       "gzip": 867,
+       "sha": "2285abce8639"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/review-tile.svg",
+       "bytes": 11456,
+       "gzip": 3311,
+       "sha": "baa3b4bd2b1e"
+      },
+      "webp": {
+       "file": "nature/light/review-tile.webp",
+       "bytes": 6004,
+       "gzip": 5956,
+       "sha": "a294a144675e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/review-full.avif",
+       "bytes": 1071,
+       "gzip": 1045,
+       "sha": "264253e30a09"
+      },
+      "webp": {
+       "file": "nature/light/review-full.webp",
+       "bytes": 996,
+       "gzip": 1019,
+       "sha": "6a2a68cd10c1"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "nature/light/review-full-lum.avif",
+       "bytes": 910,
+       "gzip": 874,
+       "sha": "2ecc12166ba2"
+      },
+      "webp": {
+       "file": "nature/light/review-full-lum.webp",
+       "bytes": 702,
+       "gzip": 725,
+       "sha": "c3bf2fc49488"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/insights-tile.svg",
+       "bytes": 9875,
+       "gzip": 3047,
+       "sha": "2aa04b2af1fb"
+      },
+      "webp": {
+       "file": "nature/light/insights-tile.webp",
+       "bytes": 5308,
+       "gzip": 5226,
+       "sha": "da698241be82"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/insights-full.avif",
+       "bytes": 1065,
+       "gzip": 1043,
+       "sha": "fb7a5c65269e"
+      },
+      "webp": {
+       "file": "nature/light/insights-full.webp",
+       "bytes": 970,
+       "gzip": 993,
+       "sha": "4324e9029da0"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/articles-tile.svg",
+       "bytes": 10146,
+       "gzip": 3097,
+       "sha": "d5f47167f95c"
+      },
+      "webp": {
+       "file": "nature/light/articles-tile.webp",
+       "bytes": 4252,
+       "gzip": 4244,
+       "sha": "0dec9bf67c63"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/articles-full.avif",
+       "bytes": 980,
+       "gzip": 954,
+       "sha": "4de4cdb9814b"
+      },
+      "webp": {
+       "file": "nature/light/articles-full.webp",
+       "bytes": 842,
+       "gzip": 865,
+       "sha": "abd1269c62c0"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/video-tile.svg",
+       "bytes": 10072,
+       "gzip": 3023,
+       "sha": "0389bdb484e5"
+      },
+      "webp": {
+       "file": "nature/light/video-tile.webp",
+       "bytes": 4492,
+       "gzip": 4484,
+       "sha": "2afac3348c01"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/video-full.avif",
+       "bytes": 943,
+       "gzip": 912,
+       "sha": "d1de570b2574"
+      },
+      "webp": {
+       "file": "nature/light/video-full.webp",
+       "bytes": 896,
+       "gzip": 919,
+       "sha": "9ddc783ba526"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/recipes-tile.svg",
+       "bytes": 10438,
+       "gzip": 3323,
+       "sha": "e45c4752cbb1"
+      },
+      "webp": {
+       "file": "nature/light/recipes-tile.webp",
+       "bytes": 4468,
+       "gzip": 4451,
+       "sha": "35a92fa53cb8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/recipes-full.avif",
+       "bytes": 1001,
+       "gzip": 978,
+       "sha": "7f3690b6d3ff"
+      },
+      "webp": {
+       "file": "nature/light/recipes-full.webp",
+       "bytes": 790,
+       "gzip": 813,
+       "sha": "01cbef60c542"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "nature/light/all-tile.svg",
+       "bytes": 11525,
+       "gzip": 3265,
+       "sha": "e52b0ed7fcb0"
+      },
+      "webp": {
+       "file": "nature/light/all-tile.webp",
+       "bytes": 4124,
+       "gzip": 4065,
+       "sha": "2e6f808103bb"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "nature/light/all-full.avif",
+       "bytes": 942,
+       "gzip": 911,
+       "sha": "48f5605935e6"
+      },
+      "webp": {
+       "file": "nature/light/all-full.webp",
+       "bytes": 758,
+       "gzip": 781,
+       "sha": "e645727cd904"
+      }
+     }
+    }
+   }
+  },
+  "origami": {
+   "dark": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "origami/dark/home-full.avif",
+       "bytes": 969,
+       "gzip": 942,
+       "sha": "df22bd97f73f"
+      },
+      "webp": {
+       "file": "origami/dark/home-full.webp",
+       "bytes": 794,
+       "gzip": 817,
+       "sha": "270c44523497"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "origami/dark/home-full-lum.avif",
+       "bytes": 777,
+       "gzip": 733,
+       "sha": "da931e7fad21"
+      },
+      "webp": {
+       "file": "origami/dark/home-full-lum.webp",
+       "bytes": 536,
+       "gzip": 559,
+       "sha": "624b2fcc09b4"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/health-tile.svg",
+       "bytes": 4824,
+       "gzip": 1066,
+       "sha": "1c1ea6e593c0"
+      },
+      "webp": {
+       "file": "origami/dark/health-tile.webp",
+       "bytes": 4542,
+       "gzip": 4444,
+       "sha": "fb97cdf8080e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/health-full.avif",
+       "bytes": 979,
+       "gzip": 950,
+       "sha": "50119af6da32"
+      },
+      "webp": {
+       "file": "origami/dark/health-full.webp",
+       "bytes": 828,
+       "gzip": 851,
+       "sha": "a8a5f794af6e"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/career-tile.svg",
+       "bytes": 2934,
+       "gzip": 799,
+       "sha": "ac31d10fe3ff"
+      },
+      "webp": {
+       "file": "origami/dark/career-tile.webp",
+       "bytes": 4542,
+       "gzip": 4459,
+       "sha": "347408da268a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/career-full.avif",
+       "bytes": 1078,
+       "gzip": 1056,
+       "sha": "aa6fd387f948"
+      },
+      "webp": {
+       "file": "origami/dark/career-full.webp",
+       "bytes": 902,
+       "gzip": 925,
+       "sha": "6bc89695fb69"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/finance-tile.svg",
+       "bytes": 3294,
+       "gzip": 879,
+       "sha": "d50598eb7a95"
+      },
+      "webp": {
+       "file": "origami/dark/finance-tile.webp",
+       "bytes": 3276,
+       "gzip": 3145,
+       "sha": "c8b751b00df8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/finance-full.avif",
+       "bytes": 864,
+       "gzip": 832,
+       "sha": "42ec453c6ce1"
+      },
+      "webp": {
+       "file": "origami/dark/finance-full.webp",
+       "bytes": 686,
+       "gzip": 709,
+       "sha": "6b417695b657"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/ventures-tile.svg",
+       "bytes": 3013,
+       "gzip": 796,
+       "sha": "b3793cc404f1"
+      },
+      "webp": {
+       "file": "origami/dark/ventures-tile.webp",
+       "bytes": 3836,
+       "gzip": 3741,
+       "sha": "e82979a6e369"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/ventures-full.avif",
+       "bytes": 942,
+       "gzip": 914,
+       "sha": "0c34c046090d"
+      },
+      "webp": {
+       "file": "origami/dark/ventures-full.webp",
+       "bytes": 768,
+       "gzip": 791,
+       "sha": "59d70c448a4e"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/relations-tile.svg",
+       "bytes": 2955,
+       "gzip": 763,
+       "sha": "c5ed77a17a5b"
+      },
+      "webp": {
+       "file": "origami/dark/relations-tile.webp",
+       "bytes": 4232,
+       "gzip": 4121,
+       "sha": "04d0a3a1a19a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/relations-full.avif",
+       "bytes": 960,
+       "gzip": 937,
+       "sha": "9b3daa162ea3"
+      },
+      "webp": {
+       "file": "origami/dark/relations-full.webp",
+       "bytes": 814,
+       "gzip": 837,
+       "sha": "58c533e48007"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/growth-tile.svg",
+       "bytes": 3153,
+       "gzip": 852,
+       "sha": "db2a752ec277"
+      },
+      "webp": {
+       "file": "origami/dark/growth-tile.webp",
+       "bytes": 4606,
+       "gzip": 4518,
+       "sha": "0c6d911bb77c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/growth-full.avif",
+       "bytes": 1094,
+       "gzip": 1076,
+       "sha": "8fd7be94a26f"
+      },
+      "webp": {
+       "file": "origami/dark/growth-full.webp",
+       "bytes": 854,
+       "gzip": 877,
+       "sha": "cadffdf79b8e"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/notes-tile.svg",
+       "bytes": 2987,
+       "gzip": 821,
+       "sha": "ae6f0b9b6272"
+      },
+      "webp": {
+       "file": "origami/dark/notes-tile.webp",
+       "bytes": 4426,
+       "gzip": 4319,
+       "sha": "3b77df7e3291"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/notes-full.avif",
+       "bytes": 962,
+       "gzip": 935,
+       "sha": "ba3ccddc2474"
+      },
+      "webp": {
+       "file": "origami/dark/notes-full.webp",
+       "bytes": 852,
+       "gzip": 875,
+       "sha": "61b3017b618e"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/meetings-tile.svg",
+       "bytes": 2726,
+       "gzip": 750,
+       "sha": "62ee2b732fc8"
+      },
+      "webp": {
+       "file": "origami/dark/meetings-tile.webp",
+       "bytes": 3556,
+       "gzip": 3505,
+       "sha": "b1d970a5e165"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/meetings-full.avif",
+       "bytes": 961,
+       "gzip": 935,
+       "sha": "00b26767864c"
+      },
+      "webp": {
+       "file": "origami/dark/meetings-full.webp",
+       "bytes": 832,
+       "gzip": 855,
+       "sha": "275452048803"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/books-tile.svg",
+       "bytes": 3810,
+       "gzip": 992,
+       "sha": "f04e9702fddd"
+      },
+      "webp": {
+       "file": "origami/dark/books-tile.webp",
+       "bytes": 4664,
+       "gzip": 4525,
+       "sha": "0b7e1b38892e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/books-full.avif",
+       "bytes": 1157,
+       "gzip": 1138,
+       "sha": "1dab0751cfd0"
+      },
+      "webp": {
+       "file": "origami/dark/books-full.webp",
+       "bytes": 972,
+       "gzip": 995,
+       "sha": "249f33d3ffbf"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/ai-tile.svg",
+       "bytes": 4327,
+       "gzip": 996,
+       "sha": "40c92224c871"
+      },
+      "webp": {
+       "file": "origami/dark/ai-tile.webp",
+       "bytes": 4722,
+       "gzip": 4626,
+       "sha": "89ceb4c6b044"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/ai-full.avif",
+       "bytes": 1035,
+       "gzip": 1014,
+       "sha": "e1e5f50a3609"
+      },
+      "webp": {
+       "file": "origami/dark/ai-full.webp",
+       "bytes": 778,
+       "gzip": 801,
+       "sha": "1024b09feab1"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/review-tile.svg",
+       "bytes": 3465,
+       "gzip": 902,
+       "sha": "9849de5cbcaa"
+      },
+      "webp": {
+       "file": "origami/dark/review-tile.webp",
+       "bytes": 3900,
+       "gzip": 3821,
+       "sha": "5a538e629c8f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/review-full.avif",
+       "bytes": 1006,
+       "gzip": 980,
+       "sha": "7eb73984ea8e"
+      },
+      "webp": {
+       "file": "origami/dark/review-full.webp",
+       "bytes": 768,
+       "gzip": 791,
+       "sha": "239ad7d57c95"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "origami/dark/review-full-lum.avif",
+       "bytes": 801,
+       "gzip": 760,
+       "sha": "ef31249afb09"
+      },
+      "webp": {
+       "file": "origami/dark/review-full-lum.webp",
+       "bytes": 536,
+       "gzip": 559,
+       "sha": "5f61953220e6"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/insights-tile.svg",
+       "bytes": 3157,
+       "gzip": 951,
+       "sha": "eea4e0218671"
+      },
+      "webp": {
+       "file": "origami/dark/insights-tile.webp",
+       "bytes": 4600,
+       "gzip": 4504,
+       "sha": "0fa2931ef109"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/insights-full.avif",
+       "bytes": 1015,
+       "gzip": 991,
+       "sha": "fb4defe47086"
+      },
+      "webp": {
+       "file": "origami/dark/insights-full.webp",
+       "bytes": 874,
+       "gzip": 897,
+       "sha": "4badf5bda23a"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/articles-tile.svg",
+       "bytes": 3191,
+       "gzip": 838,
+       "sha": "41e1a585f5e2"
+      },
+      "webp": {
+       "file": "origami/dark/articles-tile.webp",
+       "bytes": 4014,
+       "gzip": 3929,
+       "sha": "4f9f106e0cc5"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/articles-full.avif",
+       "bytes": 1045,
+       "gzip": 1025,
+       "sha": "9f3bca6eeedc"
+      },
+      "webp": {
+       "file": "origami/dark/articles-full.webp",
+       "bytes": 866,
+       "gzip": 889,
+       "sha": "17bdbf73caf1"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/video-tile.svg",
+       "bytes": 2988,
+       "gzip": 800,
+       "sha": "22c4efc9f1a3"
+      },
+      "webp": {
+       "file": "origami/dark/video-tile.webp",
+       "bytes": 3642,
+       "gzip": 3537,
+       "sha": "da6049c483e2"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/video-full.avif",
+       "bytes": 926,
+       "gzip": 896,
+       "sha": "e6e0bb8e978b"
+      },
+      "webp": {
+       "file": "origami/dark/video-full.webp",
+       "bytes": 802,
+       "gzip": 825,
+       "sha": "56d4b434f24b"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/recipes-tile.svg",
+       "bytes": 2959,
+       "gzip": 813,
+       "sha": "5db29efd782f"
+      },
+      "webp": {
+       "file": "origami/dark/recipes-tile.webp",
+       "bytes": 4742,
+       "gzip": 4703,
+       "sha": "449083d7858b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/recipes-full.avif",
+       "bytes": 1072,
+       "gzip": 1053,
+       "sha": "6afa4344e13e"
+      },
+      "webp": {
+       "file": "origami/dark/recipes-full.webp",
+       "bytes": 898,
+       "gzip": 921,
+       "sha": "47de3b82c5b1"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "origami/dark/all-tile.svg",
+       "bytes": 3804,
+       "gzip": 931,
+       "sha": "f265e475efde"
+      },
+      "webp": {
+       "file": "origami/dark/all-tile.webp",
+       "bytes": 3764,
+       "gzip": 3689,
+       "sha": "d5b3f8a8af2f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/dark/all-full.avif",
+       "bytes": 978,
+       "gzip": 954,
+       "sha": "c027bccad04d"
+      },
+      "webp": {
+       "file": "origami/dark/all-full.webp",
+       "bytes": 852,
+       "gzip": 875,
+       "sha": "c38f85e15534"
+      }
+     }
+    }
+   },
+   "light": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "origami/light/home-full.avif",
+       "bytes": 952,
+       "gzip": 925,
+       "sha": "000f1e4d5494"
+      },
+      "webp": {
+       "file": "origami/light/home-full.webp",
+       "bytes": 858,
+       "gzip": 881,
+       "sha": "1aef4a311422"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "origami/light/home-full-lum.avif",
+       "bytes": 850,
+       "gzip": 813,
+       "sha": "9c1a88f16d2d"
+      },
+      "webp": {
+       "file": "origami/light/home-full-lum.webp",
+       "bytes": 604,
+       "gzip": 627,
+       "sha": "266838d200e0"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/health-tile.svg",
+       "bytes": 4824,
+       "gzip": 1076,
+       "sha": "5c9e066b1270"
+      },
+      "webp": {
+       "file": "origami/light/health-tile.webp",
+       "bytes": 3938,
+       "gzip": 3797,
+       "sha": "846a1a22a5dd"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/health-full.avif",
+       "bytes": 936,
+       "gzip": 909,
+       "sha": "0ccb1eb71cad"
+      },
+      "webp": {
+       "file": "origami/light/health-full.webp",
+       "bytes": 716,
+       "gzip": 739,
+       "sha": "474903386635"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/career-tile.svg",
+       "bytes": 2934,
+       "gzip": 805,
+       "sha": "be88fb1769cb"
+      },
+      "webp": {
+       "file": "origami/light/career-tile.webp",
+       "bytes": 4678,
+       "gzip": 4577,
+       "sha": "381ad78c2f09"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/career-full.avif",
+       "bytes": 1020,
+       "gzip": 996,
+       "sha": "ad1646461b90"
+      },
+      "webp": {
+       "file": "origami/light/career-full.webp",
+       "bytes": 934,
+       "gzip": 957,
+       "sha": "e2010b8b1a17"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/finance-tile.svg",
+       "bytes": 3294,
+       "gzip": 874,
+       "sha": "e9e06baa9ce9"
+      },
+      "webp": {
+       "file": "origami/light/finance-tile.webp",
+       "bytes": 3610,
+       "gzip": 3500,
+       "sha": "4e2b0284bf91"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/finance-full.avif",
+       "bytes": 814,
+       "gzip": 777,
+       "sha": "e5861eb6f716"
+      },
+      "webp": {
+       "file": "origami/light/finance-full.webp",
+       "bytes": 752,
+       "gzip": 775,
+       "sha": "db4d4ec9ecb9"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/ventures-tile.svg",
+       "bytes": 3013,
+       "gzip": 803,
+       "sha": "a411b4655e43"
+      },
+      "webp": {
+       "file": "origami/light/ventures-tile.webp",
+       "bytes": 4006,
+       "gzip": 3926,
+       "sha": "122a3ee61ca3"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/ventures-full.avif",
+       "bytes": 935,
+       "gzip": 909,
+       "sha": "9419cddb982d"
+      },
+      "webp": {
+       "file": "origami/light/ventures-full.webp",
+       "bytes": 810,
+       "gzip": 833,
+       "sha": "e38fc6cb3abe"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/relations-tile.svg",
+       "bytes": 2955,
+       "gzip": 764,
+       "sha": "7f88fa1a3641"
+      },
+      "webp": {
+       "file": "origami/light/relations-tile.webp",
+       "bytes": 3716,
+       "gzip": 3572,
+       "sha": "3cdfd3b1a45a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/relations-full.avif",
+       "bytes": 852,
+       "gzip": 820,
+       "sha": "4eedf460ad1b"
+      },
+      "webp": {
+       "file": "origami/light/relations-full.webp",
+       "bytes": 788,
+       "gzip": 811,
+       "sha": "cd94eb267ff8"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/growth-tile.svg",
+       "bytes": 3153,
+       "gzip": 860,
+       "sha": "480a17ad0230"
+      },
+      "webp": {
+       "file": "origami/light/growth-tile.webp",
+       "bytes": 3730,
+       "gzip": 3654,
+       "sha": "45a968efbef7"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/growth-full.avif",
+       "bytes": 886,
+       "gzip": 856,
+       "sha": "201aaac17b14"
+      },
+      "webp": {
+       "file": "origami/light/growth-full.webp",
+       "bytes": 744,
+       "gzip": 767,
+       "sha": "e3c6da87b266"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/notes-tile.svg",
+       "bytes": 2987,
+       "gzip": 833,
+       "sha": "1f4ad48516ca"
+      },
+      "webp": {
+       "file": "origami/light/notes-tile.webp",
+       "bytes": 4110,
+       "gzip": 4011,
+       "sha": "efec1e714aac"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/notes-full.avif",
+       "bytes": 855,
+       "gzip": 821,
+       "sha": "250d1b9252ff"
+      },
+      "webp": {
+       "file": "origami/light/notes-full.webp",
+       "bytes": 734,
+       "gzip": 757,
+       "sha": "72f276c5932a"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/meetings-tile.svg",
+       "bytes": 2726,
+       "gzip": 752,
+       "sha": "ba2343e61863"
+      },
+      "webp": {
+       "file": "origami/light/meetings-tile.webp",
+       "bytes": 3018,
+       "gzip": 2911,
+       "sha": "b6f52ec99a52"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/meetings-full.avif",
+       "bytes": 867,
+       "gzip": 836,
+       "sha": "4634c21e9ebd"
+      },
+      "webp": {
+       "file": "origami/light/meetings-full.webp",
+       "bytes": 702,
+       "gzip": 725,
+       "sha": "2b6161454d34"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/books-tile.svg",
+       "bytes": 3810,
+       "gzip": 991,
+       "sha": "6cc2ae9f4b6d"
+      },
+      "webp": {
+       "file": "origami/light/books-tile.webp",
+       "bytes": 3884,
+       "gzip": 3767,
+       "sha": "1e5f759c3d7d"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/books-full.avif",
+       "bytes": 947,
+       "gzip": 919,
+       "sha": "e8ce183dd2b8"
+      },
+      "webp": {
+       "file": "origami/light/books-full.webp",
+       "bytes": 734,
+       "gzip": 757,
+       "sha": "dbebfc9bc322"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/ai-tile.svg",
+       "bytes": 4327,
+       "gzip": 1000,
+       "sha": "3630bbcfc3fa"
+      },
+      "webp": {
+       "file": "origami/light/ai-tile.webp",
+       "bytes": 3720,
+       "gzip": 3628,
+       "sha": "bbe209dc528d"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/ai-full.avif",
+       "bytes": 875,
+       "gzip": 841,
+       "sha": "01c504e69eb9"
+      },
+      "webp": {
+       "file": "origami/light/ai-full.webp",
+       "bytes": 756,
+       "gzip": 779,
+       "sha": "49d3f5f7ce41"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/review-tile.svg",
+       "bytes": 3465,
+       "gzip": 911,
+       "sha": "99410c383611"
+      },
+      "webp": {
+       "file": "origami/light/review-tile.webp",
+       "bytes": 4420,
+       "gzip": 4354,
+       "sha": "2e3c6310e069"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/review-full.avif",
+       "bytes": 1032,
+       "gzip": 1012,
+       "sha": "221ceb491a7d"
+      },
+      "webp": {
+       "file": "origami/light/review-full.webp",
+       "bytes": 906,
+       "gzip": 929,
+       "sha": "e3537ab3e84a"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "origami/light/review-full-lum.avif",
+       "bytes": 902,
+       "gzip": 869,
+       "sha": "1a53fea4bed7"
+      },
+      "webp": {
+       "file": "origami/light/review-full-lum.webp",
+       "bytes": 652,
+       "gzip": 675,
+       "sha": "27f38843e516"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/insights-tile.svg",
+       "bytes": 3157,
+       "gzip": 958,
+       "sha": "cdf12442bf1b"
+      },
+      "webp": {
+       "file": "origami/light/insights-tile.webp",
+       "bytes": 4290,
+       "gzip": 4185,
+       "sha": "0d21ae50af64"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/insights-full.avif",
+       "bytes": 958,
+       "gzip": 932,
+       "sha": "4fd5221ea6ed"
+      },
+      "webp": {
+       "file": "origami/light/insights-full.webp",
+       "bytes": 860,
+       "gzip": 883,
+       "sha": "823947c2c0b8"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/articles-tile.svg",
+       "bytes": 3191,
+       "gzip": 845,
+       "sha": "c3f69ecc5a47"
+      },
+      "webp": {
+       "file": "origami/light/articles-tile.webp",
+       "bytes": 3478,
+       "gzip": 3379,
+       "sha": "fcce4f6b68fc"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/articles-full.avif",
+       "bytes": 902,
+       "gzip": 872,
+       "sha": "64e7077af3e6"
+      },
+      "webp": {
+       "file": "origami/light/articles-full.webp",
+       "bytes": 738,
+       "gzip": 761,
+       "sha": "323f83386458"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/video-tile.svg",
+       "bytes": 2988,
+       "gzip": 798,
+       "sha": "44594514b992"
+      },
+      "webp": {
+       "file": "origami/light/video-tile.webp",
+       "bytes": 3620,
+       "gzip": 3500,
+       "sha": "24b7e5cc7461"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/video-full.avif",
+       "bytes": 878,
+       "gzip": 846,
+       "sha": "e146e0e050e1"
+      },
+      "webp": {
+       "file": "origami/light/video-full.webp",
+       "bytes": 784,
+       "gzip": 807,
+       "sha": "e3cb8be5d50c"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/recipes-tile.svg",
+       "bytes": 2959,
+       "gzip": 816,
+       "sha": "ae2013b17dd9"
+      },
+      "webp": {
+       "file": "origami/light/recipes-tile.webp",
+       "bytes": 3130,
+       "gzip": 3032,
+       "sha": "f5b53c84c415"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/recipes-full.avif",
+       "bytes": 813,
+       "gzip": 778,
+       "sha": "5afb4804da6a"
+      },
+      "webp": {
+       "file": "origami/light/recipes-full.webp",
+       "bytes": 688,
+       "gzip": 711,
+       "sha": "0e58ee9d6c02"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "origami/light/all-tile.svg",
+       "bytes": 3804,
+       "gzip": 938,
+       "sha": "bb6bf2e9d5d6"
+      },
+      "webp": {
+       "file": "origami/light/all-tile.webp",
+       "bytes": 3482,
+       "gzip": 3404,
+       "sha": "85fe438f765c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "origami/light/all-full.avif",
+       "bytes": 879,
+       "gzip": 849,
+       "sha": "775a003ae7cb"
+      },
+      "webp": {
+       "file": "origami/light/all-full.webp",
+       "bytes": 738,
+       "gzip": 761,
+       "sha": "a75327021180"
+      }
+     }
+    }
+   }
+  },
+  "fluid": {
+   "dark": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "fluid/dark/home-full.avif",
+       "bytes": 1220,
+       "gzip": 1210,
+       "sha": "3eed4f6cbff3"
+      },
+      "webp": {
+       "file": "fluid/dark/home-full.webp",
+       "bytes": 992,
+       "gzip": 1015,
+       "sha": "cd5d06f3c94c"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "fluid/dark/home-full-lum.avif",
+       "bytes": 735,
+       "gzip": 691,
+       "sha": "c2fa8dfda202"
+      },
+      "webp": {
+       "file": "fluid/dark/home-full-lum.webp",
+       "bytes": 542,
+       "gzip": 565,
+       "sha": "1e4a3aa83a95"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/health-tile.svg",
+       "bytes": 17399,
+       "gzip": 4534,
+       "sha": "5a95cdc18a9e"
+      },
+      "webp": {
+       "file": "fluid/dark/health-tile.webp",
+       "bytes": 7254,
+       "gzip": 7277,
+       "sha": "3253890b7d5d"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/health-full.avif",
+       "bytes": 1142,
+       "gzip": 1124,
+       "sha": "44a7a4ff3233"
+      },
+      "webp": {
+       "file": "fluid/dark/health-full.webp",
+       "bytes": 946,
+       "gzip": 969,
+       "sha": "f23baa62cacf"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/career-tile.svg",
+       "bytes": 13448,
+       "gzip": 3381,
+       "sha": "79ba2f1676c4"
+      },
+      "webp": {
+       "file": "fluid/dark/career-tile.webp",
+       "bytes": 7538,
+       "gzip": 7553,
+       "sha": "8c97437dcd7e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/career-full.avif",
+       "bytes": 1077,
+       "gzip": 1057,
+       "sha": "4a95b550ad8b"
+      },
+      "webp": {
+       "file": "fluid/dark/career-full.webp",
+       "bytes": 946,
+       "gzip": 969,
+       "sha": "24eb996dd1e1"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/finance-tile.svg",
+       "bytes": 12501,
+       "gzip": 3367,
+       "sha": "5fec2fbc8285"
+      },
+      "webp": {
+       "file": "fluid/dark/finance-tile.webp",
+       "bytes": 5640,
+       "gzip": 5663,
+       "sha": "72e039e19ed2"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/finance-full.avif",
+       "bytes": 1065,
+       "gzip": 1042,
+       "sha": "e9c5ec99aee2"
+      },
+      "webp": {
+       "file": "fluid/dark/finance-full.webp",
+       "bytes": 936,
+       "gzip": 959,
+       "sha": "668ad9dfbee4"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/ventures-tile.svg",
+       "bytes": 13457,
+       "gzip": 3616,
+       "sha": "1e28ede9e8c1"
+      },
+      "webp": {
+       "file": "fluid/dark/ventures-tile.webp",
+       "bytes": 6466,
+       "gzip": 6489,
+       "sha": "90fd87934215"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/ventures-full.avif",
+       "bytes": 1069,
+       "gzip": 1049,
+       "sha": "8013b1c24645"
+      },
+      "webp": {
+       "file": "fluid/dark/ventures-full.webp",
+       "bytes": 966,
+       "gzip": 989,
+       "sha": "120d274255c3"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/relations-tile.svg",
+       "bytes": 20315,
+       "gzip": 4974,
+       "sha": "acdf157d9834"
+      },
+      "webp": {
+       "file": "fluid/dark/relations-tile.webp",
+       "bytes": 8494,
+       "gzip": 8517,
+       "sha": "81d8970e0dc7"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/relations-full.avif",
+       "bytes": 1202,
+       "gzip": 1189,
+       "sha": "f44e600f499f"
+      },
+      "webp": {
+       "file": "fluid/dark/relations-full.webp",
+       "bytes": 1114,
+       "gzip": 1137,
+       "sha": "3c7e4ed4107e"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/growth-tile.svg",
+       "bytes": 11710,
+       "gzip": 3124,
+       "sha": "32537931abad"
+      },
+      "webp": {
+       "file": "fluid/dark/growth-tile.webp",
+       "bytes": 8112,
+       "gzip": 8129,
+       "sha": "4f4d20334e3c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/growth-full.avif",
+       "bytes": 1075,
+       "gzip": 1053,
+       "sha": "5e1572ee1f59"
+      },
+      "webp": {
+       "file": "fluid/dark/growth-full.webp",
+       "bytes": 982,
+       "gzip": 1005,
+       "sha": "b6e3454b1ca4"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/notes-tile.svg",
+       "bytes": 12902,
+       "gzip": 3519,
+       "sha": "751561e83d8d"
+      },
+      "webp": {
+       "file": "fluid/dark/notes-tile.webp",
+       "bytes": 5322,
+       "gzip": 5345,
+       "sha": "3dd80941a343"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/notes-full.avif",
+       "bytes": 1036,
+       "gzip": 1015,
+       "sha": "f4b9b340398e"
+      },
+      "webp": {
+       "file": "fluid/dark/notes-full.webp",
+       "bytes": 892,
+       "gzip": 915,
+       "sha": "4178757d1bd5"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/meetings-tile.svg",
+       "bytes": 14667,
+       "gzip": 3946,
+       "sha": "e1cf5e864484"
+      },
+      "webp": {
+       "file": "fluid/dark/meetings-tile.webp",
+       "bytes": 7716,
+       "gzip": 7739,
+       "sha": "ec9937df409a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/meetings-full.avif",
+       "bytes": 1152,
+       "gzip": 1136,
+       "sha": "80aad51eb9f9"
+      },
+      "webp": {
+       "file": "fluid/dark/meetings-full.webp",
+       "bytes": 1134,
+       "gzip": 1157,
+       "sha": "da600194f495"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/books-tile.svg",
+       "bytes": 15019,
+       "gzip": 4560,
+       "sha": "cc9c8654aa56"
+      },
+      "webp": {
+       "file": "fluid/dark/books-tile.webp",
+       "bytes": 6860,
+       "gzip": 6817,
+       "sha": "8e33650cc81d"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/books-full.avif",
+       "bytes": 1137,
+       "gzip": 1120,
+       "sha": "e0c500069797"
+      },
+      "webp": {
+       "file": "fluid/dark/books-full.webp",
+       "bytes": 1046,
+       "gzip": 1069,
+       "sha": "33520177a490"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/ai-tile.svg",
+       "bytes": 15067,
+       "gzip": 3599,
+       "sha": "f7dc97d14d98"
+      },
+      "webp": {
+       "file": "fluid/dark/ai-tile.webp",
+       "bytes": 6648,
+       "gzip": 6671,
+       "sha": "d1f8cf5e5000"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/ai-full.avif",
+       "bytes": 1170,
+       "gzip": 1152,
+       "sha": "5d890e778c4e"
+      },
+      "webp": {
+       "file": "fluid/dark/ai-full.webp",
+       "bytes": 928,
+       "gzip": 951,
+       "sha": "a7b3fec073cc"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/review-tile.svg",
+       "bytes": 11846,
+       "gzip": 3153,
+       "sha": "f1240064107b"
+      },
+      "webp": {
+       "file": "fluid/dark/review-tile.webp",
+       "bytes": 6068,
+       "gzip": 6091,
+       "sha": "2d38b441518a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/review-full.avif",
+       "bytes": 1069,
+       "gzip": 1050,
+       "sha": "a33ce0fba31a"
+      },
+      "webp": {
+       "file": "fluid/dark/review-full.webp",
+       "bytes": 908,
+       "gzip": 931,
+       "sha": "6f82a3628513"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "fluid/dark/review-full-lum.avif",
+       "bytes": 767,
+       "gzip": 724,
+       "sha": "b2e5ecad8740"
+      },
+      "webp": {
+       "file": "fluid/dark/review-full-lum.webp",
+       "bytes": 548,
+       "gzip": 571,
+       "sha": "2d8e2cbb2659"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/insights-tile.svg",
+       "bytes": 13349,
+       "gzip": 3643,
+       "sha": "41070fc9e6ad"
+      },
+      "webp": {
+       "file": "fluid/dark/insights-tile.webp",
+       "bytes": 7126,
+       "gzip": 7149,
+       "sha": "3de9e0e61360"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/insights-full.avif",
+       "bytes": 1091,
+       "gzip": 1070,
+       "sha": "dfd5deeaa2ec"
+      },
+      "webp": {
+       "file": "fluid/dark/insights-full.webp",
+       "bytes": 1020,
+       "gzip": 1043,
+       "sha": "55c74dce1b21"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/articles-tile.svg",
+       "bytes": 14691,
+       "gzip": 3777,
+       "sha": "b2dc7ff84bd9"
+      },
+      "webp": {
+       "file": "fluid/dark/articles-tile.webp",
+       "bytes": 6558,
+       "gzip": 6581,
+       "sha": "db55376c70a9"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/articles-full.avif",
+       "bytes": 1145,
+       "gzip": 1127,
+       "sha": "e9b11cccda42"
+      },
+      "webp": {
+       "file": "fluid/dark/articles-full.webp",
+       "bytes": 1114,
+       "gzip": 1137,
+       "sha": "1b48d4741a0d"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/video-tile.svg",
+       "bytes": 12003,
+       "gzip": 3262,
+       "sha": "472ff73400b1"
+      },
+      "webp": {
+       "file": "fluid/dark/video-tile.webp",
+       "bytes": 6028,
+       "gzip": 6028,
+       "sha": "7ede1d8b06c4"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/video-full.avif",
+       "bytes": 1037,
+       "gzip": 1013,
+       "sha": "9fd35b05c89a"
+      },
+      "webp": {
+       "file": "fluid/dark/video-full.webp",
+       "bytes": 840,
+       "gzip": 863,
+       "sha": "bcedc90ec55e"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/recipes-tile.svg",
+       "bytes": 13831,
+       "gzip": 3616,
+       "sha": "817688ce4e0a"
+      },
+      "webp": {
+       "file": "fluid/dark/recipes-tile.webp",
+       "bytes": 6158,
+       "gzip": 6181,
+       "sha": "13fd7d70550a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/recipes-full.avif",
+       "bytes": 1059,
+       "gzip": 1039,
+       "sha": "7d797efe3312"
+      },
+      "webp": {
+       "file": "fluid/dark/recipes-full.webp",
+       "bytes": 1040,
+       "gzip": 1063,
+       "sha": "d0822287e641"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "fluid/dark/all-tile.svg",
+       "bytes": 15055,
+       "gzip": 3688,
+       "sha": "791e0d108354"
+      },
+      "webp": {
+       "file": "fluid/dark/all-tile.webp",
+       "bytes": 5224,
+       "gzip": 5247,
+       "sha": "6a2055dbdaa7"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/dark/all-full.avif",
+       "bytes": 1009,
+       "gzip": 984,
+       "sha": "09c913dd8e34"
+      },
+      "webp": {
+       "file": "fluid/dark/all-full.webp",
+       "bytes": 872,
+       "gzip": 895,
+       "sha": "e327c46e5004"
+      }
+     }
+    }
+   },
+   "light": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "fluid/light/home-full.avif",
+       "bytes": 996,
+       "gzip": 972,
+       "sha": "ed2f5de05fd3"
+      },
+      "webp": {
+       "file": "fluid/light/home-full.webp",
+       "bytes": 964,
+       "gzip": 987,
+       "sha": "1c18e2f0969a"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "fluid/light/home-full-lum.avif",
+       "bytes": 824,
+       "gzip": 785,
+       "sha": "6b986ad2fde3"
+      },
+      "webp": {
+       "file": "fluid/light/home-full-lum.webp",
+       "bytes": 562,
+       "gzip": 585,
+       "sha": "b105d94f0ad3"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/health-tile.svg",
+       "bytes": 17447,
+       "gzip": 4548,
+       "sha": "6a8a02fe6182"
+      },
+      "webp": {
+       "file": "fluid/light/health-tile.webp",
+       "bytes": 4826,
+       "gzip": 4818,
+       "sha": "10813a814c1e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/health-full.avif",
+       "bytes": 946,
+       "gzip": 918,
+       "sha": "4cea077bcc2d"
+      },
+      "webp": {
+       "file": "fluid/light/health-full.webp",
+       "bytes": 752,
+       "gzip": 775,
+       "sha": "92c351e660f8"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/career-tile.svg",
+       "bytes": 13528,
+       "gzip": 3383,
+       "sha": "fc7c10058c93"
+      },
+      "webp": {
+       "file": "fluid/light/career-tile.webp",
+       "bytes": 6046,
+       "gzip": 6069,
+       "sha": "670e3ac94b1a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/career-full.avif",
+       "bytes": 932,
+       "gzip": 903,
+       "sha": "bc0a7f0f2a48"
+      },
+      "webp": {
+       "file": "fluid/light/career-full.webp",
+       "bytes": 800,
+       "gzip": 823,
+       "sha": "059f28cdbb94"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/finance-tile.svg",
+       "bytes": 12549,
+       "gzip": 3375,
+       "sha": "2e141d6b6242"
+      },
+      "webp": {
+       "file": "fluid/light/finance-tile.webp",
+       "bytes": 4564,
+       "gzip": 4587,
+       "sha": "6d4b00fa1e6c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/finance-full.avif",
+       "bytes": 977,
+       "gzip": 950,
+       "sha": "c2951fee664d"
+      },
+      "webp": {
+       "file": "fluid/light/finance-full.webp",
+       "bytes": 866,
+       "gzip": 889,
+       "sha": "96fdf4ad1bd0"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/ventures-tile.svg",
+       "bytes": 13505,
+       "gzip": 3626,
+       "sha": "171c96b5f1ea"
+      },
+      "webp": {
+       "file": "fluid/light/ventures-tile.webp",
+       "bytes": 5916,
+       "gzip": 5939,
+       "sha": "6874701c5f2e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/ventures-full.avif",
+       "bytes": 928,
+       "gzip": 898,
+       "sha": "3dd7e13f60a2"
+      },
+      "webp": {
+       "file": "fluid/light/ventures-full.webp",
+       "bytes": 996,
+       "gzip": 1019,
+       "sha": "65ab42a4d372"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/relations-tile.svg",
+       "bytes": 20363,
+       "gzip": 4977,
+       "sha": "b175f1ac534c"
+      },
+      "webp": {
+       "file": "fluid/light/relations-tile.webp",
+       "bytes": 5172,
+       "gzip": 5195,
+       "sha": "988f6e992b5c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/relations-full.avif",
+       "bytes": 976,
+       "gzip": 951,
+       "sha": "83c92bb7d9f8"
+      },
+      "webp": {
+       "file": "fluid/light/relations-full.webp",
+       "bytes": 810,
+       "gzip": 833,
+       "sha": "afe86101c6f1"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/growth-tile.svg",
+       "bytes": 11758,
+       "gzip": 3126,
+       "sha": "5c7057ee8d1c"
+      },
+      "webp": {
+       "file": "fluid/light/growth-tile.webp",
+       "bytes": 8106,
+       "gzip": 8103,
+       "sha": "479b090ed150"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/growth-full.avif",
+       "bytes": 1000,
+       "gzip": 976,
+       "sha": "b18fb1727efb"
+      },
+      "webp": {
+       "file": "fluid/light/growth-full.webp",
+       "bytes": 872,
+       "gzip": 895,
+       "sha": "5deb66f1cddd"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/notes-tile.svg",
+       "bytes": 12950,
+       "gzip": 3530,
+       "sha": "d85ed378a7f3"
+      },
+      "webp": {
+       "file": "fluid/light/notes-tile.webp",
+       "bytes": 4366,
+       "gzip": 4378,
+       "sha": "bdf1805b236c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/notes-full.avif",
+       "bytes": 919,
+       "gzip": 892,
+       "sha": "0c1a610be074"
+      },
+      "webp": {
+       "file": "fluid/light/notes-full.webp",
+       "bytes": 854,
+       "gzip": 877,
+       "sha": "cf0b1ca099d9"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/meetings-tile.svg",
+       "bytes": 14715,
+       "gzip": 3948,
+       "sha": "c02ca5b9a760"
+      },
+      "webp": {
+       "file": "fluid/light/meetings-tile.webp",
+       "bytes": 6258,
+       "gzip": 6281,
+       "sha": "f50cdd8f0cb3"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/meetings-full.avif",
+       "bytes": 1019,
+       "gzip": 995,
+       "sha": "cb94b6f995a9"
+      },
+      "webp": {
+       "file": "fluid/light/meetings-full.webp",
+       "bytes": 942,
+       "gzip": 965,
+       "sha": "d5161576182b"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/books-tile.svg",
+       "bytes": 15067,
+       "gzip": 4552,
+       "sha": "78a8d991dcb6"
+      },
+      "webp": {
+       "file": "fluid/light/books-tile.webp",
+       "bytes": 4774,
+       "gzip": 4797,
+       "sha": "8390d0604068"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/books-full.avif",
+       "bytes": 1005,
+       "gzip": 980,
+       "sha": "6f67a39f375e"
+      },
+      "webp": {
+       "file": "fluid/light/books-full.webp",
+       "bytes": 856,
+       "gzip": 879,
+       "sha": "9598dbc78cb0"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/ai-tile.svg",
+       "bytes": 15115,
+       "gzip": 3609,
+       "sha": "9951d3b467ae"
+      },
+      "webp": {
+       "file": "fluid/light/ai-tile.webp",
+       "bytes": 5954,
+       "gzip": 5962,
+       "sha": "3d0d08a5a9d8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/ai-full.avif",
+       "bytes": 1007,
+       "gzip": 983,
+       "sha": "83c8e3607429"
+      },
+      "webp": {
+       "file": "fluid/light/ai-full.webp",
+       "bytes": 918,
+       "gzip": 941,
+       "sha": "dd773a524c7d"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/review-tile.svg",
+       "bytes": 11894,
+       "gzip": 3163,
+       "sha": "5de5f7c46b7a"
+      },
+      "webp": {
+       "file": "fluid/light/review-tile.webp",
+       "bytes": 5558,
+       "gzip": 5554,
+       "sha": "001f86e027ad"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/review-full.avif",
+       "bytes": 1011,
+       "gzip": 988,
+       "sha": "e74587536113"
+      },
+      "webp": {
+       "file": "fluid/light/review-full.webp",
+       "bytes": 856,
+       "gzip": 879,
+       "sha": "9f9272e26c0d"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "fluid/light/review-full-lum.avif",
+       "bytes": 793,
+       "gzip": 753,
+       "sha": "57076fa539ba"
+      },
+      "webp": {
+       "file": "fluid/light/review-full-lum.webp",
+       "bytes": 560,
+       "gzip": 583,
+       "sha": "bb9dda9e9be1"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/insights-tile.svg",
+       "bytes": 13397,
+       "gzip": 3649,
+       "sha": "81922eae06f7"
+      },
+      "webp": {
+       "file": "fluid/light/insights-tile.webp",
+       "bytes": 6354,
+       "gzip": 6377,
+       "sha": "275eb15a5c37"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/insights-full.avif",
+       "bytes": 1017,
+       "gzip": 991,
+       "sha": "18e7d1f3c4de"
+      },
+      "webp": {
+       "file": "fluid/light/insights-full.webp",
+       "bytes": 946,
+       "gzip": 969,
+       "sha": "ef9e83b3685c"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/articles-tile.svg",
+       "bytes": 14739,
+       "gzip": 3773,
+       "sha": "183527f576eb"
+      },
+      "webp": {
+       "file": "fluid/light/articles-tile.webp",
+       "bytes": 5660,
+       "gzip": 5683,
+       "sha": "17965d06a8a6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/articles-full.avif",
+       "bytes": 1018,
+       "gzip": 990,
+       "sha": "18b52d92438d"
+      },
+      "webp": {
+       "file": "fluid/light/articles-full.webp",
+       "bytes": 940,
+       "gzip": 963,
+       "sha": "78f73a37ac1b"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/video-tile.svg",
+       "bytes": 12051,
+       "gzip": 3277,
+       "sha": "c7078ae93bc5"
+      },
+      "webp": {
+       "file": "fluid/light/video-tile.webp",
+       "bytes": 4672,
+       "gzip": 4695,
+       "sha": "7d3768af96e3"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/video-full.avif",
+       "bytes": 911,
+       "gzip": 881,
+       "sha": "9716e67c4946"
+      },
+      "webp": {
+       "file": "fluid/light/video-full.webp",
+       "bytes": 744,
+       "gzip": 767,
+       "sha": "1214d97ff508"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/recipes-tile.svg",
+       "bytes": 13929,
+       "gzip": 3627,
+       "sha": "2b8ac3b4009a"
+      },
+      "webp": {
+       "file": "fluid/light/recipes-tile.webp",
+       "bytes": 4134,
+       "gzip": 4157,
+       "sha": "b7ec60bf94bd"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/recipes-full.avif",
+       "bytes": 891,
+       "gzip": 860,
+       "sha": "99f0aeaa898a"
+      },
+      "webp": {
+       "file": "fluid/light/recipes-full.webp",
+       "bytes": 772,
+       "gzip": 795,
+       "sha": "905279c21b0a"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "svg": {
+       "file": "fluid/light/all-tile.svg",
+       "bytes": 15103,
+       "gzip": 3677,
+       "sha": "e05e2b5ec5cb"
+      },
+      "webp": {
+       "file": "fluid/light/all-tile.webp",
+       "bytes": 3970,
+       "gzip": 3993,
+       "sha": "4d7bd8e8bae8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "fluid/light/all-full.avif",
+       "bytes": 914,
+       "gzip": 882,
+       "sha": "d666c437a1d9"
+      },
+      "webp": {
+       "file": "fluid/light/all-full.webp",
+       "bytes": 744,
+       "gzip": 767,
+       "sha": "7daf1d1a2963"
+      }
+     }
+    }
+   }
+  },
+  "foto": {
+   "dark": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "foto/dark/home-full.avif",
+       "bytes": 1396,
+       "gzip": 1392,
+       "sha": "ad2eea3ee4d2"
+      },
+      "webp": {
+       "file": "foto/dark/home-full.webp",
+       "bytes": 1436,
+       "gzip": 1459,
+       "sha": "5afc0bdab614"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "foto/dark/home-full-lum.avif",
+       "bytes": 1054,
+       "gzip": 1029,
+       "sha": "85e686880f83"
+      },
+      "webp": {
+       "file": "foto/dark/home-full-lum.webp",
+       "bytes": 1166,
+       "gzip": 1189,
+       "sha": "76b25e1f24dc"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/health-tile.avif",
+       "bytes": 10285,
+       "gzip": 10283,
+       "sha": "a4a8e76367fc"
+      },
+      "webp": {
+       "file": "foto/dark/health-tile.webp",
+       "bytes": 16408,
+       "gzip": 16434,
+       "sha": "5e3e9beca2c7"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/health-full.avif",
+       "bytes": 1494,
+       "gzip": 1491,
+       "sha": "f2c6967c3949"
+      },
+      "webp": {
+       "file": "foto/dark/health-full.webp",
+       "bytes": 1442,
+       "gzip": 1465,
+       "sha": "47dd9e521758"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/career-tile.avif",
+       "bytes": 2969,
+       "gzip": 2968,
+       "sha": "2d658e6d808e"
+      },
+      "webp": {
+       "file": "foto/dark/career-tile.webp",
+       "bytes": 4312,
+       "gzip": 4335,
+       "sha": "164ef7f3486b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/career-full.avif",
+       "bytes": 979,
+       "gzip": 954,
+       "sha": "02cd90e9ed32"
+      },
+      "webp": {
+       "file": "foto/dark/career-full.webp",
+       "bytes": 898,
+       "gzip": 921,
+       "sha": "50596c31367c"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/finance-tile.avif",
+       "bytes": 4798,
+       "gzip": 4795,
+       "sha": "4d52947a3220"
+      },
+      "webp": {
+       "file": "foto/dark/finance-tile.webp",
+       "bytes": 7420,
+       "gzip": 7443,
+       "sha": "6440a23f1855"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/finance-full.avif",
+       "bytes": 1376,
+       "gzip": 1375,
+       "sha": "97174fdceb57"
+      },
+      "webp": {
+       "file": "foto/dark/finance-full.webp",
+       "bytes": 1288,
+       "gzip": 1311,
+       "sha": "2f9b7d287d53"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/ventures-tile.avif",
+       "bytes": 2289,
+       "gzip": 2284,
+       "sha": "8b014bfe1279"
+      },
+      "webp": {
+       "file": "foto/dark/ventures-tile.webp",
+       "bytes": 3328,
+       "gzip": 3351,
+       "sha": "3ac100c9045f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/ventures-full.avif",
+       "bytes": 904,
+       "gzip": 874,
+       "sha": "4c2b40d5ac09"
+      },
+      "webp": {
+       "file": "foto/dark/ventures-full.webp",
+       "bytes": 864,
+       "gzip": 887,
+       "sha": "663b3770155b"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/relations-tile.avif",
+       "bytes": 6646,
+       "gzip": 6646,
+       "sha": "874abae18c4f"
+      },
+      "webp": {
+       "file": "foto/dark/relations-tile.webp",
+       "bytes": 9966,
+       "gzip": 9989,
+       "sha": "b7fb8d19082f"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/relations-full.avif",
+       "bytes": 1816,
+       "gzip": 1815,
+       "sha": "95b42579114a"
+      },
+      "webp": {
+       "file": "foto/dark/relations-full.webp",
+       "bytes": 1784,
+       "gzip": 1807,
+       "sha": "a34afc83be49"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/growth-tile.avif",
+       "bytes": 3411,
+       "gzip": 3412,
+       "sha": "47ca8f60a16f"
+      },
+      "webp": {
+       "file": "foto/dark/growth-tile.webp",
+       "bytes": 5014,
+       "gzip": 5037,
+       "sha": "fa8d2db06e7c"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/growth-full.avif",
+       "bytes": 1126,
+       "gzip": 1110,
+       "sha": "5693cb6756aa"
+      },
+      "webp": {
+       "file": "foto/dark/growth-full.webp",
+       "bytes": 994,
+       "gzip": 1017,
+       "sha": "b92f03a2be82"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/notes-tile.avif",
+       "bytes": 4970,
+       "gzip": 4973,
+       "sha": "bd8eae8cf8e3"
+      },
+      "webp": {
+       "file": "foto/dark/notes-tile.webp",
+       "bytes": 7520,
+       "gzip": 7543,
+       "sha": "511483803e08"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/notes-full.avif",
+       "bytes": 1447,
+       "gzip": 1442,
+       "sha": "d6f54eaf0cba"
+      },
+      "webp": {
+       "file": "foto/dark/notes-full.webp",
+       "bytes": 1368,
+       "gzip": 1391,
+       "sha": "b50c2d5c54a4"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/meetings-tile.avif",
+       "bytes": 5315,
+       "gzip": 5313,
+       "sha": "0132a2dbe627"
+      },
+      "webp": {
+       "file": "foto/dark/meetings-tile.webp",
+       "bytes": 8024,
+       "gzip": 8047,
+       "sha": "e00900dd56aa"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/meetings-full.avif",
+       "bytes": 1461,
+       "gzip": 1455,
+       "sha": "29109ce55321"
+      },
+      "webp": {
+       "file": "foto/dark/meetings-full.webp",
+       "bytes": 1264,
+       "gzip": 1287,
+       "sha": "c8ac133e4938"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/books-tile.avif",
+       "bytes": 5954,
+       "gzip": 5948,
+       "sha": "737fc6f7aff8"
+      },
+      "webp": {
+       "file": "foto/dark/books-tile.webp",
+       "bytes": 9728,
+       "gzip": 9751,
+       "sha": "1ad1262e08f2"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/books-full.avif",
+       "bytes": 1675,
+       "gzip": 1676,
+       "sha": "e26133b720a7"
+      },
+      "webp": {
+       "file": "foto/dark/books-full.webp",
+       "bytes": 1668,
+       "gzip": 1691,
+       "sha": "dc81d08087a3"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/ai-tile.avif",
+       "bytes": 3649,
+       "gzip": 3650,
+       "sha": "74594580782b"
+      },
+      "webp": {
+       "file": "foto/dark/ai-tile.webp",
+       "bytes": 5544,
+       "gzip": 5567,
+       "sha": "e8a0e02773f3"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/ai-full.avif",
+       "bytes": 1184,
+       "gzip": 1170,
+       "sha": "bc87a0005963"
+      },
+      "webp": {
+       "file": "foto/dark/ai-full.webp",
+       "bytes": 1072,
+       "gzip": 1095,
+       "sha": "8a2b43d530f3"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/review-tile.avif",
+       "bytes": 4473,
+       "gzip": 4475,
+       "sha": "db5b174f65c1"
+      },
+      "webp": {
+       "file": "foto/dark/review-tile.webp",
+       "bytes": 6428,
+       "gzip": 6451,
+       "sha": "9d64355d0d8a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/review-full.avif",
+       "bytes": 1273,
+       "gzip": 1263,
+       "sha": "f1444a5be40c"
+      },
+      "webp": {
+       "file": "foto/dark/review-full.webp",
+       "bytes": 1248,
+       "gzip": 1271,
+       "sha": "e8273f6c8ec9"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "foto/dark/review-full-lum.avif",
+       "bytes": 986,
+       "gzip": 957,
+       "sha": "058c25f52075"
+      },
+      "webp": {
+       "file": "foto/dark/review-full-lum.webp",
+       "bytes": 1036,
+       "gzip": 1059,
+       "sha": "b45223cfdd2f"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/insights-tile.avif",
+       "bytes": 4574,
+       "gzip": 4577,
+       "sha": "43079d1238ae"
+      },
+      "webp": {
+       "file": "foto/dark/insights-tile.webp",
+       "bytes": 6514,
+       "gzip": 6537,
+       "sha": "221058b83e65"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/insights-full.avif",
+       "bytes": 1101,
+       "gzip": 1079,
+       "sha": "efea57744bf3"
+      },
+      "webp": {
+       "file": "foto/dark/insights-full.webp",
+       "bytes": 964,
+       "gzip": 987,
+       "sha": "44f3efd5c26e"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/articles-tile.avif",
+       "bytes": 3386,
+       "gzip": 3386,
+       "sha": "f91aedfe8d70"
+      },
+      "webp": {
+       "file": "foto/dark/articles-tile.webp",
+       "bytes": 4824,
+       "gzip": 4847,
+       "sha": "0d5d882cbce3"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/articles-full.avif",
+       "bytes": 1236,
+       "gzip": 1223,
+       "sha": "45fa59246eeb"
+      },
+      "webp": {
+       "file": "foto/dark/articles-full.webp",
+       "bytes": 1170,
+       "gzip": 1193,
+       "sha": "15febb82ae6b"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/video-tile.avif",
+       "bytes": 2364,
+       "gzip": 2359,
+       "sha": "b480f8d622a9"
+      },
+      "webp": {
+       "file": "foto/dark/video-tile.webp",
+       "bytes": 3406,
+       "gzip": 3429,
+       "sha": "cd4d667672bf"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/video-full.avif",
+       "bytes": 971,
+       "gzip": 944,
+       "sha": "dd990f8a32f8"
+      },
+      "webp": {
+       "file": "foto/dark/video-full.webp",
+       "bytes": 802,
+       "gzip": 825,
+       "sha": "a9f07acd0ff6"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/recipes-tile.avif",
+       "bytes": 5967,
+       "gzip": 5960,
+       "sha": "724c1e2bff3e"
+      },
+      "webp": {
+       "file": "foto/dark/recipes-tile.webp",
+       "bytes": 8688,
+       "gzip": 8711,
+       "sha": "f578c6d8dfe8"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/recipes-full.avif",
+       "bytes": 1348,
+       "gzip": 1338,
+       "sha": "c4a3f730ad31"
+      },
+      "webp": {
+       "file": "foto/dark/recipes-full.webp",
+       "bytes": 1152,
+       "gzip": 1175,
+       "sha": "3c0c977acb50"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "avif": {
+       "file": "foto/dark/all-tile.avif",
+       "bytes": 4625,
+       "gzip": 4627,
+       "sha": "d51b74759893"
+      },
+      "webp": {
+       "file": "foto/dark/all-tile.webp",
+       "bytes": 6484,
+       "gzip": 6507,
+       "sha": "1220f85a155a"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/dark/all-full.avif",
+       "bytes": 1374,
+       "gzip": 1369,
+       "sha": "2e2da9a7a858"
+      },
+      "webp": {
+       "file": "foto/dark/all-full.webp",
+       "bytes": 1230,
+       "gzip": 1253,
+       "sha": "1766343cd264"
+      }
+     }
+    }
+   },
+   "light": {
+    "home": {
+     "full": {
+      "avif": {
+       "file": "foto/light/home-full.avif",
+       "bytes": 955,
+       "gzip": 928,
+       "sha": "ebcaae7d283c"
+      },
+      "webp": {
+       "file": "foto/light/home-full.webp",
+       "bytes": 748,
+       "gzip": 771,
+       "sha": "d57a3dd488b2"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "foto/light/home-full-lum.avif",
+       "bytes": 722,
+       "gzip": 675,
+       "sha": "1c530ccba780"
+      },
+      "webp": {
+       "file": "foto/light/home-full-lum.webp",
+       "bytes": 588,
+       "gzip": 611,
+       "sha": "2fc333b87285"
+      }
+     }
+    },
+    "health": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/health-tile.avif",
+       "bytes": 8597,
+       "gzip": 8598,
+       "sha": "746d4176c6d4"
+      },
+      "webp": {
+       "file": "foto/light/health-tile.webp",
+       "bytes": 13870,
+       "gzip": 13893,
+       "sha": "39adc56bea68"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/health-full.avif",
+       "bytes": 1654,
+       "gzip": 1660,
+       "sha": "57fe4919984c"
+      },
+      "webp": {
+       "file": "foto/light/health-full.webp",
+       "bytes": 1566,
+       "gzip": 1589,
+       "sha": "3a9fcc3241f7"
+      }
+     }
+    },
+    "career": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/career-tile.avif",
+       "bytes": 1723,
+       "gzip": 1728,
+       "sha": "5de0f4ab261a"
+      },
+      "webp": {
+       "file": "foto/light/career-tile.webp",
+       "bytes": 2348,
+       "gzip": 2371,
+       "sha": "ad704822d80b"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/career-full.avif",
+       "bytes": 734,
+       "gzip": 694,
+       "sha": "19714275e2cc"
+      },
+      "webp": {
+       "file": "foto/light/career-full.webp",
+       "bytes": 556,
+       "gzip": 579,
+       "sha": "61968419752e"
+      }
+     }
+    },
+    "finance": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/finance-tile.avif",
+       "bytes": 4808,
+       "gzip": 4805,
+       "sha": "43b955d23dc5"
+      },
+      "webp": {
+       "file": "foto/light/finance-tile.webp",
+       "bytes": 6766,
+       "gzip": 6789,
+       "sha": "35765d76fa58"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/finance-full.avif",
+       "bytes": 1252,
+       "gzip": 1240,
+       "sha": "539a158f3d6d"
+      },
+      "webp": {
+       "file": "foto/light/finance-full.webp",
+       "bytes": 1076,
+       "gzip": 1099,
+       "sha": "6d41dac170b2"
+      }
+     }
+    },
+    "ventures": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/ventures-tile.avif",
+       "bytes": 2461,
+       "gzip": 2464,
+       "sha": "fadc7f7e1f02"
+      },
+      "webp": {
+       "file": "foto/light/ventures-tile.webp",
+       "bytes": 3016,
+       "gzip": 3039,
+       "sha": "63c5c8f70e75"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/ventures-full.avif",
+       "bytes": 811,
+       "gzip": 777,
+       "sha": "90d23a988bfd"
+      },
+      "webp": {
+       "file": "foto/light/ventures-full.webp",
+       "bytes": 618,
+       "gzip": 641,
+       "sha": "fabd29e144aa"
+      }
+     }
+    },
+    "relations": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/relations-tile.avif",
+       "bytes": 6345,
+       "gzip": 6348,
+       "sha": "6c58d85ae54a"
+      },
+      "webp": {
+       "file": "foto/light/relations-tile.webp",
+       "bytes": 9652,
+       "gzip": 9675,
+       "sha": "5b83194637a6"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/relations-full.avif",
+       "bytes": 1829,
+       "gzip": 1828,
+       "sha": "d9703929776a"
+      },
+      "webp": {
+       "file": "foto/light/relations-full.webp",
+       "bytes": 1716,
+       "gzip": 1739,
+       "sha": "4aabb76007f9"
+      }
+     }
+    },
+    "growth": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/growth-tile.avif",
+       "bytes": 3050,
+       "gzip": 3052,
+       "sha": "561bb01536ef"
+      },
+      "webp": {
+       "file": "foto/light/growth-tile.webp",
+       "bytes": 4098,
+       "gzip": 4108,
+       "sha": "9d51f1675c87"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/growth-full.avif",
+       "bytes": 962,
+       "gzip": 936,
+       "sha": "e4b314976516"
+      },
+      "webp": {
+       "file": "foto/light/growth-full.webp",
+       "bytes": 820,
+       "gzip": 843,
+       "sha": "214bb1ba3072"
+      }
+     }
+    },
+    "notes": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/notes-tile.avif",
+       "bytes": 5072,
+       "gzip": 5074,
+       "sha": "d9014abe0cce"
+      },
+      "webp": {
+       "file": "foto/light/notes-tile.webp",
+       "bytes": 8356,
+       "gzip": 8379,
+       "sha": "9fcdc286e100"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/notes-full.avif",
+       "bytes": 1464,
+       "gzip": 1461,
+       "sha": "fbdefee16f4f"
+      },
+      "webp": {
+       "file": "foto/light/notes-full.webp",
+       "bytes": 1296,
+       "gzip": 1319,
+       "sha": "8e91d19e2784"
+      }
+     }
+    },
+    "meetings": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/meetings-tile.avif",
+       "bytes": 5119,
+       "gzip": 5116,
+       "sha": "fd27bf433aed"
+      },
+      "webp": {
+       "file": "foto/light/meetings-tile.webp",
+       "bytes": 8188,
+       "gzip": 8211,
+       "sha": "774a04a9657d"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/meetings-full.avif",
+       "bytes": 1435,
+       "gzip": 1430,
+       "sha": "ec9bb1e43f81"
+      },
+      "webp": {
+       "file": "foto/light/meetings-full.webp",
+       "bytes": 1220,
+       "gzip": 1243,
+       "sha": "87ee3a30782c"
+      }
+     }
+    },
+    "books": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/books-tile.avif",
+       "bytes": 4614,
+       "gzip": 4609,
+       "sha": "672acf24edb2"
+      },
+      "webp": {
+       "file": "foto/light/books-tile.webp",
+       "bytes": 7570,
+       "gzip": 7593,
+       "sha": "1fdf4f180a44"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/books-full.avif",
+       "bytes": 1604,
+       "gzip": 1601,
+       "sha": "42a55d0e6c4e"
+      },
+      "webp": {
+       "file": "foto/light/books-full.webp",
+       "bytes": 1610,
+       "gzip": 1633,
+       "sha": "6b646bceac9d"
+      }
+     }
+    },
+    "ai": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/ai-tile.avif",
+       "bytes": 3022,
+       "gzip": 3020,
+       "sha": "76fdc4dd0b70"
+      },
+      "webp": {
+       "file": "foto/light/ai-tile.webp",
+       "bytes": 4578,
+       "gzip": 4601,
+       "sha": "d0ec41dd267e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/ai-full.avif",
+       "bytes": 919,
+       "gzip": 887,
+       "sha": "69e080bb7609"
+      },
+      "webp": {
+       "file": "foto/light/ai-full.webp",
+       "bytes": 788,
+       "gzip": 811,
+       "sha": "2f02d62c4689"
+      }
+     }
+    },
+    "review": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/review-tile.avif",
+       "bytes": 2779,
+       "gzip": 2785,
+       "sha": "e137f92e0863"
+      },
+      "webp": {
+       "file": "foto/light/review-tile.webp",
+       "bytes": 3748,
+       "gzip": 3771,
+       "sha": "50e318baf608"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/review-full.avif",
+       "bytes": 979,
+       "gzip": 952,
+       "sha": "b97228b212d3"
+      },
+      "webp": {
+       "file": "foto/light/review-full.webp",
+       "bytes": 736,
+       "gzip": 759,
+       "sha": "be3656fa6600"
+      }
+     },
+     "lum": {
+      "avif": {
+       "file": "foto/light/review-full-lum.avif",
+       "bytes": 760,
+       "gzip": 717,
+       "sha": "d65b02eb6a0b"
+      },
+      "webp": {
+       "file": "foto/light/review-full-lum.webp",
+       "bytes": 640,
+       "gzip": 663,
+       "sha": "90658f210d5f"
+      }
+     }
+    },
+    "insights": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/insights-tile.avif",
+       "bytes": 4728,
+       "gzip": 4727,
+       "sha": "d834fd52d6ad"
+      },
+      "webp": {
+       "file": "foto/light/insights-tile.webp",
+       "bytes": 7094,
+       "gzip": 7117,
+       "sha": "5c8db8cd9cdf"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/insights-full.avif",
+       "bytes": 1002,
+       "gzip": 975,
+       "sha": "bd222bdc4fc8"
+      },
+      "webp": {
+       "file": "foto/light/insights-full.webp",
+       "bytes": 870,
+       "gzip": 893,
+       "sha": "fb7cd2ef5765"
+      }
+     }
+    },
+    "articles": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/articles-tile.avif",
+       "bytes": 3684,
+       "gzip": 3684,
+       "sha": "7541732e472f"
+      },
+      "webp": {
+       "file": "foto/light/articles-tile.webp",
+       "bytes": 4610,
+       "gzip": 4633,
+       "sha": "fa4b114a49c1"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/articles-full.avif",
+       "bytes": 1274,
+       "gzip": 1265,
+       "sha": "7d1018577b41"
+      },
+      "webp": {
+       "file": "foto/light/articles-full.webp",
+       "bytes": 1018,
+       "gzip": 1041,
+       "sha": "76ee444a8839"
+      }
+     }
+    },
+    "video": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/video-tile.avif",
+       "bytes": 3410,
+       "gzip": 3409,
+       "sha": "ab91e0114272"
+      },
+      "webp": {
+       "file": "foto/light/video-tile.webp",
+       "bytes": 4660,
+       "gzip": 4683,
+       "sha": "778e04c92848"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/video-full.avif",
+       "bytes": 1171,
+       "gzip": 1156,
+       "sha": "d5dcdf1d8cba"
+      },
+      "webp": {
+       "file": "foto/light/video-full.webp",
+       "bytes": 972,
+       "gzip": 995,
+       "sha": "3e130670c822"
+      }
+     }
+    },
+    "recipes": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/recipes-tile.avif",
+       "bytes": 5659,
+       "gzip": 5657,
+       "sha": "c1ac93ab01ad"
+      },
+      "webp": {
+       "file": "foto/light/recipes-tile.webp",
+       "bytes": 8070,
+       "gzip": 8093,
+       "sha": "454e0d4f5a93"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/recipes-full.avif",
+       "bytes": 1526,
+       "gzip": 1517,
+       "sha": "af4a2302b4a7"
+      },
+      "webp": {
+       "file": "foto/light/recipes-full.webp",
+       "bytes": 1316,
+       "gzip": 1339,
+       "sha": "09b277ea7080"
+      }
+     }
+    },
+    "all": {
+     "tile": {
+      "avif": {
+       "file": "foto/light/all-tile.avif",
+       "bytes": 3411,
+       "gzip": 3410,
+       "sha": "989176bcc98c"
+      },
+      "webp": {
+       "file": "foto/light/all-tile.webp",
+       "bytes": 4528,
+       "gzip": 4551,
+       "sha": "f07c12c2fd1e"
+      }
+     },
+     "full": {
+      "avif": {
+       "file": "foto/light/all-full.avif",
+       "bytes": 1177,
+       "gzip": 1164,
+       "sha": "f5282a8a7160"
+      },
+      "webp": {
+       "file": "foto/light/all-full.webp",
+       "bytes": 944,
+       "gzip": 967,
+       "sha": "20000e25b29a"
+      }
+     }
+    }
+   }
+  }
+ },
+ "accentTint": {
+  "topics": [
+   "home",
+   "review"
+  ],
+  "method": "luminance image + overlay div with background var(--kx-accent), mix-blend-mode: color, opacity 0.85, container isolation: isolate"
+ },
+ "focus": {
+  "home": {
+   "x": 0.68,
+   "y": 0.5
+  },
+  "health": {
+   "x": 0.38,
+   "y": 0.5
+  },
+  "career": {
+   "x": 0.66,
+   "y": 0.5
+  },
+  "finance": {
+   "x": 0.36,
+   "y": 0.5
+  },
+  "ventures": {
+   "x": 0.64,
+   "y": 0.5
+  },
+  "relations": {
+   "x": 0.4,
+   "y": 0.5
+  },
+  "growth": {
+   "x": 0.62,
+   "y": 0.5
+  },
+  "notes": {
+   "x": 0.62,
+   "y": 0.5
+  },
+  "meetings": {
+   "x": 0.38,
+   "y": 0.5
+  },
+  "books": {
+   "x": 0.6,
+   "y": 0.5
+  },
+  "ai": {
+   "x": 0.42,
+   "y": 0.5
+  },
+  "review": {
+   "x": 0.62,
+   "y": 0.5
+  },
+  "insights": {
+   "x": 0.4,
+   "y": 0.5
+  },
+  "articles": {
+   "x": 0.64,
+   "y": 0.5
+  },
+  "video": {
+   "x": 0.38,
+   "y": 0.5
+  },
+  "recipes": {
+   "x": 0.62,
+   "y": 0.5
+  },
+  "all": {
+   "x": 0.4,
+   "y": 0.5
+  }
+ },
+ "surfaces": {
+  "home": {
+   "full": "home",
+   "follows_accent": true
+  },
+  "weekly_review": {
+   "full": "review",
+   "tile": "review",
+   "follows_accent": true
+  },
+  "insights": {
+   "full": "insights",
+   "tile": "insights"
+  },
+  "life_areas": [
+   "health",
+   "career",
+   "finance",
+   "ventures",
+   "relations",
+   "growth"
+  ],
+  "auto_spaces": [
+   "notes",
+   "meetings",
+   "books",
+   "ai"
+  ],
+  "object_types": {
+   "articles": "articles",
+   "videos_reels_podcasts": "video",
+   "recipes": "recipes",
+   "all_entries": "all"
+  }
+ },
+ "spec": {
+  "tile": {
+   "w": 800,
+   "h": 470,
+   "objectPosition": "50% 0%"
+  },
+  "full": {
+   "w": 320,
+   "h": 180,
+   "blurBaked": true
+  },
+  "scrim": [
+   [
+    0,
+    0
+   ],
+   [
+    30,
+    22
+   ],
+   [
+    56,
+    82
+   ],
+   [
+    100,
+    100
+   ]
+  ]
+ }
+}

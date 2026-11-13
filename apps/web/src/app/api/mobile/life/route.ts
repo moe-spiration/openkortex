@@ -1,0 +1,10 @@
+import { getServerDeps } from "@/server/deps";
+import { createMobileHandlers } from "@/server/mobile/handler";
+
+// GET /api/mobile/life — live data for the mobile app (Supabase JWT as bearer). See src/server/mobile.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const handlers = createMobileHandlers(getServerDeps).life;
+export const GET = handlers.GET;
+export const OPTIONS = handlers.OPTIONS;

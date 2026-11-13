@@ -1,0 +1,37 @@
+{
+  "name": "@kortex/mcp-server",
+  "version": "0.6.4",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./agents-guide": "./src/agents-guide.ts",
+    "./jwt": "./src/jwt.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/cli.mjs --banner:js=\"import{createRequire}from\\\"node:module\\\";const require=createRequire(import.meta.url);\"",
+    "start": "tsx --env-file-if-exists=../../.env.local --env-file-if-exists=../../.env src/cli.ts",
+    "start:http": "tsx --env-file-if-exists=../../.env.local --env-file-if-exists=../../.env src/cli.ts --http"
+  },
+  "dependencies": {
+    "@kortex/ai-core": "workspace:*",
+    "@kortex/db": "workspace:*",
+    "@kortex/i18n": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@supabase/supabase-js": "^2.118.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "ai": "^7.0.148",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "vitest": "^5.0.5"
+  },
+  "license": "AGPL-3.0-only"
+}

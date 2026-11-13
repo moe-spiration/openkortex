@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kortex Extension: Reference vs. Build</title>
+    <style>
+      body { margin: 0; font: 12px/1.4 ui-monospace, monospace; background: #222; color: #ddd; }
+      #bar { position: sticky; top: 0; z-index: 9; display: flex; gap: 8px; padding: 6px 10px; background: #111; align-items: center; flex-wrap: wrap; }
+      button, select { font: inherit; }
+      #frames { display: flex; gap: 8px; padding: 8px; }
+      .col { flex: none; }
+      iframe { width: 1440px; height: 900px; border: 0; background: #000; zoom: var(--z, 0.5); }
+      .frame { overflow: hidden; width: var(--cw, auto); height: var(--ch, auto); }
+      .frame iframe { position: relative; left: calc(var(--cx, 0px) * -1); top: calc(var(--cy, 0px) * -1); }
+      #out { padding: 10px; white-space: pre-wrap; }
+      .bad { color: #f88; } .ok { color: #8f8; }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <label>Theme <select id="theme"><option>dark</option><option>light</option></select></label>
+      <label>Ansicht
+        <select id="mode"><option value="clip">Clipper</option><option value="clip-done">Clipper (fertig)</option><option value="hl">Highlighter</option><option value="chat">Chat</option></select>
+      </label>
+      <label>Bot <select id="bot"><option>claude</option><option>chatgpt</option></select></label>
+      <label>Zoom <select id="zoom"><option>0.5</option><option>0.35</option><option>0.7</option><option>1</option></select></label>
+      <label>Ausschnitt <select id="crop"><option value="">Voll</option><option value="1000,110,400,700">Clipper</option><option value="440,150,860,330">Highlighter</option><option value="40,50,1360,170">Chat-Kopf</option><option value="330,200,800,560">Chat-Antworten</option></select></label>
+      <button id="run">Neu laden + vergleichen</button>
+      <span id="summary"></span>
+    </div>
+    <div id="frames">
+      <div class="col"><div>Prototyp (Extension.dc.html)</div><div class="frame"><iframe id="ref"></iframe></div></div>
+      <div class="col"><div>Build (React-Komponenten)</div><div class="frame"><iframe id="ext"></iframe></div></div>
+    </div>
+    <div id="out"></div>
+    <script type="module" src="./compare.ts"></script>
+  </body>
+</html>

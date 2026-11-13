@@ -1,0 +1,948 @@
+/*
+ * Kortex editor skin: maps BlockNote's DOM onto the design-system editor rules (kx-ed-*, kx-callout,
+ * kx-menu, kx-check, kx-inline-code, kx-link; design/reference/NoteSheet.dc.html). Everything is
+ * scoped under .kx-editor (the BlockNote root and its floating-UI portal roots carry that class).
+ * Unlayered on purpose: BlockNote's own CSS is unlayered, so @layer rules would lose against it.
+ */
+
+/* ---------- theme bridge: BlockNote variables -> Kortex tokens ---------- */
+.kx-editor.bn-root,
+.kx-editor.bn-root[data-color-scheme] {
+  --bn-font-family: var(--font-sans);
+  --bn-colors-editor-text: var(--text-primary);
+  --bn-colors-editor-background: transparent;
+  --bn-colors-menu-text: var(--text-primary);
+  --bn-colors-menu-background: var(--bg-floating-glass);
+  --bn-colors-tooltip-text: var(--text-primary);
+  --bn-colors-tooltip-background: var(--bg-surface-muted);
+  --bn-colors-hovered-text: var(--text-primary);
+  --bn-colors-hovered-background: var(--bg-hover);
+  --bn-colors-selected-text: var(--tag-ai-fg);
+  --bn-colors-selected-background: var(--accent-ai-soft);
+  --bn-colors-disabled-text: var(--text-muted);
+  --bn-colors-disabled-background: var(--bg-surface-muted);
+  --bn-colors-shadow: rgba(0, 0, 0, 0.32);
+  --bn-colors-border: var(--border-subtle);
+  /* Nested-block guide lines: the prototype lists have none. */
+  --bn-colors-side-menu: transparent;
+  --bn-border-radius: 8px;
+  --bn-shadow-medium: var(--shadow-floating);
+  --bn-shadow-light: var(--shadow-floating);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+/* ---------- editor surface ---------- */
+.kx-editor .bn-editor {
+  /* Text aligns with the page title column; the side menu hangs in the left gutter. */
+  padding-inline: 0;
+  background: transparent;
+  border-radius: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: calc(15px * var(--kx-fs, 1));
+  line-height: 1.7;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.kx-editor .bn-editor ::selection {
+  background: color-mix(in srgb, var(--accent-ai) 32%, transparent);
+}
+.kx-editor .bn-block-outer {
+  line-height: 1.7;
+}
+.kx-editor .bn-block-content {
+  padding: 3px 0;
+}
+.kx-editor .bn-block-group .bn-block-group {
+  margin-left: 22px;
+}
+
+/* Placeholder ("Schreibe oder tippe / für Befehle"), the only writing hint in the note. */
+.kx-editor .bn-block-content:has(.ProseMirror-trailingBreak:only-child)::after {
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+/* Node / drop selection */
+.kx-editor .bn-block-content.ProseMirror-selectednode > *::after,
+.kx-editor .ProseMirror-selectednode > .bn-block-content > *::after,
+.kx-editor .bn-block-content .ProseMirror-selectednode::after,
+.kx-editor .bn-inline-content .ProseMirror-selectednode::after,
+.kx-editor .bn-block-outer[data-drop-target="true"]::after {
+  background-color: var(--accent-ai-soft);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-ai) 45%, transparent);
+}
+.kx-editor .bn-inline-content .ProseMirror-selectednode::after {
+  box-shadow: none;
+  border-radius: var(--radius-lg);
+}
+
+/* ---------- headings (kx-ed-h2 / kx-ed-h3; H1 one step larger) ---------- */
+/* BlockNote sizes headings (and their placeholders) via --level / --prev-level. */
+.kx-editor .bn-block-content[data-content-type="heading"] {
+  --level: 24px;
+  --prev-level: 24px;
+  padding: 18px 0 4px;
+  line-height: 1.15;
+}
+.kx-editor .bn-block-content[data-content-type="heading"][data-level="2"] {
+  --level: 15px;
+  --prev-level: 15px;
+  line-height: 1.5;
+}
+.kx-editor .bn-block-content[data-content-type="heading"] :is(h1, h2, h3) {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.kx-editor .bn-block-content[data-content-type="heading"] h1 {
+  font-size: calc(24px * var(--kx-fs, 1));
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.kx-editor .bn-block-content[data-content-type="heading"] h2 {
+  font-size: calc(15px * var(--kx-fs, 1));
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+.kx-editor .bn-block-content[data-content-type="heading"][data-level="3"] {
+  --level: 13px;
+  --prev-level: 13px;
+  padding: 12px 0 2px;
+  line-height: 1.4;
+}
+.kx-editor .bn-block-content[data-content-type="heading"] h3 {
+  font-size: calc(13px * var(--kx-fs, 1));
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+.kx-editor
+  .bn-editor
+  > .bn-block-group
+  > .bn-block-outer:first-child
+  > .bn-block
+  > .bn-block-content[data-content-type="heading"] {
+  padding-top: 0;
+}
+
+/* ---------- lists (kx-ed-ul: 22px indent, muted markers) ---------- */
+/* Blocks sit in the prototype's `display:grid; gap:2px` column; list items share one <ul> (no gap). */
+.kx-editor .bn-block-group > .bn-block-outer + .bn-block-outer {
+  margin-top: 2px;
+}
+.kx-editor
+  .bn-block-group
+  > .bn-block-outer:has(> .bn-block > .bn-block-content[data-content-type="bulletListItem"])
+  + .bn-block-outer:has(> .bn-block > .bn-block-content[data-content-type="bulletListItem"]),
+.kx-editor
+  .bn-block-group
+  > .bn-block-outer:has(> .bn-block > .bn-block-content[data-content-type="numberedListItem"])
+  + .bn-block-outer:has(> .bn-block > .bn-block-content[data-content-type="numberedListItem"]) {
+  margin-top: 0;
+}
+/* The prototype's <ul class="kx-ed-ul"> has no .kx-block padding: items sit 26px apart. */
+.kx-editor
+  .bn-block-content:is(
+    [data-content-type="bulletListItem"],
+    [data-content-type="numberedListItem"]
+  ) {
+  padding: 0;
+}
+.kx-editor .bn-block-content[data-content-type="bulletListItem"]::before,
+.kx-editor .bn-block-content[data-content-type="numberedListItem"]::before {
+  min-width: 22px;
+  padding-right: 0;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.kx-editor .bn-block-content[data-content-type="numberedListItem"]::before {
+  justify-content: flex-start;
+  font-size: calc(13px * var(--kx-fs, 1));
+}
+
+/* ---------- to-dos (kx-ed-todo + kx-check) ---------- */
+.kx-editor .bn-block-content[data-content-type="checkListItem"] > div:has(> input) {
+  display: flex;
+  align-items: center;
+  height: calc(1.68 * 15.5px);
+  margin-right: 10px;
+}
+.kx-editor .bn-block-content[data-content-type="checkListItem"] > div > input {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin: 0;
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface-flat);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text-muted) 70%, transparent);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease-snappy),
+    box-shadow var(--dur) var(--ease-snappy);
+}
+.kx-editor .bn-block-content[data-content-type="checkListItem"] > div > input:hover {
+  box-shadow: inset 0 0 0 1.5px var(--text-secondary);
+}
+.kx-editor .bn-block-content[data-content-type="checkListItem"] > div > input:checked {
+  background: var(--accent-ai-solid);
+  box-shadow: none;
+}
+.kx-editor .bn-block-content[data-content-type="checkListItem"] > div > input:checked::after {
+  content: "";
+  width: 9px;
+  height: 5px;
+  margin-top: -2px;
+  border: solid var(--on-accent-ai);
+  border-width: 0 0 2px 2px;
+  transform: rotate(-45deg);
+}
+.kx-editor
+  .bn-block-content[data-content-type="checkListItem"][data-checked="true"]
+  .bn-inline-content {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--text-muted) 60%, transparent);
+}
+
+/* ---------- quote (kx-ed-quote) ---------- */
+.kx-editor .bn-block-content[data-content-type="quote"] blockquote {
+  margin: 6px 0;
+  padding: 2px 0 2px 16px;
+  border-left: 0;
+  box-shadow: inset 2px 0 0 0 color-mix(in srgb, var(--text-muted) 55%, transparent);
+  font-family: var(--font-sans);
+  font-size: calc(15px * var(--kx-fs, 1));
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-secondary);
+}
+
+/* ---------- code block (kx-ed-code: header strip with language, copy, mermaid switch) ---------- */
+.kx-editor .bn-block-content[data-content-type="codeBlock"] {
+  flex-direction: column;
+  margin: 6px 0;
+  padding: 0;
+  border-radius: var(--radius-xl, 12px);
+  background: var(--bg-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+.kx-editor .kx-ed-code {
+  width: 100%;
+}
+.kx-editor .kx-ed-code-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 6px 0 12px;
+  font-family: var(--font-mono);
+  font-size: calc(12px * var(--kx-fs, 1));
+  color: var(--text-muted);
+  box-shadow: inset 0 -1px 0 0 var(--border-subtle);
+}
+.kx-editor .kx-ed-code-lang {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kx-editor .kx-ed-code-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--radius-xs, 6px);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.kx-editor .kx-ed-code-btn:hover,
+.kx-editor .kx-ed-code-btn:focus-visible {
+  background: var(--bg-surface-hover, var(--bg-surface));
+  color: var(--text-primary);
+}
+.kx-editor .kx-ed-code-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.kx-editor .kx-ed-code-btn[data-state="done"] {
+  color: var(--accent);
+}
+.kx-editor .kx-ed-code-pre {
+  margin: 0;
+  padding: 12px 14px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: calc(12px * var(--kx-fs, 1));
+  line-height: 1.5;
+  color: var(--text-primary);
+  letter-spacing: 0;
+  white-space: pre;
+  overflow: auto;
+}
+.kx-editor .kx-ed-code-pre[hidden] {
+  display: none;
+}
+.kx-editor .kx-ed-code-pre code {
+  font-family: inherit;
+}
+.kx-editor .kx-ed-mermaid {
+  padding: 12px 14px;
+  overflow: auto;
+  text-align: center;
+}
+.kx-editor .kx-ed-mermaid-svg svg {
+  max-width: 100%;
+  height: auto;
+}
+.kx-editor .kx-ed-mermaid-state {
+  font-size: calc(12px * var(--kx-fs, 1));
+  color: var(--text-muted);
+}
+.kx-editor .kx-ed-mermaid-error {
+  text-align: left;
+  font-size: calc(12px * var(--kx-fs, 1));
+  color: var(--danger, var(--text-primary));
+}
+.kx-editor .kx-ed-mermaid-error pre {
+  margin: 4px 0 0;
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+}
+
+/* ---------- inline marks ---------- */
+.kx-editor .bn-inline-content code {
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: calc(13px * var(--kx-fs, 1));
+}
+.kx-editor .bn-inline-content a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-ai) 55%, transparent);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  cursor: pointer;
+}
+.kx-editor .bn-inline-content a:hover {
+  text-decoration-color: var(--accent-ai);
+}
+.kx-editor .bn-inline-content s {
+  text-decoration-color: color-mix(in srgb, var(--text-primary) 60%, transparent);
+}
+
+/* [[Wiki-Links]]: kx-wikilink with dim brackets, like the prototype backlinks */
+.kx-editor .kx-ed-wikilink {
+  display: inline;
+  padding: 1px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.kx-editor .kx-ed-wikilink:hover {
+  background: color-mix(in srgb, var(--accent-ai) 22%, transparent);
+}
+.kx-editor .kx-ed-wikilink.is-unresolved {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--tag-ai-border);
+}
+.kx-editor .kx-ed-brackets {
+  opacity: 0.6;
+  font-size: calc(13px * var(--kx-fs, 1));
+}
+
+/* ---------- tables ---------- */
+.kx-editor [data-content-type="table"] .tableWrapper {
+  margin-left: calc(-1 * var(--bn-table-handle-size, 9px));
+}
+.kx-editor [data-content-type="table"] table {
+  border-collapse: collapse;
+  font-size: calc(13px * var(--kx-fs, 1));
+  line-height: 1.4;
+}
+.kx-editor .bn-editor [data-content-type="table"] th,
+.kx-editor .bn-editor [data-content-type="table"] td {
+  border: 1px solid var(--border-subtle);
+  padding: 6px 10px;
+  color: var(--text-primary);
+  vertical-align: top;
+}
+.kx-editor .bn-editor [data-content-type="table"] th {
+  background: var(--bg-surface-muted);
+  font-weight: 500;
+}
+.kx-editor .bn-editor [data-content-type="table"] th > p,
+.kx-editor .bn-editor [data-content-type="table"] td > p {
+  min-height: 22px;
+}
+.kx-editor .bn-editor .selectedCell::after {
+  background: var(--accent-ai-soft);
+}
+.kx-editor .bn-editor .column-resize-handle {
+  background-color: var(--accent-ai);
+}
+
+/* ---------- images ---------- */
+.kx-editor [data-file-block] .bn-visual-media {
+  border-radius: 12px;
+}
+.kx-editor [data-file-block] .bn-file-caption {
+  font-size: calc(12px * var(--kx-fs, 1));
+  color: var(--text-muted);
+}
+.kx-editor [data-file-block] .bn-add-file-button {
+  border-radius: 12px;
+  background: var(--bg-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-muted);
+}
+.kx-editor [data-file-block] .bn-add-file-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+.kx-editor [data-file-block] .bn-resize-handle {
+  background-color: var(--bg-floating-glass);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ---------- divider ---------- */
+.kx-editor .bn-block-content[data-content-type="divider"] hr {
+  margin: 12px 0;
+  border: 0;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+/* ---------- custom blocks ---------- */
+/* Focused-empty placeholders of custom blocks would render beside the box; they get their own. */
+.kx-editor
+  .bn-block-content:is(
+    [data-content-type="callout"],
+    [data-content-type="aiSummary"],
+    [data-content-type="rawMarkdown"],
+    [data-content-type="subpage"]
+  )::after {
+  display: none;
+}
+
+.kx-editor .kx-ed-callout,
+.kx-editor .kx-ed-ai {
+  width: 100%;
+  margin: 3px 0;
+}
+.kx-editor .kx-ed-callout-body,
+.kx-editor .kx-ed-ai-body {
+  position: relative;
+}
+.kx-editor .kx-ed-callout-body:has(.ProseMirror-trailingBreak:only-child)::before,
+.kx-editor
+  .kx-ed-ai:not([data-pending])
+  .kx-ed-ai-body:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Hinweis schreiben …";
+  position: absolute;
+  inset: 0 auto auto 0;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.kx-editor
+  .kx-ed-ai:not([data-pending])
+  .kx-ed-ai-body:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Zusammenfassung schreiben …";
+}
+/* Callout flavours (Obsidian kinds); note/info/ai keep the AI tint of the prototype. */
+.kx-editor
+  .kx-ed-callout:is(
+    [data-kind="tip"],
+    [data-kind="success"],
+    [data-kind="check"],
+    [data-kind="done"]
+  ) {
+  background: color-mix(in srgb, var(--status-synced) 10%, transparent);
+}
+.kx-editor
+  .kx-ed-callout:is(
+    [data-kind="tip"],
+    [data-kind="success"],
+    [data-kind="check"],
+    [data-kind="done"]
+  )
+  .kx-callout-head {
+  color: var(--tag-health-fg);
+}
+.kx-editor
+  .kx-ed-callout:is(
+    [data-kind="warning"],
+    [data-kind="caution"],
+    [data-kind="attention"],
+    [data-kind="question"]
+  ) {
+  background: color-mix(in srgb, var(--status-processing) 10%, transparent);
+}
+.kx-editor
+  .kx-ed-callout:is(
+    [data-kind="warning"],
+    [data-kind="caution"],
+    [data-kind="attention"],
+    [data-kind="question"]
+  )
+  .kx-callout-head {
+  color: var(--tag-food-fg);
+}
+.kx-editor
+  .kx-ed-callout:is(
+    [data-kind="danger"],
+    [data-kind="error"],
+    [data-kind="bug"],
+    [data-kind="failure"]
+  ) {
+  background: color-mix(in srgb, var(--status-urgent) 10%, transparent);
+}
+.kx-editor
+  .kx-ed-callout:is(
+    [data-kind="danger"],
+    [data-kind="error"],
+    [data-kind="bug"],
+    [data-kind="failure"]
+  )
+  .kx-callout-head {
+  color: var(--tag-finance-fg);
+}
+
+/* AI summary: text and the streaming caret flow inline */
+.kx-editor .kx-ed-ai-text,
+.kx-editor .kx-ed-ai-text > div {
+  display: inline;
+}
+
+/* Sub-page row */
+.kx-editor .kx-ed-subpage {
+  display: flex;
+  padding: 1px 0;
+}
+.kx-editor .kx-ed-subpage-link {
+  height: 28px;
+  gap: 6px;
+  padding: 0 10px 0 8px;
+  font-size: calc(13px * var(--kx-fs, 1));
+  cursor: pointer;
+}
+.kx-editor .kx-ed-subpage-link:hover {
+  background: color-mix(in srgb, var(--accent-ai) 22%, transparent);
+}
+
+/* Raw Markdown (HTML, footnotes, math, ...): muted source */
+.kx-editor .kx-ed-raw {
+  position: relative;
+  width: 100%;
+  margin: 3px 0;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+.kx-editor .kx-ed-raw pre {
+  margin: 0;
+  padding: 8px 76px 8px 12px;
+  font-family: var(--font-mono);
+  font-size: calc(12px * var(--kx-fs, 1));
+  line-height: 1.5;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.kx-editor .kx-ed-raw pre code {
+  font-family: inherit;
+}
+.kx-editor .kx-ed-raw-tag {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  font-family: var(--font-mono);
+  font-size: calc(11px * var(--kx-fs, 1));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------- suggestion menus (prototype .kx-menu) ---------- */
+.kx-editor .kx-ed-menu {
+  width: 260px;
+  max-height: min(340px, var(--popover-available-height, 340px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.kx-editor .kx-ed-menu .kx-menu-item {
+  width: 100%;
+}
+.kx-editor .kx-ed-menu-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kx-editor .kx-ed-menu .kx-hint {
+  flex: none;
+  padding-left: 8px;
+}
+
+/* ---------- side menu (drag handle + plus), like .kx-block-handle ---------- */
+.kx-editor .bn-side-menu {
+  gap: 2px;
+}
+.kx-editor .bn-side-menu .bn-ak-button {
+  width: 22px;
+  height: 24px;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  cursor: grab;
+}
+.kx-editor .bn-side-menu .bn-ak-button:hover,
+.kx-editor .bn-side-menu .bn-ak-button[data-active] {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  padding: 0;
+}
+.kx-editor .bn-side-menu .bn-ak-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- floating toolbars, menus, popovers: DS floating glass ---------- */
+.kx-editor .bn-ak-toolbar,
+.kx-editor .bn-ak-menu,
+.kx-editor .bn-ak-popover,
+.kx-editor .bn-ak-wrapper,
+.kx-editor .bn-panel {
+  border: 0;
+  border-radius: 12px;
+  background: var(--bg-floating-glass);
+  -webkit-backdrop-filter: blur(var(--blur-overlay, 16px)) saturate(var(--saturate-glass, 160%));
+  backdrop-filter: blur(var(--blur-overlay, 16px)) saturate(var(--saturate-glass, 160%));
+  box-shadow: var(--shadow-floating);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: calc(13px * var(--kx-fs, 1));
+}
+.kx-editor .bn-ak-toolbar {
+  gap: 2px;
+  padding: 4px;
+}
+.kx-editor .bn-ak-menu,
+.kx-editor .bn-ak-popover {
+  padding: 4px;
+}
+.kx-editor .bn-panel-popover,
+.kx-editor .bn-panel-popover .bn-ak-popover {
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.kx-editor .bn-ak-wrapper .bn-ak-wrapper {
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.kx-editor .bn-toolbar .bn-ak-button,
+.kx-editor .bn-ak-popover .bn-ak-button:not(.bn-ak-primary) {
+  height: 28px;
+  min-width: 28px;
+  padding: 0 6px;
+  gap: 4px;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-secondary);
+  font-size: calc(13px * var(--kx-fs, 1));
+  font-weight: 500;
+}
+.kx-editor .bn-toolbar .bn-ak-button:hover,
+.kx-editor .bn-ak-popover .bn-ak-button:not(.bn-ak-primary):hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.kx-editor .bn-toolbar .bn-ak-button[data-selected],
+.kx-editor .bn-toolbar .bn-ak-button[data-selected]:where(.dark, .dark *) {
+  padding-top: 0;
+  background: var(--accent-ai-soft);
+  box-shadow: none;
+  color: var(--tag-ai-fg);
+}
+.kx-editor .bn-toolbar .bn-ak-button:active,
+.kx-editor .bn-toolbar .bn-ak-button[data-active] {
+  padding-top: 0;
+  box-shadow: none;
+}
+.kx-editor .bn-ak-toolbar svg,
+.kx-editor .bn-ak-menu-item svg,
+.kx-editor .bn-ak-select-item svg {
+  width: 16px;
+  height: 16px;
+}
+.kx-editor .bn-ak-separator {
+  border-color: var(--border-subtle);
+}
+
+.kx-editor .bn-ak-menu-item,
+.kx-editor .bn-ak-select-item {
+  height: 30px;
+  padding: 0 8px;
+  gap: 10px;
+  border-radius: 8px;
+  font-size: calc(13px * var(--kx-fs, 1));
+  color: var(--text-primary);
+}
+.kx-editor .bn-ak-menu-item svg,
+.kx-editor .bn-ak-select-item svg {
+  color: var(--text-secondary);
+}
+.kx-editor .bn-ak-menu-item:hover,
+.kx-editor .bn-ak-menu-item[data-active-item],
+.kx-editor .bn-ak-select-item[data-active-item] {
+  background: var(--accent-ai-soft);
+  color: var(--text-primary);
+}
+.kx-editor .bn-ak-menu-item:active,
+.kx-editor .bn-ak-menu-item[data-active] {
+  padding: 0 8px;
+  background: var(--accent-ai-soft);
+}
+.kx-editor .bn-ak-group-label {
+  padding: 8px 8px 4px;
+  font-size: calc(11px * var(--kx-fs, 1));
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.kx-editor .bn-ak-input {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--bg-surface-flat);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-primary);
+  font-size: calc(13px * var(--kx-fs, 1));
+}
+.kx-editor .bn-ak-input::placeholder {
+  color: var(--text-muted);
+}
+.kx-editor .bn-ak-input:hover {
+  background: var(--bg-surface-flat);
+}
+.kx-editor .bn-ak-input:focus-visible,
+.kx-editor .bn-ak-input[data-focus-visible] {
+  outline: 0;
+  box-shadow: inset 0 0 0 1.5px var(--border-focus);
+}
+.kx-editor .bn-ak-input-wrapper svg {
+  width: 16px;
+  color: var(--text-muted);
+}
+
+.kx-editor .bn-ak-tab {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: calc(13px * var(--kx-fs, 1));
+  color: var(--text-secondary);
+}
+.kx-editor .bn-ak-tab:hover {
+  background: var(--bg-hover);
+}
+.kx-editor .bn-ak-tab[aria-selected="true"],
+.kx-editor .bn-ak-tab[aria-selected="true"]:hover {
+  background: var(--accent-ai-soft);
+  color: var(--tag-ai-fg);
+}
+.kx-editor .bn-ak-panels .bn-ak-button,
+.kx-editor .bn-ak-primary {
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent-ai-solid);
+  box-shadow: var(--shadow-btn-primary);
+  color: var(--on-accent-ai);
+  font-size: calc(13px * var(--kx-fs, 1));
+}
+
+.kx-editor .bn-ak-tooltip {
+  border: 0;
+  border-radius: 8px;
+  background: var(--bg-inverse);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-floating);
+  font-size: calc(12px * var(--kx-fs, 1));
+  line-height: 1.5;
+  padding: 3px 8px;
+}
+
+/* Table handles */
+.kx-editor .bn-table-handle,
+.kx-editor .bn-extend-button,
+.kx-editor .bn-table-cell-handle {
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-muted);
+  color: var(--text-muted);
+}
+.kx-editor .bn-table-handle:hover,
+.kx-editor .bn-extend-button:hover,
+.kx-editor .bn-table-cell-handle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ---------- W8 (UI overhaul 2026-10-25): callout, toggle, slash groups, toolbar KI ---------- */
+
+/* Callout: level-1b card surface, radius 12, icon in the accent colour, 13/400 Text 1. The
+   Obsidian flavours (tip, warning, danger ...) keep their tint from above. */
+.kx-editor .kx-ed-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-xl, 12px);
+  background: var(--bg-surface-flat);
+  box-shadow: none;
+  font-size: calc(13px * var(--kx-fs, 1));
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.kx-editor .kx-ed-callout-icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 2px;
+  color: var(--tag-ai-fg);
+}
+.kx-editor .kx-ed-callout-icon .kx-ico {
+  width: var(--icon-m, 16px);
+  height: var(--icon-m, 16px);
+  stroke-width: var(--icon-stroke, 1.5);
+}
+.kx-editor .kx-ed-callout-main {
+  flex: 1;
+  min-width: 0;
+}
+.kx-editor .kx-ed-callout .kx-ed-callout-body {
+  color: var(--text-primary);
+}
+
+/* Toggle: chevron left, the body indented 24 px (chevron + gap), hidden while closed. */
+.kx-editor .kx-ed-toggle {
+  column-gap: 4px;
+  align-items: start;
+}
+.kx-editor .kx-ed-toggle > .bn-toggle-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  padding: 0;
+  border-radius: var(--radius-xs, 4px);
+  color: var(--text-muted);
+  transition: transform var(--dur-fast, 120ms) var(--ease-snappy, ease);
+}
+.kx-editor .kx-ed-toggle > .bn-toggle-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.kx-editor .kx-ed-toggle > .bn-toggle-button > svg {
+  width: var(--icon-m, 16px);
+  height: var(--icon-m, 16px);
+}
+.kx-editor .kx-ed-toggle > .bn-toggle-slot > .bn-block-group {
+  margin-left: 24px;
+}
+.kx-editor .kx-ed-toggle > .bn-toggle-add-block-button {
+  margin-left: 24px;
+  justify-self: start;
+  padding: 2px 0;
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: calc(13px * var(--kx-fs, 1));
+  cursor: pointer;
+}
+.kx-editor .kx-ed-toggle > .bn-toggle-add-block-button:hover {
+  color: var(--text-secondary);
+}
+.kx-editor .kx-ed-toggle-title {
+  color: var(--text-primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .kx-editor .kx-ed-toggle > .bn-toggle-button {
+    transition: none;
+  }
+}
+
+/* Underline (`<u>…</u>`). */
+.kx-editor .bn-inline-content u {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* Slash menu groups (Grundlagen, Einbetten, KI). */
+.kx-editor .kx-ed-menu .kx-ed-menu-group:not(:first-child) {
+  margin-top: 6px;
+}
+
+/* Toolbar "KI": accent-soft pill with accent text, like the reference. */
+.kx-editor .bn-toolbar .bn-ak-button.kx-ed-ai-button {
+  gap: 5px;
+  padding: 0 8px;
+  background: var(--accent-ai-soft);
+  color: var(--tag-ai-fg);
+  font-weight: 500;
+}
+.kx-editor .bn-toolbar .bn-ak-button.kx-ed-ai-button:hover {
+  background: color-mix(in srgb, var(--accent-ai) 22%, transparent);
+}
+
+/* KI › "Eigene Anweisung …": a prompt field wide enough for a sentence. */
+.kx-ed-ai-prompt {
+  width: min(420px, calc(100vw - 32px));
+}
+.kx-ed-ai-prompt form,
+.kx-ed-ai-prompt .bn-ak-input-wrapper,
+.kx-ed-ai-prompt input {
+  width: 100%;
+}
+
+/* Block-handle menu divider: a horizontal hairline (the toolbar separator is vertical). */
+.kx-editor .bn-ak-menu .bn-ak-separator,
+.kx-editor .bn-ak-menu .bn-menu-divider {
+  display: block;
+  align-self: stretch;
+  width: auto;
+  height: 0;
+  margin: 4px 8px;
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+}

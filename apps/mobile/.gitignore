@@ -1,0 +1,18 @@
+dist/
+expo-env.d.ts
+node_modules/
+.expo/
+web-build/
+# Expo prebuild output (native projects are generated, not tracked)
+android/
+ios/
+# signing material
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# update signing (optional): a certificate may be tracked, private keys never
+certs/*.pem
+!certs/certificate.pem

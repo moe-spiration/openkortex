@@ -1,0 +1,31 @@
+Return-Path: <news@heise.de>
+From: =?UTF-8?Q?heise_Newsletter_f=C3=BCr_Entwickler?= <news@heise.de>
+To: k7x2mqa4vd5tbe3pwn6r@in.kortex.example.com
+Subject: =?UTF-8?B?TUNQIGVya2zDpHJ0OiBBZ2VudGVuIHZlcmJpbmRlbg==?=
+Date: Sat, 31 Oct 2026 14:02:00 +0100
+Message-ID: <20261031130200.abc123@mail.heise.de>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1"
+
+--b1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+MCP erkl=C3=A4rt
+
+Das Model Context Protocol verbindet Agenten mit Werkzeugen.
+Bitte bis Freitag das Review abschlie=C3=9Fen.
+--b1
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><style>p{color:red}</style><title>x</title></head><body>
+<span style=3D"display:none">Vorschautext, den niemand sehen soll</span>
+<h1>MCP erkl=C3=A4rt</h1>
+<p>Das <b>Model Context Protocol</b> verbindet Agenten mit <a href=3D"https://=
+modelcontextprotocol.io">Werkzeugen</a>.</p>
+<p>Bitte bis Freitag das Review abschlie=C3=9Fen.</p>
+<img src=3D"data:image/png;base64,iVBORw0KGgo=3D" alt=3D"logo">
+<img src=3D"https://track.heise.de/open.gif" width=3D"1" height=3D"1">
+</body></html>
+--b1--

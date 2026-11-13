@@ -1,0 +1,9 @@
+// Caps parallel C++ compile/link jobs of every native module at 3 (CMake job pools), so an Android
+// release build does not exhaust RAM. Used by scripts/build-android.mjs via `gradlew -I`.
+allprojects { p ->
+  def cap = { ext ->
+    ext.defaultConfig.externalNativeBuild.cmake.arguments "-DCMAKE_JOB_POOLS=capped=3", "-DCMAKE_JOB_POOL_COMPILE=capped", "-DCMAKE_JOB_POOL_LINK=capped"
+  }
+  p.pluginManager.withPlugin("com.android.library") { cap(p.android) }
+  p.pluginManager.withPlugin("com.android.application") { cap(p.android) }
+}
