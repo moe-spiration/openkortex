@@ -17,6 +17,62 @@
     });
   });
 
+  // Theme switch: flips between light and dark and remembers the choice; without a choice the system decides.
+  document.querySelectorAll("[data-theme-toggle]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var root = document.documentElement;
+      var now = root.getAttribute("data-theme") || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      var next = now === "light" ? "dark" : "light";
+      root.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem("okx-theme", next);
+      } catch {
+        /* storage blocked: the choice lasts for this page */
+      }
+    });
+  });
+
+  // GitHub stars next to the header link. Cached for an hour; shown only from 10 stars on, and never blocks anything.
+  var stars = document.querySelector("[data-stars]");
+  var gh = stars && stars.closest("a");
+  var m = gh && /github\.com\/([\w.-]+\/[\w.-]+)/.exec(gh.href);
+  if (m && window.fetch) {
+    var showStars = function (n) {
+      if (typeof n !== "number" || n < 10) return;
+      stars.textContent = n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + "k" : String(n);
+      stars.hidden = false;
+    };
+    var cached = null;
+    try {
+      cached = JSON.parse(localStorage.getItem("okx-stars") || "null");
+    } catch {
+      cached = null;
+    }
+    if (cached && Date.now() - cached.at < 3600000) showStars(cached.n);
+    else
+      fetch("https://api.github.com/repos/" + m[1], { headers: { Accept: "application/vnd.github+json" } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (!d) return;
+          showStars(d.stargazers_count);
+          try {
+            localStorage.setItem("okx-stars", JSON.stringify({ n: d.stargazers_count, at: Date.now() }));
+          } catch {
+            /* not cached */
+          }
+        })
+        .catch(function () {});
+  }
+
+  // Marquees loop seamlessly: the list is doubled once, the copy hidden from assistive technology.
+  document.querySelectorAll(".marquee ul").forEach(function (ul) {
+    Array.prototype.slice.call(ul.children).forEach(function (li) {
+      var c = li.cloneNode(true);
+      c.setAttribute("aria-hidden", "true");
+      ul.appendChild(c);
+    });
+  });
+
   // The hero orbit uses SVG animation; hold it still for reduced motion.
   if (reduced) {
     var svg = document.querySelector(".orbit svg");
@@ -130,6 +186,34 @@
       });
     });
     show(0);
+  }
+
+  /* ---------- scenes: replay while on screen ---------- */
+  // Each scene is a short CSS choreography that starts when .is-live is set. Removing and setting the class
+  // again replays it. With reduced motion the class is never set and the scene shows its final state.
+  if (!reduced) {
+    document.querySelectorAll("[data-scene]").forEach(function (el) {
+      var ms = Number(el.getAttribute("data-scene")) || 11000;
+      var timer = null;
+      el.style.setProperty("--loop", ms + "ms");
+      function play() {
+        clearTimeout(timer);
+        el.classList.remove("is-live");
+        void el.offsetWidth;
+        el.classList.add("is-live");
+        timer = setTimeout(play, ms);
+      }
+      new IntersectionObserver(
+        function (entries) {
+          if (entries[0].isIntersecting) play();
+          else {
+            clearTimeout(timer);
+            el.classList.remove("is-live");
+          }
+        },
+        { threshold: 0.35 },
+      ).observe(el);
+    });
   }
 
   /* ---------- gallery deck ---------- */

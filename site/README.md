@@ -41,19 +41,22 @@ repository), else the GitHub remote `origin` of the clone. No external fonts, sc
 tracking: the typeface is Geist from the demo build, the screenshots in `img/` are taken from the
 demo at build time and are not in git.
 
-<<<<<<< HEAD
 Motion (`src/site.css`, `src/site.js`): the hero diagram (every app sends captures to the server,
 which files Markdown and answers agents) plays once on load, then labelled chips for the kinds of
 content (website, e-book, recipe, photo, ...) travel from their app to the center; the four steps and the screenshot deck
-advance only while on screen and pause on hover or focus. With "reduce motion" nothing moves by
-itself; everything stays reachable by click and keyboard.
+advance only while on screen and pause on hover or focus. The three scenes (clipping in the browser,
+capturing on the phone, agents reading and writing) are short CSS choreographies that `site.js`
+replays while they are on screen. The header has a light/dark switch (kept per browser, otherwise the
+system decides) and shows the GitHub stars from 10 on (read from the GitHub API, cached an hour).
+With "reduce motion" nothing moves by itself; everything stays reachable by click and keyboard.
+
+Pictures for the repository README (`site/readme/`, referenced by `oss/overlay/README.md`):
+`node site/scripts/readme-media.mjs` after `pnpm site:build` records the hero diagram and the three
+scenes as GIFs and copies the demo screens. It needs ffmpeg on PATH. New or changed pictures have to
+be approved for the export (`node scripts/oss-export.mjs --check --approve-binaries site/readme/`).
 
 ## Hosting (Cloudflare Pages)
 
-=======
-## Hosting (Cloudflare Pages)
-
->>>>>>> origin/main
 The site is uploaded to Cloudflare Pages (free plan) by Direct Upload: the build needs Playwright
 and a Chromium, which Cloudflare's own build image does not offer reliably, so it runs where the
 repository is checked out.

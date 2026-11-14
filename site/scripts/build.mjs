@@ -47,6 +47,10 @@ const LOCALES = [
 
 
 // On "/" only: a German browser goes to /de/ once, unless the visitor picked a language before.
+// Theme: "auto" follows the system; a choice in the header (site.js) is kept per browser and set before paint.
+const THEMEBOOT = `<script>try{var t=localStorage.getItem("okx-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>`;
+const themeToggle = (strings, iconMap) =>
+  `<button class="theme" type="button" data-theme-toggle aria-label="${strings["nav.theme"]}" title="${strings["nav.theme"]}">${iconMap["icon:sun"]}${iconMap["icon:moon"]}</button>`;
 const AUTOLANG = `<script>try{var l=localStorage.getItem("okx-lang");if(!l&&/^de\\b/i.test(navigator.language||""))location.replace("/de/")}catch(e){}</script>`;
 
 // Lucide icons (ISC), inlined as SVG from the web app's lucide-react: {{icon:name}} in the template.
@@ -88,7 +92,7 @@ const localeStrings = (loc) =>
 
 async function buildPages() {
   const template = readFileSync(join(site, "src/index.html"), "utf8");
-  const iconMap = await icons(template);
+  const iconMap = await icons(`${template}{{icon:sun}}{{icon:moon}}`); // the theme switch is not in the template
   const fontCss = fonts();
   for (const loc of LOCALES) {
     const strings = localeStrings(loc);
@@ -106,6 +110,11 @@ async function buildPages() {
       otherLang: other.lang,
       otherLabel: other.label,
       autolang: loc.dir ? "" : AUTOLANG,
+      themeboot: THEMEBOOT,
+      themeToggle: themeToggle(strings, iconMap),
+      releasesUrl: link("/releases"),
+      issueBugUrl: link("/issues/new?template=bug.yml"),
+      issueIdeaUrl: link("/issues/new?template=feature.yml"),
       repoUrl,
       codeUrl: link(""),
       guideUrl: link("/blob/main/selfhost/README.md"),
@@ -152,7 +161,7 @@ function plainPages(iconMap, fontCss) {
     const strings = localeStrings(loc);
     const home = loc.dir ? `/${loc.dir}/` : "/";
     const page = (pageTitle, body, robots = "noindex") =>
-      render(template, strings, { ...iconMap, mark: MARK, fonts: fontCss, lang: loc.lang, home, pageTitle, body, robots, imprintLink: imprintLink(loc, strings) });
+      render(template, strings, { ...iconMap, mark: MARK, fonts: fontCss, lang: loc.lang, home, pageTitle, body, robots, themeboot: THEMEBOOT, themeToggle: themeToggle(strings, iconMap), imprintLink: imprintLink(loc, strings) });
     const cta = `<div class="cta"><a class="btn primary" href="/home">${iconMap["icon:play"]}${strings["hero.demo"]}</a><a class="btn" href="${home}">${strings["soon.back"]}</a></div>`;
     write(
       join(out, loc.dir, "soon.html"),
