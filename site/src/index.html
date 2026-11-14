@@ -19,6 +19,7 @@
 <link rel="alternate" hreflang="x-default" href="{{siteUrl}}/">
 {{fonts}}
 <link rel="stylesheet" href="/site/site.css">
+{{themeboot}}
 {{autolang}}
 </head>
 <body>
@@ -26,10 +27,13 @@
 <header class="top">
   <a class="brand" href="{{home}}" aria-label="OpenKortex">{{mark}}<span>OpenKortex</span></a>
   <nav aria-label="{{nav.label}}">
-    <a href="#flow">{{nav.how}}</a>
+    <a href="#scenes">{{nav.how}}</a>
+    <a href="#files">{{nav.files}}</a>
     <a href="#apps">{{nav.apps}}</a>
     <a href="#selfhost">{{nav.selfhost}}</a>
-    <a href="{{codeUrl}}">GitHub</a>
+    <a href="#faq">{{nav.faq}}</a>
+    <a class="gh" href="{{codeUrl}}" aria-label="{{nav.star}}">{{icon:star}}<span>GitHub</span><b data-stars hidden></b></a>
+    {{themeToggle}}
     <a class="lang" href="{{otherHref}}" hreflang="{{otherLang}}" data-lang="{{otherLang}}">{{otherLabel}}</a>
   </nav>
 </header>
@@ -38,6 +42,7 @@
   <!-- Hero: the one orchestrated moment. Captures travel from every app into the brain and come back as Markdown. -->
   <section class="hero">
     <div class="hero-copy">
+      <a class="pill" href="{{codeUrl}}">{{icon:star}}<span>{{hero.pill}}</span>{{icon:arrow-right}}</a>
       <h1>{{hero.title}}</h1>
       <p class="lead">{{hero.lead}}</p>
       <div class="cta">
@@ -45,6 +50,9 @@
         <a class="btn" href="{{codeUrl}}">{{icon:code}}{{hero.github}}</a>
       </div>
       <p class="fine">{{hero.note}}</p>
+      <ul class="badges" aria-label="{{hero.badges}}">
+        <li>{{icon:scale}}AGPL-3.0</li><li>{{icon:server}}{{hero.b1}}</li><li>{{icon:file-text}}Markdown</li><li>{{icon:bot}}MCP</li><li>{{icon:languages}}EN · DE</li>
+      </ul>
     </div>
 
     <figure class="orbit" aria-label="{{orbit.label}}">
@@ -116,6 +124,12 @@
     <p><strong>{{p1.title}}</strong> {{p1.text}}</p>
     <p><strong>{{p2.title}}</strong> {{p2.text}}</p>
     <p><strong>{{p3.title}}</strong> {{p3.text}}</p>
+  </section>
+
+  <!-- Who it is for: two rows drifting in opposite directions (paused on hover and for reduced motion). -->
+  <section class="uses" aria-label="{{use.title}}">
+    <p class="uses-title">{{use.title}}</p>
+    <div class="marquee"><ul><li>{{icon:graduation-cap}}<b>{{use.u1}}</b><span>{{use.u1t}}</span></li><li>{{icon:rocket}}<b>{{use.u2}}</b><span>{{use.u2t}}</span></li><li>{{icon:briefcase}}<b>{{use.u3}}</b><span>{{use.u3t}}</span></li><li>{{icon:pen-line}}<b>{{use.u4}}</b><span>{{use.u4t}}</span></li><li>{{icon:code}}<b>{{use.u5}}</b><span>{{use.u5t}}</span></li><li>{{icon:chef-hat}}<b>{{use.u6}}</b><span>{{use.u6t}}</span></li><li>{{icon:users}}<b>{{use.u7}}</b><span>{{use.u7t}}</span></li><li>{{icon:heart-pulse}}<b>{{use.u8}}</b><span>{{use.u8t}}</span></li></ul></div>
   </section>
 
   <!-- A real sequence, so the steps are numbered. The stage shows a small live-built piece of the app per step. -->
@@ -198,6 +212,172 @@
     </div>
   </section>
 
+  <!-- Three abstract scenes built in HTML: how capturing in the browser and on the phone works, and how agents read and write.
+       site.js replays each one while it is on screen; without script or with reduced motion they show their final state. -->
+  <section id="scenes" class="scenes">
+    <div class="section-head">
+      <h2>{{sc.title}}</h2>
+      <p>{{sc.lead}}</p>
+    </div>
+
+    <article class="scene" data-scene="11000">
+      <div class="scene-copy">
+        <p class="eyebrow">{{icon:scissors}}{{sc1.kicker}}</p>
+        <h3>{{sc1.title}}</h3>
+        <p>{{sc1.text}}</p>
+        <ul class="ticks">
+          <li>{{icon:check}}{{sc1.a}}</li>
+          <li>{{icon:check}}{{sc1.b}}</li>
+          <li>{{icon:check}}{{sc1.c}}</li>
+        </ul>
+      </div>
+      <div class="scene-vis v-clip" aria-hidden="true"><div class="sv">
+        <div class="win">
+          <div class="win-bar"><i></i><i></i><i></i><span class="url">{{icon:lock}}teamhandbook.example/retros</span><span class="ext a-press" style="--t:1.5">{{mark}}</span></div>
+          <div class="page">
+            <b>{{ui.c4}}</b>
+            <i class="l"></i><i class="l"></i>
+            <span class="hl" style="--t:6.3">{{sc1.quote}}</span>
+            <i class="l"></i><i class="l s"></i>
+          </div>
+          <div class="pop">
+            <span class="row main"><span class="a-out" style="--t:3.2">{{icon:download}}{{sc1.save}}</span><span class="a-fade done" style="--t:3.3">{{icon:check}}{{sc1.saved}}</span></span>
+            <span class="row">{{icon:highlighter}}{{sc1.highlight}}</span>
+            <span class="row">{{icon:message-square}}{{sc1.chat}}</span>
+          </div>
+        </div>
+        <span class="fly">{{icon:globe}}{{kind.website}}</span>
+        <div class="ui note a-rise" style="--t:4.1">
+          <div class="ui-head a-rise" style="--t:4.4">{{icon:globe}}<b>{{ui.c4}}</b></div>
+          <p class="label a-fade" style="--t:4.9">{{icon:sparkles}}{{ui.summary}}</p>
+          <p class="line a-wipe" style="--t:5.1">{{sc1.sum}}</p>
+          <div class="chips"><span class="a-pop" style="--t:5.8">#retro</span><span class="a-pop" style="--t:5.95">#team</span></div>
+          <p class="quote a-wipe" style="--t:7.6">{{sc1.quote}}</p>
+          <p class="path a-fade" style="--t:8.2">{{icon:folder}}30_Clippings / Team</p>
+        </div>
+        <span class="cursor">{{icon:mouse-pointer-2}}</span>
+      </div></div>
+    </article>
+
+    <article class="scene flip" data-scene="11000">
+      <div class="scene-copy">
+        <p class="eyebrow">{{icon:smartphone}}{{sc2.kicker}}</p>
+        <h3>{{sc2.title}}</h3>
+        <p>{{sc2.text}}</p>
+        <ul class="ticks">
+          <li>{{icon:check}}{{sc2.a}}</li>
+          <li>{{icon:check}}{{sc2.b}}</li>
+          <li>{{icon:check}}{{sc2.c}}</li>
+        </ul>
+      </div>
+      <div class="scene-vis v-phone" aria-hidden="true"><div class="sv">
+        <div class="phone">
+          <div class="shot"><span class="img">{{icon:chef-hat}}</span><b>{{sc2.recipe}}</b><i class="l"></i><i class="l"></i><i class="l s"></i></div>
+          <div class="toast a-rise" style="--t:3.3">{{icon:check}}{{sc2.toast}}</div>
+          <div class="talk"><span class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="mic a-press" style="--t:5.4">{{icon:mic}}</span></div>
+          <div class="sheet">
+            <small>{{sc2.share}}</small>
+            <div class="targets"><span>{{icon:message-circle}}</span><span>{{icon:mail}}</span><span class="me a-press" style="--t:2.4">{{mark}}</span><span>{{icon:copy}}</span></div>
+          </div>
+        </div>
+        <div class="results">
+          <div class="ui res a-rise" style="--t:3.8">
+            <div class="ui-head">{{icon:chef-hat}}<b>{{sc2.recipe}}</b></div>
+            <p class="meta">{{sc2.recipeMeta}}</p>
+            <p class="path">{{icon:folder}}50_Recipes</p>
+          </div>
+          <div class="ui res a-rise" style="--t:7.2">
+            <div class="ui-head">{{icon:mic}}<b>{{ui.c3}}</b><small>0:12</small></div>
+            <p class="meta a-wipe" style="--t:7.7">{{sc2.memo}}</p>
+            <p class="task a-rise" style="--t:8.6">{{icon:square-check}}{{sc2.task}}</p>
+          </div>
+        </div>
+      </div></div>
+    </article>
+
+    <article class="scene" data-scene="12000">
+      <div class="scene-copy">
+        <p class="eyebrow">{{icon:bot}}{{sc3.kicker}}</p>
+        <h3>{{sc3.title}}</h3>
+        <p>{{sc3.text}}</p>
+        <ul class="ticks">
+          <li>{{icon:check}}{{sc3.a}}</li>
+          <li>{{icon:check}}{{sc3.b}}</li>
+          <li>{{icon:check}}{{sc3.c}}</li>
+        </ul>
+      </div>
+      <div class="scene-vis v-agent" aria-hidden="true"><div class="sv">
+        <div class="ui agent">
+          <div class="ui-head">{{icon:bot}}<b>{{sc3.agent}}</b><small>MCP</small></div>
+          <p class="say a-rise" style="--t:0.7">{{ui.q}}</p>
+          <p class="call a-rise" style="--t:1.8"><em class="r">{{sc3.read}}</em><code>brain_search</code><span>{{sc3.hits}}</span></p>
+          <p class="call a-rise" style="--t:3.0"><em class="r">{{sc3.read}}</em><code>brain_get_item</code><span>{{ui.src2}}</span></p>
+          <p class="think a-wipe" style="--t:4.2">{{sc3.think}}</p>
+          <p class="call a-rise" style="--t:5.6"><em class="w">{{sc3.write}}</em><code>brain_save_item</code><span>{{sc3.note}}</span></p>
+          <p class="call a-rise" style="--t:7.0"><em class="w">{{sc3.write}}</em><code>brain_manage_tasks</code><span>{{ui.task}}</span></p>
+        </div>
+        <div class="ui vault">
+          <div class="ui-head">{{icon:folder-open}}<b>{{sc3.vault}}</b></div>
+          <p class="dir">30_Clippings/</p>
+          <p class="file a-glow" style="--t:2.0">{{icon:file-text}}Local-first software.md</p>
+          <p class="dir">70_Objects/Projects/</p>
+          <p class="file a-glow" style="--t:3.2">{{icon:file-text}}Atlas.md</p>
+          <p class="dir">10_Notes/</p>
+          <p class="file new a-rise" style="--t:5.9">{{icon:file-plus}}{{sc3.note}}.md<em>{{sc3.new}}</em></p>
+          <p class="file new a-rise" style="--t:7.3">{{icon:square-check}}{{ui.task}}<em>{{sc3.new}}</em></p>
+        </div>
+      </div></div>
+    </article>
+  </section>
+
+  <!-- What people ask their agents, once OpenKortex is connected. -->
+  <section class="asks" aria-label="{{ask.title}}">
+    <div class="section-head center">
+      <h2>{{ask.title}}</h2>
+      <p>{{ask.lead}}</p>
+    </div>
+    <div class="marquee prompts"><ul><li>{{icon:search}}{{ask.q1}}</li><li>{{icon:list-checks}}{{ask.q2}}</li><li>{{icon:calendar-days}}{{ask.q3}}</li><li>{{icon:file-plus}}{{ask.q4}}</li><li>{{icon:users}}{{ask.q5}}</li><li>{{icon:link}}{{ask.q6}}</li><li>{{icon:sparkles}}{{ask.q7}}</li><li>{{icon:folder-input}}{{ask.q8}}</li></ul></div>
+    <p class="clients">{{ask.clients}}</p>
+  </section>
+
+  <!-- No lock-in: the vault is plain files; OpenKortex is one of several things that can open them. -->
+  <section id="files" class="own">
+    <div class="own-copy">
+      <h2>{{own.title}}</h2>
+      <p class="lead">{{own.lead}}</p>
+      <ul class="facts">
+        <li>{{icon:file-text}}<div><h3>{{own.f1}}</h3><p>{{own.f1t}}</p></div></li>
+        <li>{{icon:unplug}}<div><h3>{{own.f2}}</h3><p>{{own.f2t}}</p></div></li>
+        <li>{{icon:truck}}<div><h3>{{own.f3}}</h3><p>{{own.f3t}}</p></div></li>
+        <li>{{icon:power-off}}<div><h3>{{own.f4}}</h3><p>{{own.f4t}}</p></div></li>
+      </ul>
+    </div>
+    <figure class="own-vis" aria-label="{{own.figure}}">
+      <p class="crumb">{{icon:folder-open}}~/vault/30_Clippings/Talks/<b>local-first-software.md</b></p>
+      <pre class="md"><code><span class="c">---</span>
+<span class="k">title:</span> "{{ui.c1}}"
+<span class="k">type:</span> video
+<span class="k">tags:</span> [local-first, sync, talks]
+<span class="k">source:</span> https://video.example/watch/lf
+<span class="c">---</span>
+
+<span class="h">## {{ui.summary}}</span>
+{{ui.sum1}}
+{{ui.sum2}}
+
+<span class="h">## {{own.links}}</span>
+<span class="w">[[CRDTs]]</span> · <span class="w">[[Atlas]]</span> · <span class="w">[[Ines Park]]</span></code></pre>
+      <p class="opens">{{own.opens}}</p>
+      <ul class="openers">
+        <li style="--i:0">{{mark}}<span>OpenKortex</span></li>
+        <li style="--i:1">{{icon:pen-line}}<span>{{own.o1}}</span></li>
+        <li style="--i:2">{{icon:git-branch}}<span>Git</span></li>
+        <li style="--i:3">{{icon:terminal}}<span>{{own.o2}}</span></li>
+        <li style="--i:4">{{icon:bot}}<span>{{orbit.mcp}}</span></li>
+      </ul>
+    </figure>
+  </section>
+
   <!-- Real screens from the live demo, stacked; the front one cross-fades to the next. -->
   <section class="gallery" data-deck>
     <div class="section-head">
@@ -235,6 +415,15 @@
       <li>{{icon:bot}}<div><h3>{{apps.mcp}}</h3><p>{{apps.mcpText}}</p></div></li>
       <li>{{icon:folder-open}}<div><h3>{{apps.md}}</h3><p>{{apps.mdText}}</p></div></li>
     </ul>
+    <div class="get">
+      <div><h3>{{get.title}}</h3><p>{{get.lead}}</p></div>
+      <div class="cta">
+        <a class="btn" href="{{releasesUrl}}">{{icon:monitor}}{{get.windows}}</a>
+        <a class="btn" href="{{releasesUrl}}">{{icon:smartphone}}{{get.android}}</a>
+        <a class="btn" href="{{releasesUrl}}">{{icon:puzzle}}{{get.extension}}</a>
+        <a class="btn primary" href="#selfhost">{{icon:server}}{{get.server}}</a>
+      </div>
+    </div>
   </section>
 
   <section id="selfhost" class="selfhost">
@@ -256,20 +445,35 @@
 <span class="p">$</span> cd selfhost &amp;&amp; docker compose up -d --build</code></pre>
   </section>
 
-  <section class="closing">
+  <section id="faq" class="faq">
+    <div class="section-head">
+      <h2>{{faq.title}}</h2>
+      <p>{{faq.lead}}</p>
+    </div>
+    <div class="faq-list"><details><summary>{{faq.q1}}{{icon:plus}}</summary><p>{{faq.a1}}</p></details><details><summary>{{faq.q2}}{{icon:plus}}</summary><p>{{faq.a2}}</p></details><details><summary>{{faq.q3}}{{icon:plus}}</summary><p>{{faq.a3}}</p></details><details><summary>{{faq.q4}}{{icon:plus}}</summary><p>{{faq.a4}}</p></details><details><summary>{{faq.q5}}{{icon:plus}}</summary><p>{{faq.a5}}</p></details><details><summary>{{faq.q6}}{{icon:plus}}</summary><p>{{faq.a6}}</p></details><details><summary>{{faq.q7}}{{icon:plus}}</summary><p>{{faq.a7}}</p></details><details><summary>{{faq.q8}}{{icon:plus}}</summary><p>{{faq.a8}}</p></details><details><summary>{{faq.q9}}{{icon:plus}}</summary><p>{{faq.a9}}</p></details></div>
+  </section>
+
+  <section id="community" class="closing">
     {{markLarge}}
     <h2>{{open.title}}</h2>
     <p>{{open.text}}</p>
+    <ul class="join">
+      <li><a href="{{codeUrl}}">{{icon:star}}<b>{{join.star}}</b><span>{{join.starT}}</span></a></li>
+      <li><a href="{{issueBugUrl}}">{{icon:bug}}<b>{{join.bug}}</b><span>{{join.bugT}}</span></a></li>
+      <li><a href="{{issueIdeaUrl}}">{{icon:lightbulb}}<b>{{join.idea}}</b><span>{{join.ideaT}}</span></a></li>
+      <li><a href="{{contributeUrl}}">{{icon:git-pull-request}}<b>{{open.contribute}}</b><span>{{join.codeT}}</span></a></li>
+      <li><a href="{{releasesUrl}}">{{icon:bell}}<b>{{join.watch}}</b><span>{{join.watchT}}</span></a></li>
+    </ul>
     <div class="cta">
       <a class="btn primary" href="/home">{{icon:play}}{{hero.demo}}</a>
-      <a class="btn" href="{{contributeUrl}}">{{icon:git-pull-request}}{{open.contribute}}</a>
+      <a class="btn" href="{{codeUrl}}">{{icon:star}}{{join.star}}</a>
     </div>
   </section>
 </main>
 
 <footer>
   <p>{{footer.text}}</p>
-  <p class="links"><a href="{{codeUrl}}">GitHub</a><a href="{{licenseUrl}}">AGPL-3.0</a><a href="/home">{{footer.demo}}</a>{{imprintLink}}<a href="{{otherHref}}" hreflang="{{otherLang}}" data-lang="{{otherLang}}">{{otherLabel}}</a></p>
+  <p class="links"><a href="{{codeUrl}}">GitHub</a><a href="{{releasesUrl}}">{{footer.releases}}</a><a href="{{licenseUrl}}">AGPL-3.0</a><a href="/home">{{footer.demo}}</a>{{imprintLink}}<a href="{{otherHref}}" hreflang="{{otherLang}}" data-lang="{{otherLang}}">{{otherLabel}}</a></p>
 </footer>
 <script src="/site/site.js" defer></script>
 </body>

@@ -11,7 +11,7 @@ test("English and German texts have the same keys, and the page uses only known 
   const de = JSON.parse(read("../src/i18n/de.json"));
   assert.deepEqual(Object.keys(de).sort(), Object.keys(en).sort());
   const template = read("../src/index.html");
-  const values = { lang: "", home: "", otherHref: "", otherLang: "", otherLabel: "", autolang: "", repoUrl: "", repoName: "", siteUrl: "", canonical: "", mark: "", markLarge: "", fonts: "", codeUrl: "", guideUrl: "", contributeUrl: "", licenseUrl: "", imprintLink: "" };
+  const values = { lang: "", home: "", otherHref: "", otherLang: "", otherLabel: "", autolang: "", repoUrl: "", repoName: "", siteUrl: "", canonical: "", mark: "", markLarge: "", fonts: "", codeUrl: "", guideUrl: "", contributeUrl: "", licenseUrl: "", imprintLink: "", themeboot: "", themeToggle: "", releasesUrl: "", issueBugUrl: "", issueIdeaUrl: "" };
   for (const [, name] of template.matchAll(/\{\{(icon:[a-z0-9-]+)\}\}/g)) values[name] = "";
   assert.doesNotThrow(() => render(template, en, values));
   assert.doesNotThrow(() => render(template, de, values));
