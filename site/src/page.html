@@ -9,12 +9,14 @@
 <link rel="icon" href="/site/mark.svg" type="image/svg+xml">
 {{fonts}}
 <link rel="stylesheet" href="/site/site.css">
+{{themeboot}}
 </head>
 <body class="plain">
 <header class="top">
   <a class="brand" href="{{home}}" aria-label="OpenKortex">{{mark}}<span>OpenKortex</span></a>
   <nav aria-label="{{nav.label}}">
     <a href="{{home}}">{{soon.back}}</a>
+    {{themeToggle}}
   </nav>
 </header>
 <main id="main" class="notice">
@@ -24,5 +26,6 @@
   <p>{{footer.text}}</p>
   <p class="links"><a href="{{home}}">OpenKortex</a><a href="/home">{{footer.demo}}</a>{{imprintLink}}</p>
 </footer>
+<script src="/site/site.js" defer></script>
 </body>
 </html>
