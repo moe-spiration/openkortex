@@ -2,6 +2,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterAll, describe, expect, it } from "vitest";
 import { bridge } from "@/bridge";
+import { DEMO_LINES } from "@/bridge/mock";
 import { DesktopProvider, useDesktop } from "@/state/desktop";
 import { clockStore } from "@/state/clock";
 import { levelStore } from "@/state/levels";
@@ -42,6 +43,12 @@ describe("HUD rendering under level events", () => {
     });
     const hud = host.querySelector(".kxd-hud")!;
     expect(hud.getAttribute("data-phase")).toBe("live");
+    // The mock bridge opens on a running conversation: 60 ms after it is created it sends the first
+    // transcript lines, a real state change that renders. Wait for them before counting, otherwise a
+    // slow runner counts that render as one caused by the level events.
+    const intro = DEMO_LINES[1]!.text;
+    for (let i = 0; i < 100 && !hud.textContent?.includes(intro); i++) await act(frame);
+    expect(hud.textContent).toContain(intro);
 
     const b = bridge() as ReturnType<typeof bridge> & { emit: (e: string, p: unknown) => void };
     const N = 300;
