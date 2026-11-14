@@ -2,6 +2,6 @@
   "//": "Where the website lives. Moving to another domain: change `url` (and add the domain to the Cloudflare Pages project); everything else uses root-relative paths. `cloudflareProject` is the Pages project `pnpm site:deploy` uploads to.",
   "url": "https://openkortex.pages.dev",
   "cloudflareProject": "openkortex",
-  "//repoPublic": "false while the repository is still private: links to it then lead to the 'not public yet' page (/soon) instead of a GitHub 404. Set to true on the day the repository goes public.",
-  "repoPublic": false
+  "//repoPublic": "true: the repository is public since 2026-11-14, so links to it go straight to GitHub. With false they would lead to the 'not public yet' page (/soon) instead.",
+  "repoPublic": true
 }
