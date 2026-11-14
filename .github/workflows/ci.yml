@@ -48,4 +48,4 @@ jobs:
           mkdir -p "$RUNNER_TEMP/gitleaks" && tar -xzf gitleaks.tar.gz -C "$RUNNER_TEMP/gitleaks" gitleaks
           rm gitleaks.tar.gz
       - name: Scan the whole history
-        run: '"$RUNNER_TEMP/gitleaks/gitleaks" git --redact --no-banner .'
+        run: '"$RUNNER_TEMP/gitleaks/gitleaks" git --redact --verbose --no-banner .'

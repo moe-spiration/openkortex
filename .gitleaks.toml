@@ -1,0 +1,12 @@
+title = "OpenKortex"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fixed fake values in tests and test fixtures"
+paths = [
+  '''(^|/)__tests__/''',
+  '''\.test\.[cm]?[jt]sx?$''',
+  '''(^|/)test/''',
+]
