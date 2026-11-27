@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type
 import { BellRing, Check, ExternalLink, Sparkles, Trash2, X } from "lucide-react";
 import { ContextMenu, isContextMenuKey, menuFor, useContextMenu, type ActionId } from "@kortex/ui";
 import { Ico } from "@/components/shell/icons";
+import { Pictogram } from "@/components/motion/Pictogram";
 import { TypeIcon } from "@/components/note/icons";
 import { INBOX_ACTIVE, INBOX_TARGET_FOLDERS, MOCK_TODAY, NOTES, OBJECT_ITEMS, isLiveData, type ItemType, type KnowledgeItem, type NoteSummary } from "@/lib/workspace-data";
 import type { InboxKind, InboxTarget } from "@/lib/mock/views";
@@ -20,7 +21,9 @@ import { useInbox, type InboxRow, type ReviewItem } from "./useInbox";
 import { UNDO_MS } from "./useItemActions";
 import { LazyItems } from "./useIncremental";
 import { NoAiKeyNotice } from "@/components/settings/NoAiKeyNotice";
-import { t, tx } from "@/i18n";
+import { useLook } from "@/components/theme/look";
+import { InboxRuhe } from "./InboxRuhe";
+import { t, tn, tx } from "@/i18n";
 
 /*
  * Inbox (Feinschliff Live, dummy "INBOX"): "Inbox" with the line "Alles landet hier …", then two tiles.
@@ -66,6 +69,11 @@ function objectOf(r: ReviewItem): EntryObject | undefined {
 export function InboxView() {
   const { captures, showToast, openNote } = useShell();
   const inbox = useInbox();
+  const inboxRef = useRef(inbox);
+  inboxRef.current = inbox;
+  const ruhe = useLook() === "ruhe";
+  /** Ruhe: the proposal whose editor ("Ändern") is open in the side pane. */
+  const [changingId, setChangingId] = useState<string | null>(null);
   const { items } = useNotes();
   const today = todayIso();
   /** The proposal opened with "Ändern" (keys act on it). */
@@ -111,6 +119,11 @@ export function InboxView() {
   );
 
   const current: ReviewItem | undefined = review.find((r) => r.id === editing);
+
+  // Ruhe shows the chosen capture in a side pane, so one is always chosen while the queue has any.
+  useEffect(() => {
+    if (ruhe && !current && review.length) setEditing(review[0]!.id);
+  }, [ruhe, current, review]);
 
   const neighbour = useCallback(
     (item: ReviewItem) => {
@@ -177,7 +190,12 @@ export function InboxView() {
       // Enter on a focused button is that button's click.
       if (k === "enter" && (e.target as HTMLElement | null)?.closest?.("button, a")) return;
       if (k === "enter") accept(current);
-      else if (k === "e") targetRef.current?.focus();
+      else if (k === "e") {
+        if (ruhe) {
+          setChangingId(current.id);
+          requestAnimationFrame(() => targetRef.current?.focus());
+        } else targetRef.current?.focus();
+      }
       else if (k === "x") dismiss(current, "archive");
       else if (k === "backspace" || k === "delete") dismiss(current, "delete");
       else if (k === "t") tagRef.current?.focus();
@@ -190,7 +208,22 @@ export function InboxView() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [review, current, accept, dismiss, openNote, showToast]);
+  }, [review, current, accept, dismiss, openNote, showToast, ruhe]);
+
+  /** Ruhe "Alle Vorschläge übernehmen": every clear proposal at once, one toast with an undo for all. */
+  const acceptAll = useCallback(
+    (list: ReviewItem[]) => {
+      if (!list.length) return;
+      for (const r of list) inbox.accept(r);
+      showToast(tn(list.length, "{n} suggestion accepted", "{n} suggestions accepted"), {
+        label: t("Undo"),
+        run: () => {
+          for (const r of list) inboxRef.current.undo(r.id);
+        },
+      });
+    },
+    [inbox, showToast],
+  );
 
   // Drop or paste anywhere on the page goes through the shell's capture hook: an optimistic job in
   // "In Bearbeitung" right away, then /api/ingest with status polling (live) or the local row (mock).
@@ -214,7 +247,7 @@ export function InboxView() {
 
   return (
     <div
-      className={"fs-ib" + (dragging ? " is-drag" : "")}
+      className={(ruhe ? "rz-ib" : "fs-ib") + (dragging ? " is-drag" : "")}
       data-collection="inbox"
       onDragOver={(e) => {
         if (!acceptsDrop(e.dataTransfer.types)) return;
@@ -227,6 +260,56 @@ export function InboxView() {
       }}
       onDrop={onDrop}
     >
+      {ruhe ? (
+        <>
+          {dragging && (
+            <div className="fs-ib-drop" aria-hidden>
+              {t("Drop it: Kortex puts it in the Inbox")}
+            </div>
+          )}
+          <InboxRuhe
+            rows={rows}
+            working={working}
+            current={current}
+            changing={!!current && changingId === current.id}
+            typeOf={(r) => (r.itemId ? items[r.itemId]?.type : undefined) ?? KIND_TYPE[r.kind] ?? "note"}
+            dueOf={(r) => !!r.itemId && isDueOn(items[r.itemId]?.remindAt, today)}
+            confidenceOf={confidenceOf}
+            objectOf={objectOf}
+            whenOf={(r) => {
+              const it = itemOf(r);
+              return it ? whenLabel(it.date, it.time, MOCK_TODAY) : "";
+            }}
+            notice={<NoAiKeyNotice where="inbox" />}
+            editor={
+              current && (
+                <ProposalEditor
+                  item={current}
+                  targetRef={targetRef}
+                  tagRef={tagRef}
+                  onTarget={(path) => inbox.setTarget(current.id, path)}
+                  onTags={(tags) => inbox.setTags(current.id, tags)}
+                  onAccept={() => accept(current)}
+                  onDiscard={() => dismiss(current, "delete")}
+                  onArchive={() => dismiss(current, "archive")}
+                  onObject={(id) => openNote(id)}
+                />
+              )
+            }
+            onPick={(id) => setEditing(id)}
+            onChange={(id) => setChangingId(id)}
+            onAccept={accept}
+            onAcceptAll={acceptAll}
+            onUndo={(id) => inbox.undo(id)}
+            onArchive={(r) => dismiss(r, "archive")}
+            onDiscard={(r) => dismiss(r, "delete")}
+            onOpen={(id) => openNote(id)}
+            onDeleteJob={deleteJob}
+            onContextMenu={(r, e) => cm.bind(r.id).onContextMenu(e)}
+          />
+        </>
+      ) : (
+      <>
       <header>
         <h1 className="fs-ib-h1">Inbox</h1>
         <p className="fs-ib-sub">{t("Everything lands here. The AI Gardener sorts, you only confirm if you want to.")}</p>
@@ -273,6 +356,7 @@ export function InboxView() {
 
       <section className="fs-tile" aria-label={t("Sorted, please check briefly")}>
         <div className="fs-lbl">{t("Sorted, please check briefly")}</div>
+        {rows.length === 0 && <Pictogram kind="inbox" className="kx-art-ruhe" />}
         {rows.length === 0 && <p className="fs-ib-empty">{t("All checked. New captures appear here with the Gardener's suggestion.")}</p>}
         <LazyItems
           items={rows}
@@ -305,6 +389,8 @@ export function InboxView() {
           )}
         />
       </section>
+      </>
+      )}
 
       <ContextMenu
         at={cm.menu?.at ?? null}

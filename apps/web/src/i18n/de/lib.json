@@ -610,5 +610,8 @@
   "Chat export from the browser extension": "Gesprächsexport aus der Browser-Extension",
   "OCR and image description": "OCR und Bildbeschreibung",
   "Handed over": "Überführt",
-  "{n} handed over": "{n} überführt"
+  "{n} handed over": "{n} überführt",
+  "“{title}” not loaded: {error}": "„{title}“ nicht geladen: {error}",
+  "Mind dump": "Mind Dump",
+  "Inbox, AI files it": "Inbox, KI sortiert ein"
 }

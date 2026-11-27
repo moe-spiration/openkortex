@@ -10,7 +10,9 @@ import { useChrome } from "../ui/Chrome";
 import { Icon } from "../ui/Icon";
 import { Btn, glass, Micro, Spinner, T, Wave } from "../ui/primitives";
 import { AgentSwitch } from "../ui/AgentSwitch";
-import { HEADER_H } from "../ui/Shell";
+import { AgentSeg } from "./ruhe/AgentRuhe";
+import { RuheLocBar } from "../ui/ruhe";
+import { useHeaderH } from "../ui/Shell";
 import { LevelWave } from "../capture/LevelWave";
 import { AgentChanges, AgentSteps } from "../ui/AgentCards";
 import type { Autonomy } from "../lib/agent";
@@ -50,6 +52,7 @@ const LIVE_SUGGESTIONS = (latest?: string) => [
 
 export function Ask() {
   const th = useTheme();
+  const ruhe = th.look === "ruhe";
   const { top } = useChrome();
   const kb = useKeyboardInset();
   const a = useApp();
@@ -57,6 +60,7 @@ export function Ask() {
   const live = auth === "live";
   const d = useData();
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  const headerH = useHeaderH();
   // Scope of the next question: the whole vault or one entry (the chip next to the input).
   const [scopeId, setScopeId] = useState<string | null>(null);
   // Source peek: the entry behind a tapped source chip, shown in a bottom sheet without leaving the chat.
@@ -73,6 +77,15 @@ export function Ask() {
       return;
     }
     a.ask(text, scopeEntry?.id);
+  };
+  /**
+   * The send arrow. While recording it ends the recording and sends what was said (with what was
+   * typed before); during the transcription it waits for the text. Nothing is dropped silently.
+   */
+  const submit = async () => {
+    if (!a.askRec && !a.askTranscribing) return send(a.askText);
+    const text = await a.finishAskRec();
+    if (text) send(text);
   };
   const pickScope = () =>
     a.openMenu({
@@ -103,30 +116,50 @@ export function Ask() {
       title: t("Agent skills"),
       items: SKILL_CMDS.map((s) => ({ label: `${s.cmd().trim()} · ${s.label()}`, icon: "sparkles", run: () => a.setAskText(s.cmd()) })),
     });
+  // Ruhe: quiet action chips (28 high, r8, lum2) without accent tint; the model and the tools move into "…".
+  const chip = (on = false): ViewStyle =>
+    ruhe ? { height: 32, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 11, borderRadius: 8, backgroundColor: on ? th.accentSoft : th.name === "dark" ? th.lum2 : th.lum3 } : { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: on ? th.accentAiSoft : th.bgSurfaceMuted };
+  const chipIcon = (on = false) => (ruhe ? (on ? th.accentInk : th.t3) : on ? th.tags.ai.fg : th.textSecondary);
+  const moreMenu = () =>
+    a.openMenu({
+      title: t("Agent"),
+      items: [
+        { label: live ? t("Model: {model}", { model: "Auto" }) : t("Model: {model}", { model: MODELS[a.model] ?? "" }), icon: "sparkles", run: live ? () => a.say(t("The model follows your routing (web: Settings → AI)")) : a.nextModel },
+        ...(live ? [{ label: `${t("Agent")}: ${AUTONOMY_LABEL[a.autonomy]()}`, icon: "check", run: pickAutonomy }, { label: t("Skills"), icon: "sparkles", run: pickSkill }, { label: t("Report status"), icon: "check", run: () => a.setAskText("/status ") }] : []),
+        ...(a.msgs.length ? [{ label: t("New chat"), icon: "plus", run: a.resetChat }] : []),
+      ],
+    });
   useEffect(() => {
     scroll.current?.scrollToEnd({ animated: true });
   }, [a.msgs.length, a.thinking]);
 
   return (
-    <View style={{ position: "absolute", left: 0, right: 0, top: top + HEADER_H, bottom: kb, zIndex: kb ? 20 : 1, backgroundColor: kb ? th.bgMainWindow : undefined }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingTop: 8, paddingHorizontal: 18, paddingBottom: 10 }}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <T type="h3">Agent</T>
+    <View style={{ position: "absolute", left: 0, right: 0, top: top + headerH, bottom: kb, zIndex: kb ? 20 : 1, backgroundColor: kb ? th.bgMainWindow : undefined }}>
+      {ruhe ? (
+        <View style={{ paddingBottom: 8 }}>
+          <RuheLocBar title={t("Agent")} actions={[{ icon: "more", label: t("More"), onPress: moreMenu }]} />
+          <AgentSeg cur="ask" />
         </View>
-        <AgentSwitch cur="ask" />
-        <Pressable accessibilityRole="button" accessibilityLabel={t("Switch model")} onPress={live ? () => a.say(t("The model follows your routing (web: Settings → AI)")) : a.nextModel} style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 6, paddingLeft: 8, paddingRight: 10, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: th.accentAi, boxShadow: `0 0 0 3px ${th.accentAiSoft}` } as ViewStyle} />
-          <T size={12} lh={18} ls={0}>
-            {live ? "Auto" : MODELS[a.model]}
-          </T>
-        </Pressable>
-      </View>
+      ) : (
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingTop: 8, paddingHorizontal: 18, paddingBottom: 10 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T type={th.look === "ruhe" ? "h1" : "h3"}>Agent</T>
+          </View>
+          <AgentSwitch cur="ask" />
+          <Pressable accessibilityRole="button" accessibilityLabel={t("Switch model")} onPress={live ? () => a.say(t("The model follows your routing (web: Settings → AI)")) : a.nextModel} style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 6, paddingLeft: 8, paddingRight: 10, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: th.accentAi, boxShadow: `0 0 0 3px ${th.accentAiSoft}` } as ViewStyle} />
+            <T size={12} lh={18} ls={0}>
+              {live ? "Auto" : MODELS[a.model]}
+            </T>
+          </Pressable>
+        </View>
+      )}
 
       <ScrollView ref={scroll} style={{ flex: 1 }} contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 12, gap: 14 }} showsVerticalScrollIndicator={false}>
         {a.msgs.map((m, i) =>
           m.me ? (
-            <View key={i} style={[{ alignSelf: "flex-end", maxWidth: "82%", paddingVertical: 10, paddingHorizontal: 12, borderRadius: RADIUS.row, backgroundColor: th.bgSurfaceMuted }]}>
-              <T size={14} lh={21} weight={400} ls={0}>
+            <View key={i} style={[{ alignSelf: "flex-end", maxWidth: "82%", paddingVertical: 10, paddingHorizontal: ruhe ? 14 : 12, borderRadius: ruhe ? 16 : RADIUS.row, backgroundColor: ruhe ? (th.name === "dark" ? th.lum2 : th.lum3) : th.bgSurfaceMuted }]}>
+              <T size={ruhe ? 15 : 14} lh={ruhe ? 22 : 21} weight={400} ls={0}>
                 {m.text}
               </T>
             </View>
@@ -141,9 +174,9 @@ export function Ask() {
               <AgentChanges m={m} />
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
                 {(m.ids ?? []).map((id, n) => (
-                  <Pressable key={id} accessibilityRole="button" accessibilityLabel={t("View source {n}", { n: n + 1 })} onPress={() => setPeekId(id)} style={{ minHeight: 40, flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 10, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
-                    <View style={{ width: 18, height: 18, borderRadius: 6, alignItems: "center", justifyContent: "center", backgroundColor: th.accentAiSoft }}>
-                      <T mono size={11} lh={14} ls={0} weight={400} color={th.tags.ai.fg}>
+                  <Pressable key={id} accessibilityRole="button" accessibilityLabel={t("View source {n}", { n: n + 1 })} onPress={() => setPeekId(id)} hitSlop={{ top: 6, bottom: 6 }} style={ruhe ? chip() : { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 10, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
+                    <View style={{ width: 18, height: 18, borderRadius: 6, alignItems: "center", justifyContent: "center", backgroundColor: ruhe ? "transparent" : th.accentAiSoft }}>
+                      <T mono={!ruhe} num={ruhe} size={ruhe ? 12 : 11} lh={14} ls={0} weight={ruhe ? 500 : 400} color={ruhe ? th.t3 : th.tags.ai.fg}>
                         {n + 1}
                       </T>
                     </View>
@@ -160,7 +193,7 @@ export function Ask() {
               )}
               {!m.action && !!m.ids?.length && (
                 <View style={{ flexDirection: "row", gap: 6 }}>
-                  <Pressable accessibilityRole="button" onPress={() => saveAnswer(m.text, (m.titles ?? m.ids?.map((x) => entryById(x)?.title ?? "") ?? []).filter(Boolean))} style={{ minHeight: 40, flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
+                  <Pressable accessibilityRole="button" onPress={() => saveAnswer(m.text, (m.titles ?? m.ids?.map((x) => entryById(x)?.title ?? "") ?? []).filter(Boolean))} style={ruhe ? chip() : { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
                     <Icon name="note" size={14} color={th.textSecondary} />
                     <T size={12} lh={18} ls={0} color={th.textSecondary}>
                       {t("Save as a note")}
@@ -183,14 +216,14 @@ export function Ask() {
 
       <View style={{ paddingHorizontal: 14, paddingBottom: kb ? 10 : 100, gap: 8 }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
-          <Pressable accessibilityRole="button" accessibilityLabel={t("Choose the scope of the question")} onPress={pickScope} style={{ minHeight: 40, maxWidth: 220, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: scopeEntry ? th.accentAiSoft : th.bgSurfaceMuted }}>
-            <Icon name={scopeEntry ? "note" : "grid"} size={14} color={scopeEntry ? th.tags.ai.fg : th.textSecondary} />
-            <T size={12} lh={18} ls={0} numberOfLines={1} color={scopeEntry ? th.tags.ai.fg : th.textSecondary} style={{ flexShrink: 1 }}>
+          <Pressable accessibilityRole="button" accessibilityLabel={t("Choose the scope of the question")} onPress={pickScope} style={[chip(!!scopeEntry), { maxWidth: 220 }]}>
+            <Icon name={scopeEntry ? "note" : "grid"} size={14} color={chipIcon(!!scopeEntry)} />
+            <T size={ruhe ? 12.5 : 12} lh={18} ls={0} numberOfLines={1} color={ruhe ? (scopeEntry ? th.accentInk : th.t2) : scopeEntry ? th.tags.ai.fg : th.textSecondary} style={{ flexShrink: 1 }}>
               {scopeEntry ? scopeEntry.title : t("Whole vault")}
             </T>
             <Icon name="chev" size={12} color={th.textMuted} rotate={90} />
           </Pressable>
-          {live && (
+          {live && !ruhe && (
             <Pressable accessibilityRole="button" accessibilityLabel={t("Agent: {level}", { level: AUTONOMY_LABEL[a.autonomy]() })} onPress={pickAutonomy} style={{ minHeight: 40, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: a.autonomy === "read" ? th.bgSurfaceMuted : th.accentAiSoft }}>
               <Icon name={a.autonomy === "read" ? "eye" : a.autonomy === "ask" ? "check" : "bolt"} size={14} color={a.autonomy === "read" ? th.textSecondary : th.tags.ai.fg} />
               <T size={12} lh={18} ls={0} color={a.autonomy === "read" ? th.textSecondary : th.tags.ai.fg}>
@@ -199,7 +232,7 @@ export function Ask() {
               <Icon name="chev" size={12} color={th.textMuted} rotate={90} />
             </Pressable>
           )}
-          {live && (
+          {live && !ruhe && (
             <Pressable accessibilityRole="button" onPress={pickSkill} style={{ minHeight: 40, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
               <Icon name="sparkles" size={14} color={th.tags.ai.fg} />
               <T size={12} lh={18} ls={0} color={th.textSecondary}>
@@ -207,7 +240,7 @@ export function Ask() {
               </T>
             </Pressable>
           )}
-          {live && a.msgs.length > 0 && (
+          {live && !ruhe && a.msgs.length > 0 && (
             <Pressable accessibilityRole="button" onPress={a.resetChat} style={{ minHeight: 40, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
               <Icon name="plus" size={14} color={th.textSecondary} />
               <T size={12} lh={18} ls={0} color={th.textSecondary}>
@@ -215,7 +248,7 @@ export function Ask() {
               </T>
             </Pressable>
           )}
-          {live && (
+          {live && !ruhe && (
             <Pressable accessibilityRole="button" accessibilityHint={t("Example: read Dune, 9 out of 10")} onPress={() => a.setAskText("/status ")} style={{ minHeight: 40, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
               <Icon name="check" size={14} color={th.tags.ai.fg} />
               <T size={12} lh={18} ls={0} color={th.textSecondary}>
@@ -224,33 +257,41 @@ export function Ask() {
             </Pressable>
           )}
           {(live ? LIVE_SUGGESTIONS(entries[0]?.title) : ASK_SUGGESTIONS).map((l) => (
-            <Pressable key={l} onPress={() => send(l)} style={{ minHeight: 40, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: th.bgSurfaceMuted }}>
-              <Icon name="sparkles" size={14} color={th.tags.ai.fg} />
-              <T size={12} lh={18} ls={0} color={th.textSecondary}>
+            <Pressable key={l} accessibilityRole="button" onPress={() => send(l)} style={chip()}>
+              <Icon name="sparkles" size={14} color={chipIcon()} />
+              <T size={ruhe ? 12.5 : 12} lh={18} ls={0} color={ruhe ? th.t2 : th.textSecondary}>
                 {l}
               </T>
             </Pressable>
           ))}
         </ScrollView>
-        <View style={[{ height: 52, flexDirection: "row", alignItems: "center", gap: 8, paddingLeft: 18, paddingRight: 6, borderRadius: RADIUS.pill, boxShadow: `inset 0 1px 0 0 ${th.borderSubtle}, ${th.shadowFloating}` } as ViewStyle, glass(th)]}>
+        <View style={ruhe ? ({ height: 52, flexDirection: "row", alignItems: "center", gap: 6, paddingLeft: 18, paddingRight: 6, borderRadius: 26, backgroundColor: th.name === "dark" ? th.lum2 : th.lum1, boxShadow: `0 0 0 1px ${th.hairStrong}` } as ViewStyle) : [{ height: 52, flexDirection: "row", alignItems: "center", gap: 8, paddingLeft: 18, paddingRight: 6, borderRadius: RADIUS.pill, boxShadow: `inset 0 1px 0 0 ${th.borderSubtle}, ${th.shadowFloating}` } as ViewStyle, glass(th)]}>
           {a.askRec ? (
             <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
               {a.voiceRecorder ? <LevelWave recorder={a.voiceRecorder} n={34} h={20} /> : <Wave n={30} h={18} />}
+            </View>
+          ) : a.askTranscribing ? (
+            <View accessibilityLiveRegion="polite" style={{ flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Spinner />
+              <T size={14} lh={20} color={th.textMuted} numberOfLines={1} style={{ flexShrink: 1 }}>
+                {t("Turning your words into text …")}
+              </T>
             </View>
           ) : (
             <TextInput
               accessibilityLabel={t("Question for Kortex")}
               placeholder={t("Ask your Second Brain")}
-              placeholderTextColor={th.textMuted}
+              placeholderTextColor={ruhe ? th.t4 : th.textMuted}
+              selectionColor={th.accent}
               value={a.askText}
               onChangeText={a.setAskText}
-              onSubmitEditing={() => send(a.askText)}
+              onSubmitEditing={() => void submit()}
               returnKeyType="send"
-              style={[{ flex: 1, minWidth: 0, height: 52, padding: 0, fontFamily: FONT.sans400, fontSize: 14, color: th.textPrimary, letterSpacing: -0.005 * 14 }, Platform.OS === "web" ? ({ outlineStyle: "none" } as never) : null]}
+              style={[{ flex: 1, minWidth: 0, height: 52, padding: 0, fontFamily: FONT.sans400, fontSize: ruhe ? 15 : 14, color: th.textPrimary, letterSpacing: -0.005 * 14 }, Platform.OS === "web" ? ({ outlineStyle: "none" } as never) : null]}
             />
           )}
-          <Btn variant="ghost" round iconOnly size={40} icon={a.askRec ? "stop" : "mic"} accessibilityLabel={a.askRec ? t("Stop voice input") : t("Speak your question")} onPress={a.toggleAskRec} />
-          <Btn variant="primary" round iconOnly size={40} icon="send" accessibilityLabel={t("Send")} onPress={() => send(a.askText)} />
+          <Btn variant="ghost" round iconOnly size={40} icon={a.askRec ? "stop" : "mic"} style={a.askTranscribing ? { opacity: 0.4 } : undefined} accessibilityLabel={a.askRec ? t("Stop voice input") : t("Speak your question")} onPress={a.toggleAskRec} />
+          <Btn variant="primary" round iconOnly size={40} icon="send" accessibilityLabel={a.askRec ? t("Stop and send") : t("Send")} onPress={() => void submit()} />
         </View>
       </View>
 

@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-local",
+  "description": "The bundled page `main` shows until the web app has loaded (or when no server is set up yet): its titlebar buttons and dragging. Only the local page; the remote web app gets the runtime capability `main-web` (main_bridge.rs).",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "allow-main-window",
+    "core:window:allow-start-dragging",
+    "core:window:allow-internal-toggle-maximize"
+  ]
+}

@@ -375,6 +375,35 @@ pub fn upload_recording(app: AppHandle, file: String) -> CmdResult<()> {
     Ok(())
 }
 
+/// Throws the running recording away (HUD "Verwerfen", after a confirmation in the HUD): capture
+/// stops, the live transcription and coaching end, the WAV is deleted and the live session's meeting
+/// item is removed in Kortex (`POST /api/meeting/live {discard}`). No upload, no protocol.
+#[tauri::command]
+pub fn discard_recording(app: AppHandle, state: State<'_, AppState>) -> CmdResult<()> {
+    let rec = state.recorder.lock().unwrap().take().ok_or(t("No recording is running"))?;
+    let session = state.live.lock().unwrap().take();
+    let session_api = state.live_api.lock().unwrap().take();
+    tray::set_recording(&app, false);
+    let stopped = rec.recorder.stop();
+    let seconds = stopped.as_ref().map(|s| s.seconds as u64).unwrap_or(0);
+    let _ = app.emit("meeting:state", serde_json::json!({ "recording": false, "elapsed": seconds, "uploading": false, "discarded": true }));
+    if let Some(path) = stopped.as_ref().ok().and_then(|s| s.path.clone()) {
+        if let Err(e) = std::fs::remove_file(&path) {
+            log::warn!("discard: WAV not deleted ({}): {e}", path.display());
+        }
+    }
+    log::info!("recording discarded after {seconds} s, live session {}", session.is_some());
+    if let Some(s) = session {
+        let api = match session_api {
+            Some(a) => Some(a),
+            None => live_api(&app).ok(),
+        };
+        tauri::async_runtime::spawn(live::discard(app.clone(), s, api));
+    }
+    window::after_recording(&app);
+    Ok(())
+}
+
 #[derive(Serialize)]
 pub struct AccountStatus {
     connected: bool,
@@ -1049,6 +1078,32 @@ pub fn set_locale(app: AppHandle, state: State<'_, AppState>, locale: String) ->
     Ok(next.code())
 }
 
+// --- theme -----------------------------------------------------------------------------------
+
+/// Stored theme → Tauri theme: "light" / "dark", anything else (None, "system") follows Windows.
+pub fn theme_of(theme: Option<&str>) -> Option<tauri::Theme> {
+    match theme {
+        Some("light") => Some(tauri::Theme::Light),
+        Some("dark") => Some(tauri::Theme::Dark),
+        _ => None,
+    }
+}
+
+/// Settings → Appearance: "light" | "dark" | "system". Stored in desktop.json and applied to every
+/// window (native parts and WebView2's prefers-color-scheme); the windows switch their colours on
+/// `settings:theme` (and on the shared localStorage value, see apps/desktop/src/theme.ts).
+#[tauri::command]
+pub fn set_theme(app: AppHandle, theme: String) -> CmdResult<String> {
+    let value = match theme.as_str() {
+        "light" | "dark" | "system" => theme,
+        other => return Err(format!("unknown theme {other}")),
+    };
+    config::update(&config_dir(&app)?, |c| c.theme = Some(value.clone())).map_err(err)?;
+    app.set_theme(theme_of(Some(value.as_str())));
+    let _ = app.emit("settings:theme", serde_json::json!({ "theme": value }));
+    Ok(value)
+}
+
 // --- reminders --------------------------------------------------------------------------------
 
 #[tauri::command]
@@ -1111,6 +1166,15 @@ const QUIT_WAIT: std::time::Duration = std::time::Duration::from_secs(120);
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_stored_theme_maps_to_light_dark_or_windows() {
+        assert_eq!(theme_of(Some("light")), Some(tauri::Theme::Light));
+        assert_eq!(theme_of(Some("dark")), Some(tauri::Theme::Dark));
+        assert_eq!(theme_of(Some("system")), None);
+        assert_eq!(theme_of(Some("purple")), None);
+        assert_eq!(theme_of(None), None);
+    }
 
     #[test]
     fn upload_paths_must_stay_in_the_recordings_folder() {

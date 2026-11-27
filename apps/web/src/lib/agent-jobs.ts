@@ -1,4 +1,4 @@
-import { intlLocale, t } from "@/i18n";
+import { intlLocale, t, tn } from "@/i18n";
 
 /*
  * Agent jobs ("Aufträge") and standing orders ("Daueraufträge"): the shapes the pages use and the
@@ -13,8 +13,18 @@ export type JobAutonomy = "read" | "ask" | "self";
 
 export interface JobStep {
   kind: "search" | "read" | "write";
+  /** May carry **entities** and [[Wiki-Links]] (see labelParts). */
   label: string;
   count?: number;
+  /** When the step happened (ISO); older jobs have none. */
+  at?: string;
+}
+/** How far a running job is (optional, newer jobs and the mock fixtures). */
+export interface JobProgress {
+  done: number;
+  total: number;
+  /** What it is doing now, e.g. "reads source 7 of 11". */
+  label?: string;
 }
 export interface JobSource {
   n: number;
@@ -42,6 +52,8 @@ export interface JobResult {
   done?: { results: JobActionResult[] };
   /** The carried-out changes were taken back. */
   undone?: boolean;
+  /** Progress of a running job. */
+  progress?: JobProgress;
 }
 
 export interface JobView {
@@ -220,4 +232,78 @@ export function duePeriod(order: Pick<StandingOrderView, "cadence" | "hour" | "w
   if (order.cadence === "weekly" && order.weekday !== at.weekday) return null;
   const period = order.cadence === "daily" ? at.date : at.week;
   return order.lastPeriod === period ? null : period;
+}
+
+/** Kind of a proposed change ("note_create", "note_edit", "dossier_update", "task_create"), for its icon; null if unknown. */
+export function proposalKind(action: unknown): string | null {
+  const kind = action && typeof action === "object" ? (action as { kind?: unknown }).kind : undefined;
+  return typeof kind === "string" ? kind : null;
+}
+
+/** Jobs finished on the given day (local time) and the older ones, each newest first. */
+export function splitFinished(finished: readonly JobView[], now: Date): { today: JobView[]; earlier: JobView[] } {
+  const day = now.toDateString();
+  const isToday = (j: JobView) => new Date(j.finishedAt ?? j.createdAt).toDateString() === day;
+  return { today: finished.filter(isToday), earlier: finished.filter((j) => !isToday(j)) };
+}
+
+/** Share of a running job in percent (0 to 100), or null when the job reports no progress. */
+export function jobPercent(job: Pick<JobView, "status" | "result">): number | null {
+  const p = job.result?.progress;
+  if (!p || !(p.total > 0) || (job.status !== "running" && job.status !== "queued")) return null;
+  return Math.max(0, Math.min(100, Math.round((p.done / p.total) * 100)));
+}
+
+export type LabelPart = { kind: "text" | "strong" | "link"; text: string };
+
+/** Splits a step or change label into plain text, **entities** and [[Wiki-Links]] for the job page. */
+export function labelParts(label: string): LabelPart[] {
+  const out: LabelPart[] = [];
+  const re = /\*\*([^*]+)\*\*|\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+  let at = 0;
+  for (let m = re.exec(label); m; m = re.exec(label)) {
+    if (m.index > at) out.push({ kind: "text", text: label.slice(at, m.index) });
+    if (m[1] !== undefined) out.push({ kind: "strong", text: m[1] });
+    else out.push({ kind: "link", text: (m[3] ?? m[2]!).trim() });
+    at = m.index + m[0].length;
+  }
+  if (at < label.length) out.push({ kind: "text", text: label.slice(at) });
+  return out;
+}
+
+const sentences = (md: string) => md.split(/(?<=[.!?])\s+/).filter((s) => /\p{L}/u.test(s)).length;
+
+/**
+ * Short fact on the right of a proposed change: the due day of a task, how much a dossier or note grows, a backlink.
+ * Empty when there is nothing to say.
+ */
+export function proposalMeta(action: unknown): string {
+  if (!action || typeof action !== "object") return "";
+  const a = action as Record<string, unknown>;
+  const str = (k: string) => (typeof a[k] === "string" ? (a[k] as string) : "");
+  switch (a.kind) {
+    case "task_create": {
+      const due = str("due_date");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) return "";
+      return new Date(`${due}T12:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "short", day: "2-digit", month: "2-digit", timeZone: "UTC" });
+    }
+    case "dossier_update": {
+      const open = Array.isArray(a.open_points) ? a.open_points.length : 0;
+      const n = sentences(str("state"));
+      if (n) return tn(n, "+{n} sentence", "+{n} sentences");
+      return open ? tn(open, "{n} open point", "{n} open points") : "";
+    }
+    case "note_edit": {
+      const add = str("append_markdown").trim();
+      if (add && /^(\[\[[^\]]+\]\][\s,.]*)+$/.test(add)) return t("Backlink");
+      if (add) return tn(Math.max(1, sentences(add)), "+{n} sentence", "+{n} sentences");
+      const r = Array.isArray(a.replacements) ? a.replacements.length : 0;
+      if (r) return tn(r, "{n} change", "{n} changes");
+      return str("new_title") ? t("New title") : "";
+    }
+    case "note_create":
+      return str("folder_path") || t("New entry");
+    default:
+      return "";
+  }
 }

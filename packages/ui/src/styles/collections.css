@@ -81,7 +81,8 @@
   .kc-av { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-size: calc(9px * var(--kx-fs, 1)); font-weight: 600; letter-spacing: -0.04em; color: var(--t1); background: var(--lum-4); box-shadow: 0 0 0 1.5px var(--lum-2); overflow: hidden; white-space: nowrap; }
   .kc-av.is-sq { border-radius: 5px; }
   .kc-avs { display: flex; align-items: center; }
-  .kc-avs > * + * { margin-left: -5px; }
+  /* A small overlap that never covers the neighbour's monogram (two letters at 9 px need ~12 of the 20 px). */
+  .kc-avs > * + * { margin-left: -3px; }
   .kc-pill { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 7px; border-radius: 999px; font-size: calc(11px * var(--kx-fs, 1)); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .kc-pill::before { content: ""; flex: none; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
   .kc-pill--new { color: var(--accent-ink); background: var(--accent-soft); }
@@ -290,8 +291,6 @@
     .kc-tl-row { grid-template-columns: 40px 11px 36px minmax(0, 1fr); gap: 8px; }
     .kc-tl-end { display: none; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .kc-card, .kc-card::after, .kc-qrow, .kc-ht-tog svg { transition: none; }
-    .kc-card::after { display: none; }
-  }
+  [data-motion="reduced"] .kc-card, [data-motion="reduced"] .kc-card::after, [data-motion="reduced"] .kc-qrow, [data-motion="reduced"] .kc-ht-tog svg { transition: none; }
+  [data-motion="reduced"] .kc-card::after { display: none; }
 }

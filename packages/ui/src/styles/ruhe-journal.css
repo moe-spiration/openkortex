@@ -1,0 +1,100 @@
+/*
+ * Ruhe (2026-11-27, web-scr2): Tagebuch as in the mockup screen "tagebuch": location bar with day navigation, a 640 px
+ * writing column (weekday 28 px, week strip with energy bars, energy 1 to 5, labelled questions, "Morgen" checklist)
+ * and a 300 px aside (Heute erwähnt, Vor einem Jahr, Diese Woche, path). Also the Ruhe head of the week tab.
+ * Markup: components/journal/JournalRuhe.tsx, JournalTabs.tsx. Ruhe only.
+ */
+@layer components {
+  [data-look="ruhe"] .rz-jr {
+    --rz-pad: 18px; position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 100%;
+    color: var(--t1); animation: rz-view-in var(--d3) var(--eo);
+  }
+  [data-look="ruhe"] .rz-bib:disabled { opacity: 0.35; cursor: default; background: none; }
+  [data-look="ruhe"] .rz-jr-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; flex: 1 1 auto; min-height: 0; }
+  [data-look="ruhe"] .rz-jr-main { display: flex; justify-content: center; padding: 22px 24px max(150px, var(--kx-footbar-safe, 100px)); min-width: 0; }
+  [data-look="ruhe"] .rz-jr-page { width: 640px; max-width: 100%; }
+  [data-look="ruhe"] .rz-jr-day { margin: 0; font-size: var(--rz-fs-display); line-height: 1.12; font-weight: var(--rz-w-semi); letter-spacing: -0.028em; }
+  [data-look="ruhe"] .rz-jr-sub { display: flex; gap: 12px; align-items: baseline; margin-top: 2px; color: var(--t3); font-size: var(--rz-fs-body); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .rz-jr-save { margin-left: auto; color: var(--t4); font-size: var(--rz-fs-meta); }
+
+  [data-look="ruhe"] .rz-jr-wk { display: flex; gap: 6px; margin: 14px 0 26px; }
+  [data-look="ruhe"] .rz-jr-wd {
+    flex: 1 1 0; height: 52px; border: 0; border-radius: 10px; background: var(--lum-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    color: var(--t3); font: inherit; font-size: var(--rz-fs-micro); cursor: pointer; transition: background var(--d1) var(--eo);
+  }
+  [data-look="ruhe"][data-theme="light"] .rz-jr-wd { background: var(--lum-3); }
+  [data-look="ruhe"] .rz-jr-wd:hover:not(:disabled) { background: var(--lum-3); }
+  [data-look="ruhe"] .rz-jr-wd:disabled { cursor: default; }
+  [data-look="ruhe"] .rz-jr-wd b { font-size: var(--rz-fs-lead); color: var(--t1); font-weight: var(--rz-w-book); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .rz-jr-wd[aria-current="date"] { background: var(--accent-soft); }
+  [data-look="ruhe"] .rz-jr-wd[aria-current="date"] b { color: var(--accent-ink); }
+  [data-look="ruhe"] .rz-jr-wd i { display: block; width: 18px; height: 3px; border-radius: 2px; background: var(--lum-4); }
+  [data-look="ruhe"] .rz-jr-wd i[data-level="w"] { background: var(--t4); }
+  [data-look="ruhe"] .rz-jr-wd i[data-level="1"] { background: oklch(0.56 0.12 60); }
+  [data-look="ruhe"] .rz-jr-wd i[data-level="2"] { background: oklch(0.62 0.12 60); }
+  [data-look="ruhe"] .rz-jr-wd i[data-level="3"] { background: oklch(0.68 0.12 160); }
+  [data-look="ruhe"] .rz-jr-wd i[data-level="4"] { background: oklch(0.74 0.12 160); }
+  [data-look="ruhe"] .rz-jr-wd i[data-level="5"] { background: oklch(0.80 0.12 160); }
+
+  [data-look="ruhe"] .rz-jr-q { display: block; margin: 22px 0 6px; color: var(--t3); font-size: var(--rz-fs-ui); }
+  [data-look="ruhe"] .rz-jr-wk + .rz-jr-q { margin-top: 0; }
+  [data-look="ruhe"] .rz-jr-mood { display: flex; gap: 6px; }
+  [data-look="ruhe"] .rz-jr-mood > button {
+    width: 44px; height: 34px; border: 0; border-radius: 9px; background: var(--lum-2); display: grid; place-items: center;
+    color: var(--t3); font: inherit; font-size: var(--rz-fs-body); font-variant-numeric: tabular-nums; cursor: pointer; transition: background var(--d1) var(--eo), color var(--d1) var(--eo);
+  }
+  [data-look="ruhe"][data-theme="light"] .rz-jr-mood > button { background: var(--lum-3); }
+  [data-look="ruhe"] .rz-jr-mood > button:hover { color: var(--t1); }
+  [data-look="ruhe"] .rz-jr-mood > button[aria-checked="true"] { background: var(--accent-soft); color: var(--accent-ink); font-weight: var(--rz-w-regular); }
+  [data-look="ruhe"] .rz-jr-t {
+    display: block; width: 100%; min-height: 1.7em; padding: 0; border: 0; outline: 0; resize: none; background: transparent; color: var(--t1);
+    font: inherit; font-size: var(--rz-fs-read); line-height: 1.7; field-sizing: content;
+  }
+  [data-look="ruhe"] .rz-jr-t::placeholder { color: var(--t4); }
+  [data-look="ruhe"] .rz-jr-todo { list-style: none; margin: 0; padding: 0; }
+  [data-look="ruhe"] .rz-jr-todo li { display: flex; align-items: center; gap: 10px; height: 30px; font-size: var(--rz-fs-read); color: var(--t1); }
+  [data-look="ruhe"] .rz-jr-todo .is-done { color: var(--t3); text-decoration: line-through; }
+  [data-look="ruhe"] .rz-jr-chk {
+    appearance: none; flex: none; width: 15px; height: 15px; margin: 0; border-radius: 4px; box-shadow: inset 0 0 0 1.4px var(--t4); cursor: pointer; display: grid; place-items: center;
+  }
+  [data-look="ruhe"] .rz-jr-chk:checked { background: var(--accent); box-shadow: none; }
+  [data-look="ruhe"] .rz-jr-chk:checked::after { content: ""; width: 6px; height: 3px; border: solid white; border-width: 0 0 1.5px 1.5px; transform: translateY(-1px) rotate(-45deg); }
+  [data-look="ruhe"] .rz-jr-rm { width: 22px; height: 22px; margin-left: auto; opacity: 0; }
+  [data-look="ruhe"] .rz-jr-todo li:hover .rz-jr-rm, [data-look="ruhe"] .rz-jr-rm:focus-visible { opacity: 1; }
+  [data-look="ruhe"] .rz-jr-add { color: var(--t4); }
+  [data-look="ruhe"] .rz-jr-add input { flex: 1 1 auto; min-width: 0; height: 28px; padding: 0; border: 0; outline: 0; background: transparent; color: var(--t1); font: inherit; font-size: var(--rz-fs-lead); }
+  [data-look="ruhe"] .rz-jr-add input::placeholder { color: var(--t4); }
+
+  [data-look="ruhe"] .rz-jr-aside { box-shadow: inset 1px 0 0 var(--hair); padding: 18px 18px max(150px, var(--kx-footbar-safe, 100px)); display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  [data-look="ruhe"] .rz-jr-aside section { display: grid; }
+  [data-look="ruhe"] .rz-jr-lab { margin: 0 0 8px; color: var(--t3); font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .rz-jr-link {
+    display: flex; align-items: center; gap: 9px; height: 30px; margin: 0 -8px; padding: 0 8px; border: 0; border-radius: 7px; background: none;
+    color: var(--t1); font: inherit; font-size: var(--rz-fs-ui); text-align: left; cursor: pointer;
+  }
+  [data-look="ruhe"] .rz-jr-link > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [data-look="ruhe"] .rz-jr-link svg { color: var(--t3); flex: none; }
+  [data-look="ruhe"] .rz-jr-link:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .rz-jr-none, [data-look="ruhe"] .rz-jr-week { margin: 0; color: var(--t3); font-size: var(--rz-fs-body); line-height: 1.55; }
+  [data-look="ruhe"] .rz-jr-none { color: var(--t4); font-size: var(--rz-fs-ui); }
+  [data-look="ruhe"] .rz-jr-year { display: block; padding: 0; border: 0; border-radius: 10px; overflow: hidden; background: var(--lum-2); color: var(--t2); font: inherit; text-align: left; cursor: pointer; }
+  [data-look="ruhe"] .rz-jr-year-img { display: block; height: 110px; background: center / cover no-repeat; }
+  [data-look="ruhe"] .rz-jr-year-t { display: block; padding: 10px 12px; font-size: var(--rz-fs-body); line-height: 1.45; }
+  [data-look="ruhe"] .rz-jr-past { display: grid; gap: 1px; margin: 0 -8px; padding: 6px 8px; border: 0; border-radius: 7px; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  [data-look="ruhe"] .rz-jr-past:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .rz-jr-past-t { color: var(--t1); font-size: var(--rz-fs-ui); }
+  [data-look="ruhe"] .rz-jr-past-s { color: var(--t3); font-size: var(--rz-fs-meta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [data-look="ruhe"] .rz-jr-path { color: var(--t4); font: var(--rz-w-regular) var(--rz-fs-code) / 1.4 var(--font-mono, ui-monospace, monospace); overflow-wrap: anywhere; }
+
+  /* Week tab: the Ruhe head above the existing week (JournalWeek). */
+
+  [data-look="ruhe"] a.rz-vt { text-decoration: none; }
+  [data-look="ruhe"] .rz-vt[aria-current="page"] { background: var(--lum-2); color: var(--t1); }
+  [data-look="ruhe"][data-theme="light"] .rz-vt[aria-current="page"] { background: var(--lum-3); }
+
+  @container kx-view (max-width: 727px) {
+    [data-look="ruhe"] .rz-jr-body { grid-template-columns: minmax(0, 1fr); }
+    [data-look="ruhe"] .rz-jr-aside { box-shadow: inset 0 1px 0 var(--hair); padding-top: 18px; }
+    [data-look="ruhe"] .rz-jr-main { padding-bottom: 32px; }
+  }
+}

@@ -7,11 +7,15 @@ import { useShell } from "@/lib/shell/store";
 import { AnswerActions, CopilotLivePanel } from "./CopilotLive";
 import { useCopilotContext } from "./useAsk";
 import { Ico } from "./icons";
+import { useLook } from "@/components/theme/look";
+import { RuheLiveAnswer, RuheMockAnswer } from "./AnswerCardRuhe";
 
 /* Quick chips above the footbar and the Hybrid-RAG copilot panel (WebApp.dc.html). */
 
 export function CopilotPanel() {
   const { live } = useCopilotChat();
+  const look = useLook();
+  if (look === "ruhe") return live ? <RuheLiveAnswer /> : <RuheMockAnswer />;
   return live ? <CopilotLivePanel /> : <MockCopilotPanel />;
 }
 

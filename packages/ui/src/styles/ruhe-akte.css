@@ -1,0 +1,163 @@
+/*
+ * Ruhe (2026-11-27, web-scr1; gap web-b W2): the Akte of a person, company or project (ObjectDossier) and the
+ * property table of objects (PropertyTable), artifact "Kortex Ruhe-Iteration", screen 06. Markup:
+ * apps/web/src/components/note/ObjectDossier.tsx, PropertyPills.tsx. Only under <html data-look="ruhe">;
+ * only the shared tokens (ruhe.css), no own colour values.
+ */
+
+@layer components {
+  /* ---------- Shared small parts ---------- */
+  [data-look="ruhe"] .rz-btn--soft { height: 26px; padding: 0 10px; background: var(--lum-2); color: var(--t1); font-size: var(--rz-fs-ui); }
+  [data-look="ruhe"] .rz-btn--soft:hover { background: var(--lum-3); }
+  [data-look="ruhe"][data-theme="light"] .rz-btn--soft, [data-look="ruhe"] [data-theme="light"] .rz-btn--soft { background: var(--lum-3); }
+  [data-look="ruhe"] .rz-lab { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); color: var(--t3); }
+  [data-look="ruhe"] .rz-lab-c { font-weight: var(--rz-w-regular); color: var(--t4); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .rz-chk {
+    display: inline-grid; place-items: center; flex: none; width: 15px; height: 15px; padding: 0; border: 0; border-radius: 50%;
+    background: transparent; box-shadow: inset 0 0 0 1.4px var(--t4); color: transparent; cursor: pointer;
+    transition: background var(--d1) var(--eo), box-shadow var(--d1) var(--eo), color var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-chk:hover { box-shadow: inset 0 0 0 1.4px var(--t2); color: var(--t3); }
+  [data-look="ruhe"] .rz-chk:active { background: var(--accent); box-shadow: none; color: var(--on-accent-ai, #fff); }
+  [data-look="ruhe"] .rz-dotlabel { display: inline-flex; align-items: center; gap: 5px; font-size: var(--rz-fs-micro); color: var(--t3); }
+  [data-look="ruhe"] .rz-dotlabel > i { width: 6px; height: 6px; border-radius: 50%; background: var(--t4); }
+  [data-look="ruhe"] .rz-dotlabel > i.is-ok { background: var(--ok, var(--t3)); }
+  [data-look="ruhe"] .rz-dotlabel > i.is-warn { background: var(--warn, var(--t3)); }
+
+  /* ---------- Akte: main column + 300-px aside with a hairline ---------- */
+  [data-look="ruhe"] .kx-dr-body:has(> .rz-akte) { container-type: inline-size; }
+  [data-look="ruhe"] .rz-akte {
+    display: grid; grid-template-columns: minmax(0, 1fr) 300px; min-height: 100%; color: var(--t1);
+    animation: rz-view-in var(--d3) var(--eo);
+  }
+  [data-look="ruhe"] .rz-akte-main { min-width: 0; max-width: 860px; padding: 20px clamp(24px, 4vw, 56px) max(110px, var(--kx-footbar-safe, 100px)) clamp(24px, 4.4vw, 64px); }
+  [data-look="ruhe"] .rz-akte-aside {
+    display: flex; flex-direction: column; gap: 20px; min-width: 0; padding: 16px 18px max(110px, var(--kx-footbar-safe, 100px));
+    box-shadow: -1px 0 0 var(--hair);
+  }
+  @container (max-width: 760px) {
+    [data-look="ruhe"] .rz-akte { grid-template-columns: minmax(0, 1fr); }
+    [data-look="ruhe"] .rz-akte-main { padding-bottom: 12px; }
+    [data-look="ruhe"] .rz-akte-aside { padding: 18px clamp(24px, 4.4vw, 64px) max(110px, var(--kx-footbar-safe, 100px)); box-shadow: 0 -1px 0 var(--hair); }
+  }
+
+  [data-look="ruhe"] .rz-akte-head { display: flex; align-items: center; gap: 14px; }
+  [data-look="ruhe"] .rz-akte-av {
+    display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--lum-3);
+    color: var(--t2); font-size: var(--rz-fs-read); font-weight: var(--rz-w-semi); letter-spacing: -0.01em;
+  }
+  [data-look="ruhe"] .rz-akte-av.is-sq { border-radius: 11px; color: var(--t3); }
+  [data-look="ruhe"] .rz-akte-name { min-width: 0; }
+  [data-look="ruhe"] .rz-akte-title { margin: 0; font: var(--rz-w-semi) var(--rz-fs-h1) / 1.2 var(--font-sans); letter-spacing: -0.022em; color: var(--t1); }
+  [data-look="ruhe"] .rz-akte-title > span { outline: none; cursor: text; }
+  [data-look="ruhe"] .rz-akte-sub { margin-top: 2px; font-size: var(--rz-fs-body); color: var(--t3); }
+
+  [data-look="ruhe"] .rz-akte-state { margin-top: 22px; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); }
+  [data-look="ruhe"] .rz-akte-state-h { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); color: var(--accent-ink); }
+  [data-look="ruhe"] .rz-akte-state-m { font-weight: var(--rz-w-regular); color: var(--t3); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .rz-akte-state-btn {
+    display: inline-flex; align-items: center; gap: 5px; height: 22px; margin-right: -6px; padding: 0 6px; border: 0; border-radius: 6px;
+    background: transparent; color: var(--t3); font: inherit; font-weight: var(--rz-w-regular); cursor: pointer; transition: background var(--d1) var(--eo), color var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-akte-state-btn > span { display: none; }
+  [data-look="ruhe"] .rz-akte-state:hover .rz-akte-state-btn > span, [data-look="ruhe"] .rz-akte-state-btn:focus-visible > span { display: inline; }
+  [data-look="ruhe"] .rz-akte-state-btn:hover { background: color-mix(in oklch, var(--accent) 12%, transparent); color: var(--accent-ink); }
+  [data-look="ruhe"] .rz-akte-state-t, [data-look="ruhe"] .rz-akte-state-t :is(p, li) { margin: 0; font-size: var(--rz-fs-body); line-height: 1.55; color: var(--t1); }
+  [data-look="ruhe"] .rz-akte-state-t .kx-block + .kx-block { margin-top: 6px; }
+  [data-look="ruhe"] .rz-akte-state-t.is-empty { color: var(--t2); }
+
+  [data-look="ruhe"] .rz-akte-sec { margin-top: 28px; }
+  [data-look="ruhe"] .rz-akte-h2 {
+    display: flex; align-items: baseline; gap: 6px; margin: 0 0 6px; font-size: var(--rz-fs-lead); font-weight: var(--rz-w-medium); letter-spacing: -0.01em; color: var(--t1);
+  }
+  [data-look="ruhe"] .rz-akte-h2 .rz-lab-c { font-size: var(--rz-fs-lead); color: var(--t4); }
+  [data-look="ruhe"] .rz-akte-h2-m { font-size: var(--rz-fs-meta); font-weight: var(--rz-w-regular); color: var(--t4); }
+  [data-look="ruhe"] .rz-akte-edit {
+    padding: 2px 6px; border: 0; border-radius: 6px; background: none; color: var(--t4); font: inherit; font-size: var(--rz-fs-meta); font-weight: var(--rz-w-regular);
+    cursor: pointer; opacity: 0; transition: opacity var(--d1) var(--eo), color var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-akte-sec:hover .rz-akte-edit, [data-look="ruhe"] .rz-akte-edit:focus-visible { opacity: 1; }
+  [data-look="ruhe"] .rz-akte-edit:hover { color: var(--t1); background: var(--lum-2); }
+  [data-look="ruhe"] .rz-akte-none { margin: 4px 0 0; padding: 0; border: 0; background: none; font: inherit; font-size: var(--rz-fs-body); color: var(--t4); text-align: left; }
+  [data-look="ruhe"] .rz-akte-none.is-btn { cursor: text; }
+  [data-look="ruhe"] .rz-akte-none.is-btn:hover { color: var(--t3); }
+
+  [data-look="ruhe"] .rz-akte-open { margin: 0 -10px; padding: 0; list-style: none; }
+  [data-look="ruhe"] .rz-akte-open > li {
+    display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: var(--rz-fs-body);
+    transition: background var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-akte-open > li:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .rz-akte-open-t { min-width: 0; overflow: hidden; color: var(--t1); white-space: nowrap; text-overflow: ellipsis; }
+  [data-look="ruhe"] .rz-akte-open-r { display: flex; align-items: center; gap: 10px; margin-left: auto; font-size: var(--rz-fs-meta); color: var(--t4); white-space: nowrap; }
+  [data-look="ruhe"] .rz-akte-open-r .rz-btn--soft { height: 24px; }
+
+  /* Verlauf: date, dot on a hairline (the newest in accent), title + second line. */
+  [data-look="ruhe"] .rz-tl { position: relative; margin: 6px 0 0; padding: 0; list-style: none; }
+  [data-look="ruhe"] .rz-tl::before { content: ""; position: absolute; left: 73px; top: 16px; bottom: 16px; width: 1px; background: var(--hair-strong); }
+  [data-look="ruhe"] .rz-tl > li { display: grid; grid-template-columns: 56px 16px minmax(0, 1fr); align-items: start; gap: 10px; padding: 7px 0; }
+  [data-look="ruhe"] .rz-tl-d { padding-top: 1px; font-size: var(--rz-fs-meta); color: var(--t4); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .rz-tl-b { position: relative; width: 7px; height: 7px; margin: 6px 0 0 4px; border-radius: 50%; background: var(--t4); }
+  [data-look="ruhe"] .rz-tl > li:first-child .rz-tl-b { background: var(--accent); }
+  [data-look="ruhe"] .rz-tl-c { display: flex; flex-direction: column; min-width: 0; padding: 0; border: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
+  [data-look="ruhe"] .rz-tl-t { font-size: var(--rz-fs-body); color: var(--t1); }
+  [data-look="ruhe"] .rz-tl-c:hover .rz-tl-t { text-decoration: underline; text-decoration-color: var(--t4); text-underline-offset: 3px; }
+  [data-look="ruhe"] .rz-tl-s { overflow: hidden; font-size: var(--rz-fs-ui); color: var(--t3); white-space: nowrap; text-overflow: ellipsis; }
+
+  [data-look="ruhe"] .rz-akte-own, [data-look="ruhe"] .rz-akte-own :is(p, li) { font-size: var(--rz-fs-lead); line-height: 1.6; color: var(--t2); }
+  [data-look="ruhe"] .rz-akte-own .kx-ed-p { margin: 0; }
+  [data-look="ruhe"] .rz-akte-own-ed { display: grid; gap: 8px; }
+  [data-look="ruhe"] .rz-akte-own-in {
+    width: 100%; min-height: 96px; padding: 10px 12px; border: 0; border-radius: 10px; outline: 0; resize: vertical; background: var(--lum-2);
+    box-shadow: 0 0 0 1px var(--hair); color: var(--t1); font: inherit; font-size: var(--rz-fs-lead); line-height: 1.6; field-sizing: content;
+  }
+  [data-look="ruhe"] .rz-akte-own-in:focus { box-shadow: 0 0 0 1px var(--accent-line, var(--accent)); }
+
+  [data-look="ruhe"] .rz-akte-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+  [data-look="ruhe"] .rz-akte-acts .rz-btn { height: 28px; padding: 0 10px; font-size: var(--rz-fs-ui); }
+  [data-look="ruhe"] .rz-akte-help { margin: 0 0 10px; font-size: var(--rz-fs-ui); line-height: 1.5; color: var(--t2); }
+  [data-look="ruhe"] .rz-akte-link {
+    display: flex; align-items: center; gap: 9px; width: calc(100% + 16px); height: 30px; margin: 0 -8px; padding: 0 8px; border: 0; border-radius: 7px;
+    background: none; color: var(--t1); font: inherit; font-size: var(--rz-fs-ui); text-align: left; cursor: pointer; transition: background var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-akte-link:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .rz-akte-link > svg { flex: none; color: var(--t3); }
+  [data-look="ruhe"] .rz-akte-link > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  [data-look="ruhe"] .rz-akte-path {
+    margin-top: auto; overflow: hidden; font: var(--rz-w-regular) var(--rz-fs-code) / 1.4 var(--font-mono, ui-monospace, monospace); color: var(--t4);
+    white-space: nowrap; text-overflow: ellipsis;
+  }
+
+  /* The note toolbar above the Akte: no mono path doubled at the bottom, the bar stays. */
+  [data-look="ruhe"] .kx-dr-body:has(> .rz-akte) { padding-top: 0; }
+
+  /* ---------- Property table (Akte aside and the object note view) ---------- */
+  [data-look="ruhe"] .rz-kv-wrap { position: relative; }
+  [data-look="ruhe"] .rz-kv { display: grid; grid-template-columns: 96px minmax(0, 1fr); row-gap: 2px; margin: 0; font-size: var(--rz-fs-ui); }
+  [data-look="ruhe"] .rz-kv-row { display: contents; }
+  [data-look="ruhe"] .rz-kv dt { display: flex; align-items: center; min-height: 26px; color: var(--t3); }
+  [data-look="ruhe"] .rz-kv dd { display: flex; align-items: center; min-width: 0; min-height: 26px; margin: 0; }
+  [data-look="ruhe"] .rz-kv-v {
+    max-width: 100%; margin: 0 -6px; padding: 3px 6px; overflow: hidden; border: 0; border-radius: 6px; background: none; color: var(--t1);
+    font: inherit; text-align: left; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; transition: background var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-kv-v:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .rz-kv-v.is-static { cursor: default; }
+  [data-look="ruhe"] .rz-kv-v.is-static:hover { background: none; }
+  [data-look="ruhe"] .rz-kv-empty { color: var(--t4); }
+  [data-look="ruhe"] .rz-kv-link { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+  [data-look="ruhe"] .rz-kv-pen {
+    display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 5px; background: none; color: var(--t4);
+    cursor: pointer; opacity: 0; transition: opacity var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-kv-row:hover .rz-kv-pen, [data-look="ruhe"] .rz-kv-pen:focus-visible { opacity: 1; }
+  [data-look="ruhe"] .rz-kv-pct { display: inline-flex; align-items: center; gap: 8px; }
+  [data-look="ruhe"] .rz-kv-bar { display: block; width: 64px; height: 3px; overflow: hidden; border-radius: 2px; background: var(--lum-4); }
+  [data-look="ruhe"] .rz-kv-bar > i { display: block; height: 100%; background: var(--t3); }
+  [data-look="ruhe"] .rz-kv-all {
+    display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 0 -6px; padding: 3px 6px; border: 0; border-radius: 6px; background: none;
+    color: var(--t4); font: inherit; font-size: var(--rz-fs-meta); cursor: pointer;
+  }
+  [data-look="ruhe"] .rz-kv-all:hover { background: var(--lum-2); color: var(--t2); }
+  [data-look="ruhe"] .rz-kv-wrap > .kx-popover { top: auto !important; bottom: auto; margin-top: 6px; position: relative !important; }
+}

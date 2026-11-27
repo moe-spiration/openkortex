@@ -18,15 +18,15 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-4f46e5" alt="License: AGPL-3.0"></a>
-  <a href="https://github.com/moe-spiration/openkortex/stargazers"><img src="https://img.shields.io/github/stars/moe-spiration/openkortex?style=flat&color=4f46e5" alt="GitHub stars"></a>
-  <a href="https://github.com/moe-spiration/openkortex/releases"><img src="https://img.shields.io/github/v/release/moe-spiration/openkortex?include_prereleases&color=2dd4bf" alt="Latest release"></a>
-  <img src="https://img.shields.io/badge/self--hosted-Docker-2dd4bf" alt="Self-hosted with Docker">
-  <img src="https://img.shields.io/badge/MCP-ready-6d67f5" alt="MCP server included">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-5b5bd6" alt="License: AGPL-3.0"></a>
+  <a href="https://github.com/moe-spiration/openkortex/stargazers"><img src="https://img.shields.io/github/stars/moe-spiration/openkortex?style=flat&color=5b5bd6" alt="GitHub stars"></a>
+  <a href="https://github.com/moe-spiration/openkortex/releases"><img src="https://img.shields.io/github/v/release/moe-spiration/openkortex?include_prereleases&color=5b5bd6" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/self--hosted-Docker-52525b" alt="Self-hosted with Docker">
+  <img src="https://img.shields.io/badge/MCP-ready-52525b" alt="MCP server included">
 </p>
 
 <p align="center">
-  <img src="site/readme/screen-home.jpg" alt="The Today screen of OpenKortex with sample data" width="900">
+  <picture><source media="(prefers-color-scheme: light)" srcset="site/readme/screen-home-light.jpg"><img src="site/readme/screen-home.jpg" alt="The Today screen of OpenKortex with sample data" width="900"></picture>
 </p>
 
 Drop anything into one inbox: thoughts, links, articles, PDFs, books, videos, podcasts, recipes,
@@ -113,18 +113,28 @@ flowchart LR
 
 ## The whole workspace
 
+Screens from the live demo with sample data, in the calm default look. They follow your GitHub theme (light or dark).
+
 <table>
   <tr>
-    <td width="50%"><img src="site/readme/screen-journal.jpg" alt="Journal: a week of daily notes"><br><sub><b>Journal</b>: a week of daily notes, energy and highlights side by side.</sub></td>
-    <td width="50%"><img src="site/readme/screen-graph.jpg" alt="Graph: every entry and object and how they connect"><br><sub><b>Graph</b>: every entry and object, and how they connect.</sub></td>
+    <td width="50%"><picture><source media="(prefers-color-scheme: light)" srcset="site/readme/screen-library-light.jpg"><img src="site/readme/screen-library.jpg" alt="Library: the list of all entries with one entry open beside it"></picture><br><sub><b>Library</b>: every entry in one calm list, the open one beside it with its summary, tasks and backlinks.</sub></td>
+    <td width="50%"><picture><source media="(prefers-color-scheme: light)" srcset="site/readme/screen-journal-light.jpg"><img src="site/readme/screen-journal.jpg" alt="Journal: a week of daily notes"></picture><br><sub><b>Journal</b>: a week of daily notes, energy and highlights side by side.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="site/readme/screen-agent.jpg" alt="Agent: jobs and standing orders"><br><sub><b>Agent</b>: jobs and standing orders that work through your knowledge, with your confirmation.</sub></td>
-    <td width="50%"><img src="site/readme/screen-tasks.jpg" alt="Tasks: action items on one board"><br><sub><b>Tasks</b>: action items from notes and meetings on one board.</sub></td>
+    <td width="50%"><picture><source media="(prefers-color-scheme: light)" srcset="site/readme/screen-graph-light.jpg"><img src="site/readme/screen-graph.jpg" alt="Graph: every entry and object and how they connect"></picture><br><sub><b>Graph</b>: every entry and object, and how they connect.</sub></td>
+    <td width="50%"><picture><source media="(prefers-color-scheme: light)" srcset="site/readme/screen-agent-light.jpg"><img src="site/readme/screen-agent.jpg" alt="Agent: jobs and standing orders"></picture><br><sub><b>Agent</b>: jobs and standing orders that work through your knowledge, with your confirmation.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><picture><source media="(prefers-color-scheme: light)" srcset="site/readme/screen-tasks-light.jpg"><img src="site/readme/screen-tasks.jpg" alt="Tasks: action items on one board"></picture><br><sub><b>Tasks</b>: action items from notes and meetings on one board.</sub></td>
+    <td width="50%"><picture><source media="(prefers-color-scheme: light)" srcset="site/readme/screen-palette-light.jpg"><img src="site/readme/screen-palette.jpg" alt="Command palette: search across entries, views and actions"></picture><br><sub><b>Command palette</b>: Ctrl+K finds any entry, view or action, and hands a question to the agent.</sub></td>
   </tr>
 </table>
 
 ## What is in the box
+
+<p align="center">
+  <picture><source media="(prefers-color-scheme: light)" srcset="site/readme/screen-platforms-light.jpg"><img src="site/readme/screen-platforms.jpg" alt="The six ways in and out: the web app, the Windows app with quick capture and meeting notes, the Android app, the browser extension, the MCP server and the Markdown folder" width="900"></picture>
+</p>
 
 | | |
 | --- | --- |

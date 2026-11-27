@@ -1,0 +1,768 @@
+/*
+ * Ruhe look, Stream C: Orbit-Bar (wave 5 of the Ruhe iteration, artifact section "Orbit-Bar", screens 09/10).
+ * Everything sits under html[data-look="ruhe"]; Classic keeps orbit.css + fs-chrome.css as they are.
+ * Prominent like the live bar: a 56 px glass pill, the mic as a tinted circle, the accent glow under it. States
+ * (Footbar sets data-state on .kx-orbit-wrap): rest, typing with the target preview growing out of the bar's top,
+ * cmd/mention lists in the same attached panel, voice (wave, dictation label, X / check), drop (one accent row
+ * on the bar instead of the big drop area), agent status docked above the bar, the answer card as a glass card.
+ * Glass surfaces use --glass-strong so the bar stays readable over any content. Only token names from tokens.css (values come from ruhe.css, Stream A); motion tokens with fallbacks.
+ * Flat: hairline rings only, no top-light or inset edges.
+ */
+
+/* Elements only the Ruhe look shows, and the Classic parts it replaces. Hiding them leaves Classic unchanged. */
+html:not([data-look="ruhe"]) .kx-rz-only {
+  display: none !important;
+}
+html[data-look="ruhe"] .kx-rz-hide {
+  display: none !important;
+}
+
+@layer components {
+  /* ---------- glow ---------- */
+  html[data-look="ruhe"] .kx-orbit-glow {
+    left: 8%;
+    right: 8%;
+    bottom: -20px;
+    height: 70px;
+    background: radial-gradient(50% 50% at 50% 50%, color-mix(in oklch, var(--accent) 42%, transparent), transparent 72%);
+    filter: blur(10px);
+    opacity: 0.7;
+    transition: opacity var(--d3, 260ms) var(--eo, ease-out);
+  }
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-glow {
+    opacity: 0.45;
+  }
+  html[data-look="ruhe"] .kx-orbit-wrap[data-mode="ask"] .kx-orbit-glow {
+    filter: blur(10px) hue-rotate(44deg);
+  }
+  html[data-look="ruhe"] .kx-orbit-wrap[data-state="voice"] .kx-orbit-glow {
+    background: radial-gradient(50% 50% at 50% 50%, color-mix(in oklch, var(--accent) 60%, transparent), transparent 70%);
+    opacity: 1;
+    animation: kxrzpulse 1.6s var(--eio, ease-in-out) infinite;
+  }
+  @keyframes kxrzpulse {
+    50% {
+      transform: scaleX(1.08) scaleY(1.15);
+      opacity: 0.7;
+    }
+  }
+
+  /* ---------- the pill ---------- */
+  html[data-look="ruhe"] .kx-orbit.tc-float {
+    z-index: 1;
+    min-height: 56px;
+    gap: 6px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 28px;
+    background: var(--glass-strong);
+    background-image: none;
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    box-shadow:
+      0 0 0 1px var(--hair-strong),
+      0 18px 44px -14px rgb(0 0 0 / 0.55);
+    transition:
+      box-shadow var(--d2, 180ms) var(--eo, ease-out),
+      background var(--d2, 180ms) var(--eo, ease-out);
+  }
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit.tc-float {
+    box-shadow:
+      0 0 0 1px var(--hair-strong),
+      0 18px 40px -16px rgb(40 30 20 / 0.28);
+  }
+  html[data-look="ruhe"] .kx-orbit-wrap:focus-within .kx-orbit.tc-float {
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--accent) 45%, transparent),
+      0 18px 44px -14px rgb(0 0 0 / 0.55);
+  }
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-wrap:focus-within .kx-orbit.tc-float {
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--accent) 45%, transparent),
+      0 18px 40px -16px rgb(40 30 20 / 0.28);
+  }
+
+  /* ---------- orbs: mic = tinted circle, send = quiet until there is content ---------- */
+  html[data-look="ruhe"] .kx-orbit-orb {
+    width: 40px;
+    height: 40px;
+    transition:
+      transform var(--d1, 120ms) var(--spring, ease-out),
+      background var(--d2, 180ms) var(--eo, ease-out),
+      color var(--d2, 180ms) var(--eo, ease-out),
+      box-shadow var(--d2, 180ms) var(--eo, ease-out);
+  }
+  html[data-look="ruhe"] .kx-orbit-mic {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--accent) 35%, transparent);
+  }
+  html[data-look="ruhe"] .kx-orbit-mic:not(.is-rec):hover {
+    background: color-mix(in oklch, var(--accent) 24%, transparent);
+  }
+  html[data-look="ruhe"] .kx-orbit-mic .kx-ico {
+    width: 18px;
+    height: 18px;
+  }
+  html[data-look="ruhe"] .kx-orbit-mic.is-rec,
+  html[data-look="ruhe"] .kx-orbit-mic.is-rec:hover {
+    background: var(--accent);
+    color: #fff;
+    box-shadow:
+      0 0 0 6px color-mix(in oklch, var(--accent) 18%, transparent),
+      0 0 0 12px color-mix(in oklch, var(--accent) 8%, transparent);
+    animation: kxrzrings 1.6s var(--eio, ease-in-out) infinite;
+  }
+  html[data-look="ruhe"] .kx-orbit-orb.is-rec::after {
+    display: none;
+  }
+  @keyframes kxrzrings {
+    50% {
+      box-shadow:
+        0 0 0 8px color-mix(in oklch, var(--accent) 14%, transparent),
+        0 0 0 16px color-mix(in oklch, var(--accent) 5%, transparent);
+    }
+  }
+  html[data-look="ruhe"] .kx-orbit-send {
+    background: var(--lum-3);
+    color: var(--t3);
+    box-shadow: none;
+  }
+  html[data-look="ruhe"] .kx-orbit-send.is-ready {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 20px -6px color-mix(in oklch, var(--accent) 80%, transparent);
+  }
+  html[data-look="ruhe"] .kx-orbit-send.is-ready .kx-ico {
+    width: 17px;
+    height: 17px;
+  }
+
+  /* ---------- segment Festhalten | Fragen: neutral track, the active half a lifted neutral thumb ---------- */
+  html[data-look="ruhe"] .kx-orbit-seg {
+    height: 38px;
+    padding: 3px;
+    border-radius: 20px;
+    background: var(--lum-3);
+    box-shadow: none;
+  }
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-seg {
+    background: var(--hair-strong);
+  }
+  html[data-look="ruhe"] .kx-orbit-thumb {
+    top: 3px;
+    bottom: 3px;
+    border-radius: 16px;
+    background: var(--lum-1);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+    transition: transform var(--d3, 260ms) var(--spring, ease-out);
+  }
+  html[data-look="ruhe"] .kx-orbit-seg button {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 16px;
+    font-size: var(--rz-fs-body);
+    font-weight: var(--rz-w-regular);
+  }
+  html[data-look="ruhe"] .kx-orbit-seg button[aria-selected="true"] .kx-ico {
+    color: inherit;
+  }
+  html[data-look="ruhe"] .kx-orbit-ofield {
+    height: 40px;
+  }
+  html[data-look="ruhe"] .kx-orbit-field {
+    padding: 0 6px;
+    font-size: var(--rz-fs-lead);
+    color: var(--t1);
+  }
+  html[data-look="ruhe"] .kx-orbit-field::placeholder {
+    color: var(--t3);
+  }
+
+  /* ---------- chips (target, model, scope), attach ---------- */
+  html[data-look="ruhe"] .kx-orbit-chip {
+    height: 30px;
+    gap: 6px;
+    padding: 0 9px;
+    border-radius: 15px;
+    font-size: var(--rz-fs-ui);
+    color: var(--t2);
+    box-shadow: none;
+  }
+  html[data-look="ruhe"] .kx-orbit-chip:hover,
+  html[data-look="ruhe"] .kx-orbit-chip[aria-expanded="true"] {
+    background: var(--hair-strong);
+    color: var(--t1);
+  }
+  html[data-look="ruhe"] .kx-orbit-attach,
+  html[data-look="ruhe"] .kx-orbit-history {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: var(--t3);
+  }
+  html[data-look="ruhe"] .kx-orbit-attach:hover,
+  html[data-look="ruhe"] .kx-orbit-history:hover {
+    background: var(--hair-strong);
+    color: var(--t1);
+  }
+
+  /* ---------- typing: target preview and lists grow out of the bar's top ---------- */
+  html[data-look="ruhe"] .kx-orbit-preview,
+  html[data-look="ruhe"] .kx-orbit-list {
+    left: 14px;
+    right: 14px;
+    bottom: calc(100% - 1px);
+    z-index: 0;
+    border: 0;
+    border-radius: 22px 22px 0 0;
+    background: var(--glass-strong);
+    background-image: none;
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    box-shadow: 0 0 0 1px var(--hair-strong);
+    animation: kxrzgrow var(--d2, 180ms) var(--eo, ease-out);
+    transform-origin: bottom center;
+  }
+  @keyframes kxrzgrow {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  html[data-look="ruhe"] .kx-orbit-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 10px 16px 11px;
+    font-size: var(--rz-fs-ui);
+    color: var(--t3);
+    pointer-events: none;
+  }
+  html[data-look="ruhe"] .kx-orbit-preview > .kx-ico {
+    flex: none;
+  }
+  html[data-look="ruhe"] .kx-orbit-preview > .kx-truncate {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .kx-orbit-pv-tag {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 5px;
+    color: var(--t2);
+  }
+  .kx-orbit-pv-tag i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-ink);
+  }
+  .kx-orbit-pv-tag.is-obj::before {
+    content: "@";
+    color: var(--t4);
+  }
+  html[data-look="ruhe"] .kx-orbit-list {
+    padding: 8px 8px 10px;
+  }
+  html[data-look="ruhe"] .kx-orbit-micro {
+    padding: 4px 8px 6px;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: var(--rz-fs-meta);
+    color: var(--t3);
+  }
+  html[data-look="ruhe"] .kx-orbit-mi {
+    border-radius: 10px;
+  }
+  html[data-look="ruhe"] .kx-orbit-mi:hover,
+  html[data-look="ruhe"] .kx-orbit-mi.is-active {
+    background: var(--hair-strong);
+    box-shadow: none;
+  }
+  html[data-look="ruhe"] .kx-orbit-cmd {
+    color: var(--t1);
+  }
+  /* Skill glyphs: monochrome, no pastel tiles. */
+  html[data-look="ruhe"] .kx-orbit-skill,
+  html[data-look="ruhe"] .kx-orbit-glyph {
+    background: transparent;
+    color: var(--t3);
+    box-shadow: none;
+  }
+  html[data-look="ruhe"] .kx-orbit-glyph.is-avatar {
+    background: var(--hair-strong);
+    color: var(--t2);
+  }
+
+  /* Focus quick actions above the empty bar: flat glass chips. */
+  html[data-look="ruhe"] .kx-orbit-suggchip {
+    background: var(--glass-strong);
+    background-image: none;
+    box-shadow: 0 0 0 1px var(--hair-strong);
+    color: var(--t2);
+  }
+  html[data-look="ruhe"] .kx-orbit-suggchip:hover {
+    color: var(--t1);
+    background: var(--lum-3);
+  }
+
+  /* ---------- agent status docked above the bar ---------- */
+  .kx-orbit-dockwrap {
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    bottom: calc(100% + 8px);
+  }
+  .kx-orbit-dock {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    max-width: 100%;
+    height: 34px;
+    padding: 0 14px 0 10px;
+    border: 0;
+    border-radius: 17px;
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 0 1px var(--hair-strong);
+    font: inherit;
+    font-size: var(--rz-fs-ui);
+    color: var(--t2);
+    pointer-events: auto;
+    cursor: pointer;
+    animation: kxrzgrow var(--d3, 260ms) var(--eo, ease-out);
+  }
+  .kx-orbit-dock:hover {
+    background: var(--lum-3);
+  }
+  .kx-orbit-dock:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .kx-orbit-dock .kx-spinner {
+    border-color: var(--accent-ink);
+    border-right-color: transparent;
+  }
+  .kx-orbit-dock-t {
+    min-width: 0;
+    color: var(--t1);
+  }
+  .kx-orbit-dock-m {
+    flex: none;
+    color: var(--t3);
+  }
+
+  /* ---------- voice ---------- */
+  html[data-look="ruhe"] .kx-orbit-rec {
+    gap: 12px;
+    padding-left: 4px;
+  }
+  html[data-look="ruhe"] .kx-orbit-timer::before {
+    display: none;
+  }
+  html[data-look="ruhe"] .kx-orbit-wave {
+    flex: 1 1 auto;
+    color: var(--accent-ink);
+  }
+  html[data-look="ruhe"] .kx-orbit-wave i {
+    background: var(--accent-ink);
+  }
+  html[data-look="ruhe"] .kx-orbit-rec-hint {
+    display: none;
+  }
+  .kx-orbit-rec-kind {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--rz-fs-ui);
+    color: var(--t2);
+  }
+  html[data-look="ruhe"] .kx-orbit-discard {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  html[data-look="ruhe"] .kx-orbit-discard:hover {
+    background: var(--hair-strong);
+  }
+
+  /* ---------- drop: one accent row on the bar, the bar keeps its size ---------- */
+  html[data-look="ruhe"] .kx-orbit.tc-float.is-drop {
+    min-height: 56px;
+    border-radius: 28px;
+    flex-direction: row;
+    justify-content: flex-start;
+    background: color-mix(in srgb, var(--accent) 16%, var(--glass-strong));
+    background-image: none;
+    box-shadow:
+      0 0 0 1.5px var(--accent),
+      0 18px 44px -14px rgb(0 0 0 / 0.55);
+  }
+  html[data-look="ruhe"] .kx-orbit-drop {
+    display: flex;
+    width: 100%;
+    padding: 0 12px;
+    text-align: left;
+  }
+  html[data-look="ruhe"] .kx-orbit-dropfiles,
+  html[data-look="ruhe"] .kx-orbit-drop-t,
+  html[data-look="ruhe"] .kx-orbit-drop-m {
+    display: none;
+  }
+  .kx-orbit-drop-rz {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    font-size: var(--rz-fs-lead);
+    color: var(--t1);
+  }
+  .kx-orbit-drop-rz .kx-ico {
+    flex: none;
+    color: var(--accent-ink);
+  }
+
+  /* ---------- answer card (Fragen) ---------- */
+  html[data-look="ruhe"] .kx-orbit-answer {
+    padding: 16px 18px;
+    border: 0;
+    border-radius: 20px;
+    background: var(--glass-strong);
+    background-image: none;
+    -webkit-backdrop-filter: blur(26px) saturate(150%);
+    backdrop-filter: blur(26px) saturate(150%);
+    box-shadow:
+      0 0 0 1px var(--hair-strong),
+      0 24px 60px -20px rgb(0 0 0 / 0.6);
+    animation: kxrzgrow var(--d3, 260ms) var(--eo, ease-out);
+  }
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-answer {
+    box-shadow:
+      0 0 0 1px var(--hair-strong),
+      0 24px 50px -22px rgb(40 30 20 / 0.3);
+  }
+  html[data-look="ruhe"] .kx-orbit-answer-title {
+    color: var(--t2);
+  }
+  html[data-look="ruhe"] .kx-orbit-answer-title .kx-ico {
+    color: var(--accent-ink);
+  }
+  html[data-look="ruhe"] .kx-orbit-answer-body {
+    font-size: var(--rz-fs-read);
+    line-height: 1.6;
+    color: var(--t1);
+  }
+  html[data-look="ruhe"] .kx-orbit-srcchip {
+    border: 0;
+    border-radius: 8px;
+    background: var(--hair);
+    box-shadow: none;
+    color: var(--t2);
+  }
+  html[data-look="ruhe"] .kx-orbit-srcchip:hover {
+    background: var(--hair-strong);
+    color: var(--t1);
+  }
+
+  /* ---------- web-lib (2026-11-27): bar width, slash card, listening card, answer card ---------- */
+  html[data-look="ruhe"] .kx-orbit-wrap {
+    width: min(780px, calc(100% - 32px));
+  }
+  html[data-look="ruhe"] .kx-orbit-preview b {
+    font-weight: var(--rz-w-regular);
+    color: var(--t1);
+  }
+  .kx-orbit-pv-sep {
+    flex: none;
+    color: var(--t3);
+  }
+  /* Slash commands: one quiet list (icon, command in mono, what it does), the active row on l3. */
+  html[data-look="ruhe"] .kx-orbit-list.is-slash {
+    max-height: 214px;
+    overflow-y: auto;
+    padding: 10px 10px 12px;
+  }
+  html[data-look="ruhe"] .kx-orbit-list.is-slash > .kx-orbit-micro {
+    display: none;
+  }
+  html[data-look="ruhe"] .kx-orbit-list.is-slash .kx-orbit-mi {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: var(--rz-fs-body);
+  }
+  html[data-look="ruhe"] .kx-orbit-list.is-slash .kx-orbit-mi > .kx-ico {
+    flex: none;
+    color: var(--t3);
+  }
+  html[data-look="ruhe"] .kx-orbit-list.is-slash .kx-orbit-cmd {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--rz-fs-ui);
+    color: var(--t1);
+  }
+  html[data-look="ruhe"] .kx-orbit-list.is-slash .kx-orbit-mi-dim {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--t3);
+  }
+  html[data-look="ruhe"] .kx-orbit-list.is-slash .kx-orbit-mi small {
+    margin-left: auto;
+  }
+  html[data-look="ruhe"] .kx-orbit-list.is-slash .kx-orbit-mi:hover,
+  html[data-look="ruhe"] .kx-orbit-list.is-slash .kx-orbit-mi.is-active {
+    background: var(--lum-3);
+  }
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-list.is-slash .kx-orbit-mi.is-active {
+    background: var(--hair-strong);
+  }
+
+  /* Listening: a card grows out of the bar's top while the microphone runs. */
+  .kx-orbit-listen {
+    left: 14px;
+    right: 14px;
+    bottom: calc(100% - 1px);
+    z-index: 0;
+    display: grid;
+    gap: 2px;
+    padding: 12px 16px 14px;
+    border-radius: 22px 22px 0 0;
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    box-shadow: 0 0 0 1px var(--hair-strong);
+    pointer-events: none;
+    animation: kxrzgrow var(--d2, 180ms) var(--eo, ease-out);
+  }
+  .kx-orbit-listen-t {
+    font-size: var(--rz-fs-lead);
+    line-height: 1.5;
+    color: var(--t2);
+  }
+  .kx-orbit-listen-m {
+    font-size: var(--rz-fs-meta);
+    color: var(--t4);
+  }
+  html[data-look="ruhe"] .kx-orbit-drop-rz b {
+    font-weight: var(--rz-w-book);
+  }
+
+  /* The cards attached to the bar sit over busy lists: nearly opaque, so the text behind never reads through. */
+  html[data-look="ruhe"] .kx-orbit-preview,
+  html[data-look="ruhe"] .kx-orbit-list,
+  html[data-look="ruhe"] .kx-orbit-listen,
+  html[data-look="ruhe"] .kx-orbit-answer.rz-ans {
+    background: color-mix(in oklch, var(--lum-2) 96%, transparent);
+  }
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-preview,
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-list,
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-listen,
+  html[data-look="ruhe"][data-theme="light"] .kx-orbit-answer.rz-ans {
+    background: color-mix(in oklch, var(--lum-1) 96%, transparent);
+  }
+
+  /* Answer card (AnswerCardRuhe.tsx): as wide as the bar, latest answer only, chips and save at the foot. */
+  html[data-look="ruhe"] .kx-orbit-answer.rz-ans {
+    bottom: 82px;
+    gap: 0;
+    width: min(780px, calc(100% - 32px));
+    max-height: min(420px, calc(100% - 140px));
+    padding: 14px 18px 16px;
+  }
+  html[data-look="ruhe"] .kx-orbit-answer.rz-ans.is-wide {
+    max-height: calc(100% - 120px);
+  }
+  .rz-ans-head {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-size: var(--rz-fs-meta);
+    color: var(--t3);
+  }
+  .rz-ans-spark {
+    flex: none;
+    width: 13px;
+    height: 13px;
+    color: var(--accent-ink);
+  }
+  .rz-ans-sp {
+    flex: 1 1 auto;
+  }
+  .rz-ans-ib {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--t3);
+    cursor: pointer;
+  }
+  .rz-ans-ib svg {
+    width: 13px;
+    height: 13px;
+  }
+  .rz-ans-ib:hover:not(:disabled),
+  .rz-ans-ib[aria-pressed="true"] {
+    background: var(--hair-strong);
+    color: var(--t1);
+  }
+  .rz-ans-ib:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .rz-ans-body {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-height: 0;
+    margin-top: 6px;
+    overflow-y: auto;
+  }
+  .rz-ans-empty,
+  .rz-ans-q {
+    margin: 0;
+    font-size: var(--rz-fs-body);
+    color: var(--t3);
+  }
+  .rz-ans.is-wide .rz-ans-q {
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--hair);
+    color: var(--t2);
+  }
+  .rz-ans.is-wide .rz-ans-q:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .rz-ans-text {
+    display: grid;
+    gap: 8px;
+    font-size: var(--rz-fs-lead);
+    line-height: 1.6;
+    color: var(--t1);
+  }
+  .rz-ans-text strong {
+    font-weight: var(--rz-w-medium);
+  }
+  .rz-ans-text ul,
+  .rz-ans-text ol {
+    margin: 0 !important;
+    padding-left: 18px !important;
+    gap: 0 !important;
+    font-size: var(--rz-fs-body);
+    color: var(--t2);
+  }
+  /* Citations stay, but quiet: a small grey number instead of a badge. */
+  .rz-ans-text .kx-cite {
+    display: inline;
+    min-width: 0;
+    height: auto;
+    margin: 0 1px 0 2px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    vertical-align: super;
+    font-size: var(--rz-fs-kbd);
+    line-height: 0;
+    color: var(--t4);
+    cursor: pointer;
+  }
+  .rz-ans-text .kx-cite:hover {
+    color: var(--accent-ink);
+  }
+  .rz-ans-foot {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .rz-ans-src {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 210px;
+    height: 22px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--lum-3);
+    font: inherit;
+    font-size: var(--rz-fs-micro);
+    color: var(--t2);
+    cursor: pointer;
+  }
+  html[data-theme="light"] .rz-ans-src {
+    background: oklch(0.25 0.01 75 / 0.06);
+  }
+  .rz-ans-src:hover {
+    color: var(--t1);
+  }
+  .rz-ans-src .kx-ico {
+    flex: none;
+    color: var(--t3);
+  }
+  .rz-ans-more {
+    cursor: default;
+  }
+  .rz-ans-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--lum-2);
+    font: var(--rz-w-book) var(--rz-fs-ui) var(--font-sans);
+    color: var(--t1);
+    cursor: pointer;
+  }
+  html[data-theme="dark"] .rz-ans-save {
+    background: var(--hair-strong);
+  }
+  .rz-ans-save svg {
+    width: 13px;
+    height: 13px;
+  }
+  .rz-ans-save:hover {
+    background: var(--lum-3);
+  }
+
+  /* ---------- reduced motion ---------- */
+  html[data-motion="reduced"] .kx-orbit-listen,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit-wrap .kx-orbit-glow,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit-mic.is-rec,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit-preview,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit-list,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit-answer,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit-dock,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit.tc-float,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit-orb,
+  html[data-look="ruhe"][data-motion="reduced"] .kx-orbit-thumb {
+    animation: none;
+    transition: none;
+  }
+}

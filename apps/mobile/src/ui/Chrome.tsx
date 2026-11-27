@@ -18,12 +18,14 @@ export const PHONE = { w: 375, h: 780, status: 44 } as const;
 interface ChromeValue {
   /** Space above the app content (system status bar or the faux status row). */
   top: number;
+  /** Space below the app content (gesture or button navigation bar on a device, 0 on the web). */
+  bottom: number;
   /** Height of the app area (the screen on a device, the frame on the web). */
   height: number;
   width: number;
 }
 
-const ChromeCtx = createContext<ChromeValue>({ top: PHONE.status, height: PHONE.h, width: PHONE.w });
+const ChromeCtx = createContext<ChromeValue>({ top: PHONE.status, bottom: 0, height: PHONE.h, width: PHONE.w });
 export const useChrome = (): ChromeValue => useContext(ChromeCtx);
 
 export function PhoneFrame({ children }: { children: ReactNode }) {
@@ -36,7 +38,7 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
   if (!framed) {
     const top = Platform.OS === "web" ? 0 : insets.top;
     return (
-      <ChromeCtx.Provider value={{ top, height: win.height, width: win.width }}>
+      <ChromeCtx.Provider value={{ top, bottom: Platform.OS === "web" ? 0 : insets.bottom, height: win.height, width: win.width }}>
         <View style={{ flex: 1, backgroundColor: th.bgMainWindow }}>{children}</View>
       </ChromeCtx.Provider>
     );
@@ -60,7 +62,7 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
           } as never,
         ]}
       >
-        <ChromeCtx.Provider value={{ top: PHONE.status, height: h, width: PHONE.w }}>
+        <ChromeCtx.Provider value={{ top: PHONE.status, bottom: 0, height: h, width: PHONE.w }}>
           {children}
           <View pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: 0, height: PHONE.status, zIndex: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 28, paddingTop: 4 }}>
             <T mono size={13} lh={20} ls={0}>

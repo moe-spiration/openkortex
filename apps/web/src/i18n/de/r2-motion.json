@@ -1,0 +1,8 @@
+{
+  "Your system asks for reduced motion, so motion is off. Pick “Full” to see it anyway.": "Dein System wünscht weniger Bewegung, deshalb ist sie aus. Wähle „Voll“, um sie trotzdem zu sehen.",
+  "Your system asks for reduced motion; your choice here wins.": "Dein System wünscht weniger Bewegung; Deine Wahl hier hat Vorrang.",
+  "Nothing to do": "Nichts zu tun",
+  "New tasks come from your notes and meetings, or from what you capture below.": "Neue Aufgaben kommen aus Deinen Notizen und Meetings oder aus dem, was Du unten festhältst.",
+  "Vault in sync": "Vault synchron",
+  "Markdown files and the database exchange every change in both directions.": "Markdown-Dateien und Datenbank tauschen jede Änderung in beide Richtungen aus."
+}

@@ -10,6 +10,7 @@ import { noteHrefById } from "@/lib/shell/routes";
 import { useShell } from "@/lib/shell/store";
 import { isLiveData } from "@/lib/workspace-data";
 import { Ico } from "@/components/shell/icons";
+import { Pictogram } from "@/components/motion/Pictogram";
 import { quoted, savedAgo } from "./home-utils";
 import { typeIcon } from "./Thumb";
 
@@ -131,9 +132,12 @@ export function Rediscover({ now, view, go, style }: { now: Date | null; view: H
           )}
         </>
       ) : (
-        <p className="e-meta" style={{ margin: 0 }}>
-          {t("Your archive is still young. Older entries show up here again as soon as they fit today.")}
-        </p>
+        <>
+          <Pictogram kind="idea" size="sm" className="kx-art-ruhe" />
+          <p className="e-meta" style={{ margin: 0 }}>
+            {t("Your archive is still young. Older entries show up here again as soon as they fit today.")}
+          </p>
+        </>
       )}
       {view && (
         <div className="hm-actions">

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/shell/AppShell";
+import { GestureLayer } from "@/components/motion/GestureLayer";
 import { NotesProvider } from "@/lib/notes/store";
 import { SettingsProvider } from "@/lib/settings/store";
 import { ShellProvider } from "@/lib/shell/store";
@@ -20,6 +21,7 @@ export default async function WorkspaceLayout({ children }: { children: ReactNod
           <ThemePackProvider>
             <NotesProvider>
               <AppShell>{children}</AppShell>
+              <GestureLayer />
             </NotesProvider>
           </ThemePackProvider>
         </SettingsProvider>

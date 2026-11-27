@@ -6,6 +6,7 @@ import { RADIUS } from "../theme/tokens";
 import { Icon, type IconName } from "./Icon";
 import { Help, T } from "./primitives";
 import { SwipeSheet } from "./SwipeSheet";
+import { RMenuRow, RSheet, RText } from "./ruhe";
 
 /* Long-press context menu: a short bottom sheet with the row's actions; swipe down or tap outside to close. */
 
@@ -13,6 +14,29 @@ export function ActionMenu() {
   const th = useTheme();
   const { menu, closeMenu } = useApp();
   if (!menu) return null;
+  if (th.look === "ruhe")
+    // Ruhe: a glass sheet that ends above the tab bar; 48 rows, title 12.5 t3, destructive in crit.
+    return (
+      <RSheet onClose={closeMenu} scroll aboveBar maxHeight="70%" z={30} contentStyle={{ paddingHorizontal: 14, paddingBottom: 12 }}>
+        {!!menu.title && (
+          <RText step="rowSub" color={th.t3} numberOfLines={1} style={{ paddingHorizontal: 4, paddingBottom: 4 }}>
+            {menu.title}
+          </RText>
+        )}
+        {menu.items.map((it) => (
+          <RMenuRow
+            key={it.label}
+            icon={(it.icon as IconName | undefined) ?? "chev"}
+            label={it.label}
+            danger={it.danger}
+            onPress={() => {
+              closeMenu();
+              it.run();
+            }}
+          />
+        ))}
+      </RSheet>
+    );
   return (
     <>
       <Pressable accessibilityLabel={t("Close menu")} onPress={closeMenu} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, zIndex: 30, backgroundColor: th.bgScrim }} />

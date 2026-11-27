@@ -52,6 +52,19 @@ export function createQueue(storage: QueueStorage, now: () => Date = () => new D
       await save(items);
       return items.length;
     },
+    /** Stores a job before it is sent (quick overlay: survives the process being closed); returns its id. */
+    async put(job: QueueJob): Promise<string> {
+      const items = await list();
+      const id = `q${now().getTime().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+      items.push({ ...job, id, at: now().toISOString(), tries: 0 });
+      await save(items);
+      return id;
+    },
+    /** Takes a job out again (sent, or failed for good). */
+    async remove(id: string): Promise<void> {
+      const items = await list();
+      if (items.some((j) => j.id === id)) await save(items.filter((j) => j.id !== id));
+    },
     /** Sends oldest first; stops at the first `retry` (still offline). Returns what happened. */
     async flush(send: (job: Queued) => Promise<SendResult>): Promise<{ sent: number; dropped: number; left: number }> {
       if (flushing) return { sent: 0, dropped: 0, left: (await list()).length };

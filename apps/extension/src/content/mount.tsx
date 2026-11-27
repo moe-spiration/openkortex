@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { ContentScriptContext } from "wxt/utils/content-script-context";
 import { createShadowRootUi } from "wxt/utils/content-script-ui/shadow-root";
-import type { ThemeSetting } from "../lib/settings";
+import type { LookSetting, ThemeSetting } from "../lib/settings";
 import { ThemeRoot } from "../ui/ThemeRoot";
 
 export interface MountedUi {
@@ -19,6 +19,7 @@ export async function mountReact(
   opts: {
     name: string;
     theme: ThemeSetting;
+    look?: LookSetting;
     node: ReactNode;
     position: "inline" | "overlay";
     anchor?: string | Element;
@@ -34,7 +35,7 @@ export async function mountReact(
     zIndex: opts.zIndex ?? 2147483646,
     onMount: (container) => {
       const root = createRoot(container);
-      root.render(<ThemeRoot theme={opts.theme}>{opts.node}</ThemeRoot>);
+      root.render(<ThemeRoot theme={opts.theme} look={opts.look}>{opts.node}</ThemeRoot>);
       return root;
     },
     onRemove: (root) => root?.unmount(),

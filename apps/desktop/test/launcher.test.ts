@@ -74,7 +74,7 @@ describe("launcher helpers", () => {
   it("puts ask right after the capture targets (incl. scratchpad), then search, prompts and the selection grab", () => {
     expect(QC_TARGETS).toEqual(["note", "inbox", "task", "scratchpad"]);
     expect(QC_ACTIONS[QC_ASK]!.label).toBe("Second Brain fragen");
-    expect(QC_ACTIONS.slice(QC_ASK + 1).map((a) => a.hint)).toEqual(["?", ">", "Alt+Shift+Space"]);
+    expect(QC_ACTIONS.slice(QC_ASK).map((a) => a.key)).toEqual(["Tab", "?", ">", null]);
   });
 });
 

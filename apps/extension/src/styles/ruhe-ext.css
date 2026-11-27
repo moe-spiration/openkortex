@@ -1,0 +1,120 @@
+/*
+ * Ruhe look, Stream H: web clipper (popup, side panel, tab manager, options, in-page overlays). Screen 18 of the Ruhe
+ * iteration (/mnt/project-files/ui-linear-2026-11/runde-2/18-clipper.png).
+ * Everything sits under [data-look="ruhe"] (set on <html> by useDocumentTheme, on the shadow-root .kx-root by
+ * ThemeRoot); Classic keeps ext.css as it is. Token values come from packages/ui/src/styles/ruhe.css; no colour values
+ * here. Calm: the page canvas is one surface, areas are outlined by a single hairline instead of filled tiles, the tag
+ * colour is only a dot, the selected tab is a soft fill without a tray. Floating things use the Orbit glass
+ * (--glass-strong, blur 24px saturate 150%, 1px --hair-strong ring).
+ */
+
+@layer components {
+  /* ---------- clipper (popup and the Alt+K overlay) ---------- */
+  [data-look="ruhe"] .kx-clip {
+    background: var(--lum-1);
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 18px 44px -14px rgb(0 0 0 / 0.5);
+  }
+  [data-look="ruhe"] .kx-clip--popup { box-shadow: none; }
+  [data-look="ruhe"] .kx-clip-title { font-weight: 600; letter-spacing: -0.015em; }
+  /* Page preview: a hairline card, the thumbnail keeps its photo, title in 600. */
+  [data-look="ruhe"] .kx-bookmark-main {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--hair);
+    border-radius: var(--radius-xl);
+  }
+  [data-look="ruhe"] .kx-bookmark-thumb { border-radius: var(--radius-lg); }
+  [data-look="ruhe"] .kx-domain { font-family: var(--font-sans); font-size: 12.5px; color: var(--t3); }
+  [data-look="ruhe"] .kx-clip-foot { border-top-color: var(--hair); }
+
+  /* Fields: transparent with a hairline; the accent ring on focus stays. */
+  [data-look="ruhe"] .kx-control,
+  [data-look="ruhe"] .kx-tm-name,
+  [data-look="ruhe"] .kx-sp-search .kx-control,
+  [data-look="ruhe"] .kx-tmp-side .kx-sp-search .kx-control {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--hair);
+  }
+  [data-look="ruhe"] .kx-control:hover,
+  [data-look="ruhe"] .kx-tm-name:hover { box-shadow: inset 0 0 0 1px var(--hair-strong); }
+  [data-look="ruhe"] .kx-control:focus-within,
+  [data-look="ruhe"] .kx-tm-name:focus-within {
+    box-shadow: inset 0 0 0 1px var(--accent-line), 0 0 0 3px var(--accent-soft);
+  }
+  [data-look="ruhe"] .kx-choice:hover { background: var(--lum-2); }
+
+  /* Hashtags: dot and text, no dashed chip; picked = soft fill. */
+  [data-look="ruhe"] .kx-tagchip {
+    min-height: 28px;
+    border: 0;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--hair);
+  }
+  [data-look="ruhe"] .kx-tagchip:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .kx-tagchip[aria-pressed="true"] {
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--accent) 35%, transparent);
+  }
+  [data-look="ruhe"] .kx-statechip { background: var(--lum-2); box-shadow: inset 0 0 0 1px var(--hair); }
+
+  /* Primary action: one accent fill, 8 px radius like the mockup. */
+  [data-look="ruhe"] .kx-clip-cta { border-radius: var(--radius-lg); box-shadow: none; }
+  [data-look="ruhe"] .kx-progress { background: var(--lum-3); }
+
+  /* ---------- side panel: view switch as text tabs without a tray ---------- */
+  [data-look="ruhe"] .kx-sp-top { background: var(--lum-1); box-shadow: inset 0 -1px 0 var(--hair); margin-bottom: 4px; }
+  [data-look="ruhe"] .kx-sp-views { padding: 0; gap: 2px; background: transparent; }
+  [data-look="ruhe"] .kx-sp-view { height: 28px; border-radius: var(--radius-lg); color: var(--t3); }
+  [data-look="ruhe"] .kx-sp-view:hover { color: var(--t1); background: var(--hair); }
+  [data-look="ruhe"] .kx-sp-kbd { background: transparent; box-shadow: inset 0 0 0 1px var(--hair); }
+  [data-look="ruhe"] .kx-sp-prompt:is(:hover, :focus-within) { background: var(--lum-2); }
+
+  /* ---------- tab manager: outlined areas instead of trays and filled tiles ---------- */
+  [data-look="ruhe"] .kx-tm-open {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--hair);
+  }
+  [data-look="ruhe"] .kx-tm-card {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--hair);
+  }
+  [data-look="ruhe"] .kx-tm-card:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .kx-tm-count { background: transparent; color: var(--t3); padding: 0 2px; min-width: 0; }
+  [data-look="ruhe"] .kx-tm-favbox--sm,
+  [data-look="ruhe"] .kx-tm-badge { background: var(--lum-2); }
+
+  /* ---------- floating surfaces: the Orbit glass ---------- */
+  [data-look="ruhe"] :is(.kx-sp-undo, .kx-opt-savebar, .kx-seltool) {
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 18px 44px -14px rgb(0 0 0 / 0.5);
+  }
+  [data-look="ruhe"] .kx-toast {
+    border: 0;
+    background-image: none;
+    background-color: var(--glass-strong);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 18px 44px -14px rgb(0 0 0 / 0.5);
+  }
+
+  /* ---------- pages ---------- */
+  [data-look="ruhe"] .kx-page { background: var(--lum-0); }
+  [data-look="ruhe"] .kx-pop-foot { background: var(--lum-1); border-top-color: var(--hair); }
+  [data-look="ruhe"] .kx-opt-toggle + .kx-opt-toggle { border-top-color: var(--hair); }
+}
+
+/* Unlayered like the rule it replaces in ext.css: the selected segment is a soft fill, no tray, no ring. */
+[data-look="ruhe"] .kx-root [role="tablist"] > [role="tab"][aria-selected="true"],
+.kx-root[data-look="ruhe"] [role="tablist"] > [role="tab"][aria-selected="true"],
+[data-look="ruhe"] .kx-root [role="tablist"].kx-sp-views > [role="tab"][aria-selected="true"] {
+  background: var(--lum-3);
+  color: var(--t1);
+  box-shadow: none;
+}
+[data-look="ruhe"] .kx-root [role="tablist"]:not(.kx-sp-views),
+.kx-root[data-look="ruhe"] [role="tablist"]:not(.kx-sp-views) {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+html[data-look="ruhe"] { background: var(--lum-1); }

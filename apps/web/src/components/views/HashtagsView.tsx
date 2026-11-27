@@ -12,6 +12,7 @@ import { CollectionHead } from "./CollectionHead";
 import { Avatars } from "./EntryParts";
 import type { EntryObject } from "./entries";
 import { t, tn } from "@/i18n";
+import { EmptyPic } from "@/components/motion/EmptyPic";
 
 /*
  * Hashtags (Tactile Craft v2, dummy `Hashtags`): dense hierarchical index (#pfad/teil) with count, share bar, a 30-day
@@ -90,7 +91,14 @@ export function HashtagsView({
             {t("Objects")}
           </span>
         </div>
-        {shown.length === 0 && <div className="kc-section kc-empty-line">{groups.length ? t("No tag matches this filter.") : t("No hashtags yet. Kortex assigns them while sorting.")}</div>}
+        {shown.length === 0 && (
+          <EmptyPic
+            kind={groups.length ? "search" : "idea"}
+            size="lg"
+            title={groups.length ? t("No tag matches this filter.") : t("No hashtags yet. Kortex assigns them while sorting.")}
+            classic={<div className="kc-section kc-empty-line">{groups.length ? t("No tag matches this filter.") : t("No hashtags yet. Kortex assigns them while sorting.")}</div>}
+          />
+        )}
         {shown.map((g) => {
           const open = !closed.has(g.tag) || !!q;
           return (

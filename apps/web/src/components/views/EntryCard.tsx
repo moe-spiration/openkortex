@@ -2,7 +2,8 @@
 
 import type { CSSProperties, HTMLAttributes } from "react";
 import { Check } from "lucide-react";
-import { Avatars, Glyph, StatusPill, TagDot, ownImage } from "./EntryParts";
+import { Avatars, EntryPlaceholder, Glyph, StatusPill, TagDot, TypeGlyph, ownImage } from "./EntryParts";
+import { useLook } from "@/components/theme/look";
 import type { ViewEntry } from "./entries";
 import { t } from "@/i18n";
 
@@ -27,6 +28,8 @@ export function EntryCard({ entry: it, active, selected, when, className, style,
   const img = ownImage(it.cover);
   const length = it.length;
   const take = it.tldr || it.facts?.line;
+  // Ruhe look: every card gets a cover (own image with a small type badge, else the monochrome type placeholder).
+  const ruhe = useLook() === "ruhe";
   return (
     <button
       type="button"
@@ -43,6 +46,16 @@ export function EntryCard({ entry: it, active, selected, when, className, style,
           <img src={img} alt="" loading="lazy" decoding="async" />
           {length?.clock && <span className="kc-dur">{length.label}</span>}
           {it.progress !== undefined && <span className="kc-prog" style={{ width: `${Math.round(it.progress * 100)}%` }} aria-hidden />}
+          {ruhe && (
+            <span className="kc-cover-type" aria-hidden>
+              <TypeGlyph entry={it} size="sm" />
+            </span>
+          )}
+        </span>
+      )}
+      {ruhe && !img && (
+        <span className="kc-cover is-ph" aria-hidden>
+          <EntryPlaceholder kind={it.kind} size={34} />
         </span>
       )}
       {selected && (

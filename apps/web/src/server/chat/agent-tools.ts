@@ -28,6 +28,14 @@ import { retrieveSources } from "./retrieval";
 
 /** Tool rounds of one agent answer (searches, reads, changes, then the answer itself). */
 export const AGENT_STEPS = 12;
+
+/**
+ * The last allowed step may not call tools any more: the model has to write its answer there.
+ * Without this a run that spends every step on searches ends without a word ("No answer received").
+ */
+export function agentPrepareStep({ stepNumber }: { stepNumber: number }): { toolChoice: "none" } | undefined {
+  return stepNumber >= AGENT_STEPS - 1 ? { toolChoice: "none" } : undefined;
+}
 const LIST_LIMIT = 40;
 
 export interface AgentToolEvents {

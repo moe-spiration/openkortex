@@ -2,6 +2,7 @@ import { t } from "../i18n";
 import { useEffect, type ReactNode } from "react";
 import { Keyboard, View, type StyleProp, type ViewStyle } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { useMotion } from "./ruhe/motion";
 import Animated, { runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 
 /*
@@ -30,7 +31,10 @@ export function SwipeSheet({
   contentContainerStyle,
   grabHeight = GRAB_H,
   scroll = true,
+  backdrop,
 }: {
+  /** Drawn behind the content, inside the moving sheet (Ruhe: the glass fill). */
+  backdrop?: ReactNode;
   /** Height of the always-draggable top zone (small for menus so items stay tappable). */
   grabHeight?: number;
   onClose: () => void;
@@ -39,17 +43,23 @@ export function SwipeSheet({
   contentContainerStyle?: StyleProp<ViewStyle>;
   scroll?: boolean;
 }) {
-  const y = useSharedValue(40);
+  // Motion tokens (android-richtlinien section 14): in 260 ms eo from 24 below, out 180 ms eio.
+  const m = useMotion();
+  const y = useSharedValue(m.offset(24));
   const opacity = useSharedValue(0);
+  const dIn = m.d3;
+  const dOut = m.d2;
+  const eo = m.eo;
+  const eio = m.eio;
   const scrollY = useSharedValue(0);
   /** translationY at which the content pan started moving the sheet (-1 = not yet). */
   const from = useSharedValue(-1);
   const ref = useAnimatedRef<Animated.ScrollView>();
 
   useEffect(() => {
-    y.value = withTiming(0, { duration: 200 });
-    opacity.value = withTiming(1, { duration: 160 });
-  }, [y, opacity]);
+    y.value = withTiming(0, { duration: dIn, easing: eo });
+    opacity.value = withTiming(1, { duration: dIn, easing: eo });
+  }, [y, opacity, dIn, eo]);
 
   const onScroll = useAnimatedScrollHandler((e) => {
     scrollY.value = e.contentOffset.y;
@@ -63,8 +73,8 @@ export function SwipeSheet({
   const settle = (velocityY: number) => {
     "worklet";
     if (y.value > CLOSE_PX || (y.value > 24 && velocityY > 800)) {
-      y.value = withTiming(900, { duration: 180 }, () => runOnJS(close)());
-      opacity.value = withTiming(0, { duration: 180 });
+      y.value = withTiming(900, { duration: dOut, easing: eio }, () => runOnJS(close)());
+      opacity.value = withTiming(0, { duration: dOut, easing: eio });
     } else {
       y.value = withSpring(0, { damping: 22, stiffness: 260 });
     }
@@ -103,11 +113,14 @@ export function SwipeSheet({
       from.value = -1;
     });
 
-  const anim = useAnimatedStyle(() => ({ opacity: opacity.value, transform: [{ translateY: Math.max(0, y.value) }] }));
+  // At rest no transform at all: a transformed ancestor would cut the glass off from what lies behind it
+  // (web backdrop-filter root), so the settled sheet blurs the page like the mockup.
+  const anim = useAnimatedStyle(() => ({ opacity: opacity.value, transform: y.value > 0.5 ? [{ translateY: y.value }] : [] }));
 
   if (!scroll)
     return (
       <Animated.View style={[style, anim]}>
+        {backdrop}
         <GestureDetector gesture={grab}>
           <View collapsable={false} style={contentContainerStyle}>
             {children}
@@ -118,6 +131,7 @@ export function SwipeSheet({
 
   return (
     <Animated.View style={[style, anim]}>
+      {backdrop}
       <GestureDetector gesture={pan}>
         <View collapsable={false} style={{ flexShrink: 1 }}>
           <GestureDetector gesture={native}>

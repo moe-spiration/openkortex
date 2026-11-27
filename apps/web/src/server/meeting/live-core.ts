@@ -118,6 +118,11 @@ export const LiveActionSchema = z.discriminatedUnion("action", [
     /** Full transcript after a failed live transcription (desktop re-transcribed the WAV). */
     transcript: z.string().max(MAX_TRANSCRIPT_CHARS).nullish(),
   }),
+  /** The user threw the recording away (desktop HUD "Discard"): the running session's item goes. */
+  z.object({
+    action: z.literal("discard"),
+    item_id: ItemId,
+  }),
 ]);
 export type LiveAction = z.infer<typeof LiveActionSchema>;
 

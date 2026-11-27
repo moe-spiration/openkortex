@@ -153,7 +153,10 @@ export function TagDot({ tag }: { tag: string }) {
   return (
     <span className="kc-tpill" title={tag}>
       <i aria-hidden style={{ background: `var(--tag-${tagTone(tag)}-dot)` }} />
-      {tag.startsWith("#") ? tag : "#" + tag}
+      <span className="kc-tpill-l">
+        <span className="kc-hash">#</span>
+        {tag.replace(/^#/, "")}
+      </span>
     </span>
   );
 }

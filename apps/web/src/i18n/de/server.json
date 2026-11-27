@@ -367,6 +367,7 @@
   "The sign-in at Griply has expired. Connect again under Settings > Connectors.": "Die Anmeldung bei Griply ist abgelaufen. Verbinde neu unter Einstellungen > Connectors.",
   "Griply did not create the task: {error}": "Griply hat die Aufgabe nicht angelegt: {error}",
   "The job was interrupted. Start it again.": "Der Auftrag wurde unterbrochen. Starte ihn noch einmal.",
+  "The agent finished without a result. Start the job again.": "Der Agent ist ohne Ergebnis fertig geworden. Starte den Auftrag noch einmal.",
   "Job not found": "Auftrag nicht gefunden",
   "This job has nothing to confirm.": "Bei diesem Auftrag gibt es nichts zu bestätigen.",
   "This job has nothing to take back.": "Bei diesem Auftrag gibt es nichts zurückzunehmen.",

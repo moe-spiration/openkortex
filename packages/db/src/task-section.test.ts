@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   parseTaskSection,
   planTaskSectionSync,
+  renderTaskSection,
   taskInsertFromLine,
   withTaskSection,
   type SectionTask,
@@ -38,6 +39,7 @@ describe("task line id marker", () => {
     expect(parseTaskLine(line)).toEqual({
       title: "Folien senden",
       done: true,
+      assignee: null,
       project: "Kortex",
       timeframe: "2026-11-07",
       due: "2026-11-05",
@@ -165,8 +167,8 @@ describe("task section in two languages", () => {
     );
     // Read back in German mode as well: every reader accepts both forms.
     expect(parseTaskSection(md)).toEqual([
-      { title: "Send slides", done: false, project: null, timeframe: "this_week", due: "2026-11-05", context: "why", id: A },
-      { title: "Check contract", done: true, project: null, timeframe: null, due: null, context: null, id: B },
+      { title: "Send slides", done: false, assignee: null, project: null, timeframe: "this_week", due: "2026-11-05", context: "why", id: A },
+      { title: "Check contract", done: true, assignee: null, project: null, timeframe: null, due: null, context: null, id: B },
     ]);
   });
 
@@ -184,7 +186,74 @@ describe("task section in two languages", () => {
   it("reads German sections in English mode", () => {
     const md = `## Aufgaben\n\n- [ ] Vertrag prüfen · Zeitrahmen: heute · Fällig: 2026-11-05 · Kontext: wichtig`;
     expect(withLocale("en", () => parseTaskSection(md))).toEqual([
-      { title: "Vertrag prüfen", done: false, project: null, timeframe: "today", due: "2026-11-05", context: "wichtig", id: null },
+      { title: "Vertrag prüfen", done: false, assignee: null, project: null, timeframe: "today", due: "2026-11-05", context: "wichtig", id: null },
     ]);
+  });
+});
+
+describe("one task section per item (meetings, voice memos, e-mails)", () => {
+  const T = "> [!toggle]- Transcript\n>\n> [00:00:40] Ich: Recording verwerfen.";
+  const meetingTask = task({ id: A, title: "Button zum Verwerfen einer Aufnahme ergänzen", context: "Statt Minutes." });
+
+  it("turns an old meeting list plus the section below the transcript into one section above it", () => {
+    // As stored by the meeting adapter before (2026-11-24): extractor list above, synced section below.
+    const md = [
+      "# Idee",
+      "",
+      "## Open risks & blockers",
+      "",
+      "- Unklar.",
+      "",
+      "## Extracted action items",
+      "",
+      "- [ ] @Me: Button zum Verwerfen einer Aufnahme ergänzen · [00:00:40] · Context: Statt Minutes.",
+      "",
+      T,
+      "",
+      "## Tasks",
+      "",
+      `- [ ] Button zum Verwerfen einer Aufnahme ergänzen · Context: Statt Minutes. <!-- task:${A} -->`,
+      "",
+    ].join("\n");
+    const out = withLocale("en", () => withTaskSection(md, [meetingTask]));
+    expect(out).toBe(
+      [
+        "# Idee",
+        "",
+        "## Open risks & blockers",
+        "",
+        "- Unklar.",
+        "",
+        "## Tasks",
+        "",
+        `- [ ] Button zum Verwerfen einer Aufnahme ergänzen · Context: Statt Minutes. <!-- task:${A} -->`,
+        "",
+        T,
+        "",
+      ].join("\n"),
+    );
+    // Stable: a second refresh changes nothing.
+    expect(withLocale("en", () => withTaskSection(out, [meetingTask]))).toBe(out);
+  });
+
+  it("replaces an old list in place when there is no section yet (German, owner and due)", () => {
+    const md = `## Extrahierte Action Items\n\n- [ ] @Anna: Folien senden (Due: 2026-11-30) · [00:12:03]\n\n${T}\n`;
+    const out = withTaskSection(md, [task({ id: A, title: "Folien senden", assignee: "Anna", due_date: "2026-11-30T00:00:00Z" })]);
+    expect(out).toBe(`## Aufgaben\n\n- [ ] Folien senden · Zuständig: Anna · Fällig: 2026-11-30 <!-- task:${A} -->\n\n${T}\n`);
+  });
+
+  it("keeps an old list that holds anything else (the user's own lines or ticks)", () => {
+    const own = `## Action Items\n\n- [ ] Folien senden\n- [ ] Eigene Zeile\n`;
+    expect(withTaskSection(own, [task({ id: A, title: "Folien senden" })])).toContain("## Action Items");
+    const ticked = `## Action Items\n\n- [x] Folien senden\n`;
+    expect(withTaskSection(ticked, [task({ id: A, title: "Folien senden" })])).toContain("## Action Items");
+  });
+
+  it("a new item's section sits above the transcript and only gains its id markers", () => {
+    const fresh = `# Sync\n\n${renderTaskSection([{ title: "Folien senden", assignee: "Max", due_date: null, timeframe: "this_week", context: null }], "de")}\n\n${T}`;
+    expect(fresh).toBe(`# Sync\n\n## Aufgaben\n\n- [ ] Folien senden · Zuständig: Max · Zeitrahmen: diese Woche\n\n${T}`);
+    const out = withTaskSection(fresh, [task({ id: A, title: "Folien senden", assignee: "Max", timeframe: "this_week" })]);
+    expect(out).toBe(`# Sync\n\n## Aufgaben\n\n- [ ] Folien senden · Zuständig: Max · Zeitrahmen: diese Woche <!-- task:${A} -->\n\n${T}`);
+    expect(parseTaskSection(out)).toHaveLength(1);
   });
 });

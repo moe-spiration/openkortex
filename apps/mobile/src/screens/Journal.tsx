@@ -7,13 +7,14 @@ import { appendPrompt, dailyNotes, heatCells, writingLevel } from "../lib/journa
 import { useApp } from "../state/AppState";
 import { useData } from "../state/Data";
 import { alpha } from "../theme/color";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
 import { FONT, RADIUS } from "../theme/tokens";
 import { useEntryActions } from "../ui/entryActions";
 import { Icon } from "../ui/Icon";
 import { JournalWeek } from "../ui/JournalWeek";
-import { Btn, Help, Micro, Section, T } from "../ui/primitives";
+import { Btn, Help, Micro, panel, rowSurface, Section, T } from "../ui/primitives";
 import { ScreenScroll } from "../ui/Screen";
+import { JournalRuhe } from "./ruhe/JournalRuhe";
 
 /*
  * Tagebuch on the phone (like the web journal, tabs Tag | Woche): today's entry (the daily note's Mind Dump, one
@@ -27,6 +28,10 @@ const PROMPTS = [msg("What am I grateful for?"), msg("What was hard today?"), ms
 const longDay = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
 export function Journal() {
+  return useRuhe() ? <JournalRuhe /> : <JournalVivid />;
+}
+
+function JournalVivid() {
   const th = useTheme();
   const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState<"day" | "week">(params.tab === "week" ? "week" : "day");
@@ -71,7 +76,7 @@ function Day() {
   const heat = heatCells(today, (date) => (date === today ? writingLevel(!!todayNote || a.journalText.trim().length > 0, a.journalText) : byDate.has(date) ? writingLevel(true, byDate.get(date)!.tldr ?? "") : 0));
   return (
     <View style={{ gap: 16 }}>
-      <View style={{ gap: 10, padding: 14, borderRadius: RADIUS.card, backgroundColor: alpha(th.bgSurfaceFlat, 0.72) }}>
+      <View style={panel(th, 10)}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <T size={13} lh={18} weight={500} style={{ flex: 1 }}>
             {t("Today · {date}", { date: longDay(today) })}
@@ -108,7 +113,7 @@ function Day() {
         )}
       </View>
 
-      <View style={{ gap: 12, padding: 14, borderRadius: RADIUS.card, backgroundColor: alpha(th.bgSurfaceFlat, 0.72) }}>
+      <View style={panel(th, 12)}>
         <Micro>{t("Last 12 weeks")}</Micro>
         <View accessibilityLabel={t("Writing activity of the last 12 weeks")} style={{ flexDirection: "row", gap: 3 }}>
           {Array.from({ length: 12 }, (_, w) => (
@@ -137,7 +142,7 @@ function Day() {
         <Section>{t("Earlier entries")}</Section>
         {!past.length && <Help>{t("No earlier daily notes yet. Every day you capture here or in the check-in on Home appears in this list afterwards.")}</Help>}
         {past.slice(0, limit).map((e) => (
-          <Pressable key={e.id} accessibilityRole="button" onPress={() => a.openEntry(e.id)} onLongPress={() => act.openMenu(e)} style={{ minHeight: 56, gap: 2, justifyContent: "center", paddingVertical: 8, paddingHorizontal: 12, borderRadius: RADIUS.row, backgroundColor: th.bgSurfaceFlat }}>
+          <Pressable key={e.id} accessibilityRole="button" onPress={() => a.openEntry(e.id)} onLongPress={() => act.openMenu(e)} style={[{ minHeight: 56, gap: 2, justifyContent: "center", paddingVertical: 8, paddingHorizontal: 12 }, rowSurface(th)]}>
             <T size={14} lh={19} weight={500}>
               {longDay(e.date)}
             </T>

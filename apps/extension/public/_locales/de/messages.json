@@ -1,4 +1,6 @@
 {
   "extDescription": { "message": "Web-Clipper, Inline-Highlighter und ChatGPT/Claude-Export für Dein OpenKortex Second Brain." },
-  "commandOpenClipper": { "message": "OpenKortex Clipper öffnen" }
+  "commandOpenClipper": { "message": "OpenKortex Clipper öffnen" },
+  "commandOpenSidePanel": { "message": "OpenKortex-Seitenleiste öffnen" },
+  "commandOpenManager": { "message": "OpenKortex-Tab-Manager öffnen" }
 }

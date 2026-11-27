@@ -15,7 +15,21 @@ export type CaptureTarget = "note" | "inbox" | "task" | "scratchpad" | "ask";
 export interface CoachCard {
   kind: "fact" | "question" | "action";
   text: string;
+  /** Short headline ("Jetzt guter Moment"), 0.6.8; without it the HUD names the card by its kind. */
+  title?: string | null;
+  /** The object file the card draws on ("Akte Jonas"), 0.6.8; opens in the main window. */
+  object?: CoachObject | null;
 }
+
+/** A knowledge item a coaching card refers to (live.rs `CardObject`). */
+export interface CoachObject {
+  id: string;
+  title: string;
+  type?: string | null;
+}
+
+/** Light / dark of the desktop's own windows: a fixed choice or Windows' setting. */
+export type ThemePref = "system" | "light" | "dark";
 
 /** Devices a running recording really uses (Rust `audio::InUse`). */
 export interface DevicesInUse {
@@ -61,8 +75,11 @@ export interface Events {
   /** Recording clock, once per second while a meeting is recorded. */
   "meeting:tick": { elapsed: number };
   /** Recording started / stopped (also when triggered from tray or hotkey). */
-  /** `uploading` (after a stop): a result follows as `meeting:upload`; false = nothing follows. */
-  "meeting:state": { recording: boolean; elapsed: number; uploading?: boolean };
+  /**
+   * `uploading` (after a stop): a result follows as `meeting:upload`; false = nothing follows.
+   * `discarded`: the user threw the recording away (no file, no minutes): back to "ready".
+   */
+  "meeting:state": { recording: boolean; elapsed: number; uploading?: boolean; discarded?: boolean };
   /** Per-channel levels: ch0 = microphone (cpal), ch1 = WASAPI loopback. ~20 Hz from Rust, 1 Hz in the mock. */
   "audio:levels": {
     ch0: ChannelLevel;
@@ -138,6 +155,8 @@ export interface Events {
   "hud:mode": { mode: HudMode };
   /** Stealth switched (set_stealth), so every window shows the same state. */
   "settings:stealth": { enabled: boolean };
+  /** Theme switched (set_theme): every window follows (the value is also shared through localStorage). */
+  "settings:theme": { theme: ThemePref };
   /** Language switched (set_locale): every local window remembers it and reloads to rebuild its texts. */
   "settings:locale": { locale: Locale };
   /** Account connected / disconnected in the settings window (sent by the frontend). */
@@ -225,6 +244,11 @@ export interface Commands {
    */
   stop_recording: { args: void; result: { file: string; seconds: number; uploading: boolean } };
   upload_recording: { args: { file: string }; result: null };
+  /**
+   * Throws the running recording away: capture stops, the WAV is deleted and the live session's
+   * meeting entry is removed in Kortex. No upload, no minutes. `meeting:state` follows with `discarded`.
+   */
+  discard_recording: { args: void; result: null };
   account_status: { args: void; result: AccountStatus };
   /**
    * "Server verbinden": the address of the user's Kortex (first start, or to switch). The core checks
@@ -236,8 +260,16 @@ export interface Commands {
   /** "Mit API-Token verbinden": personal token (kx_…) from the web app instead of a sign-in. */
   connect_token: { args: { token: string }; result: AccountStatus };
   disconnect_account: { args: void; result: AccountStatus };
-  /** Shows / resizes / hides the HUD window (pill 420×48, hud 400×684). */
+  /** Shows / sizes / hides the meeting bar window: "pill" = the 560×48 bar, "hud" = bar plus panel. */
   set_hud_mode: { args: { mode: HudMode }; result: null };
+  /** Settings → Appearance: stored in desktop.json, applied to every window, `settings:theme` follows. */
+  set_theme: { args: { theme: ThemePref }; result: ThemePref };
+  /**
+   * Window buttons of the main window's titlebar (main_bridge.rs): "frame" announces that the page draws
+   * them (the native frame goes), the others are the buttons; "close" hides to the tray, "drag" moves the window
+   * (fallback of the web titlebar's move, Ruhe round 2).
+   */
+  main_window: { args: { action: "frame" | "minimize" | "toggle_maximize" | "close" | "drag" }; result: null };
   /** SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE) on HUD + overlays. */
   set_stealth: { args: { enabled: boolean }; result: null };
   /** Device names plus the chosen ones (kept in desktop.json; null = system default). */

@@ -516,7 +516,65 @@ export function recordingHint(state: OrbitState, pushToTalk: boolean): string {
 export const targetLabel = (target: CaptureTarget, space?: SpaceContext | null) =>
   target === "space" && space ? space.label : (CAPTURE_TARGETS.find((c) => c.id === target)?.label ?? "Inbox");
 
+/**
+ * Ruhe look, typing state: the preview above the bar ("Becomes Note in 00_Inbox · #kortex · [[Jonas]]").
+ * Mirrors planCapture, so the line says exactly where the capture lands. Null without text.
+ */
+export interface CapturePreview {
+  /** What it becomes (Note, Link, Task, Mind dump). */
+  as: string;
+  /** Where it lands: a vault folder, a space, the daily note, the tasks, or the inbox (AI files it). */
+  dest: string;
+  tags: string[];
+  /** Known objects the text links ("@Name" → [[Name]]). */
+  links: string[];
+}
+
+export function capturePreview(
+  text: string,
+  target: CaptureTarget,
+  opts: { space?: SpaceContext | null; objects?: readonly string[]; link?: boolean } = {},
+): CapturePreview | null {
+  const plan = planCapture(opts.link && !text.trim() ? "link" : text, target, opts);
+  if (!plan) return null;
+  const linked = linkObjectMentions(text, opts.objects ?? []);
+  const links = [...new Set([...linked.matchAll(/\[\[([^\]]+)\]\]/g)].map((m) => m[1]!))];
+  if (plan.to === "journal") return { as: t("Mind dump"), dest: tx("target", "Daily note"), tags: [], links };
+  if (plan.to === "task") return { as: t("Task"), dest: t("Tasks"), tags: [], links };
+  const as = opts.link ? t("Link") : t("Note");
+  const tags = opts.link ? extractTags(text) : (plan.tags ?? []);
+  const dest =
+    plan.folderPath ?? (target === "space" && opts.space ? opts.space.label : t("Inbox, AI files it"));
+  return { as, dest, tags, links };
+}
+
 /** Drop text after "Loslassen zum Festhalten · ": dropped files always land in the inbox. */
 export function dropLabel(files: number): string {
   return files >= 1 ? tn(files, "{n} file → Inbox", "{n} files → Inbox") : "→ Inbox";
+}
+
+// --- Ruhe: context entry and drop kind ---------------------------------------------------------------
+
+/**
+ * Kontext (Ruhe): with an entry open, a thought captured to the inbox links that entry ([[Title]]), so it hangs on the
+ * entry through the backlink while the AI files it. Nothing is appended twice.
+ */
+export function withContextLink(text: string, title: string): string {
+  const body = text.trim();
+  const name = title.trim();
+  if (!body || !name || body.includes(`[[${name}]]`) || body.includes(`@${name}`)) return body;
+  return `${body} [[${name}]]`;
+}
+
+/** What is being dragged, by MIME type (file names are hidden until the drop): "PDF", "2 images", "3 files". */
+export function dropKindLabel(types: readonly string[]): string {
+  const kinds = types.map((m) => (m === "application/pdf" ? "pdf" : m === "application/epub+zip" ? "epub" : m.startsWith("image/") ? "image" : m.startsWith("text/") ? "text" : "file"));
+  const n = kinds.length;
+  if (!n) return t("File");
+  const one = kinds.every((k) => k === kinds[0]) ? kinds[0]! : "file";
+  if (one === "pdf") return n === 1 ? "PDF" : tn(n, "{n} PDF", "{n} PDFs");
+  if (one === "epub") return n === 1 ? "EPUB" : tn(n, "{n} EPUB", "{n} EPUBs");
+  if (one === "image") return tn(n, "{n} image", "{n} images");
+  if (one === "text") return tn(n, "{n} text file", "{n} text files");
+  return tn(n, "{n} file", "{n} files");
 }

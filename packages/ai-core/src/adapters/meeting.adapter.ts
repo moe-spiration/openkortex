@@ -1,6 +1,6 @@
 import { generateText, Output } from "ai";
 import { z } from "zod";
-import { PRIORITIES, timeframeLabel } from "@kortex/db";
+import { PRIORITIES, renderTaskSection } from "@kortex/db";
 import {
   formatTranscriptLine,
   looksLikeMeetingTranscript,
@@ -138,16 +138,19 @@ export function renderMeetingMarkdown(
     });
     section(ph("decisionsMade"), protocol.decisions);
     section(ph("openRisks"), protocol.risks);
-    if (actionItems.length) md.push(`## ${ph("extractedActionItems")}`, "");
-    for (const a of actionItems) {
-      const due = a.due_date ? ` (Due: ${a.due_date.slice(0, 10)})` : "";
-      const at =
-        a.source_timestamp_sec !== null ? ` · [${formatTimestamp(a.source_timestamp_sec)}]` : "";
-      const tf = timeframeLabel(a.timeframe);
-      const extra = `${tf ? ` · ${ph("timeframe")}: ${tf}` : ""}${a.context ? ` · ${ph("context")}: ${a.context}` : ""}`;
-      md.push(`- [ ] @${a.assignee}: ${a.title}${due}${at}${extra}`);
-    }
-    if (actionItems.length) md.push("");
+    // The item's one task section (same heading and line format as every other entry type); the
+    // task rows get their id markers in place once they exist (@kortex/db withTaskSection).
+    const tasks = renderTaskSection(
+      actionItems.map((a) => ({
+        title: a.title,
+        assignee: a.assignee,
+        timeframe: a.timeframe ?? null,
+        due_date: a.due_date,
+        context: a.context ?? null,
+      })),
+      getLocale(),
+    );
+    if (tasks) md.push(tasks, "");
   } else {
     md.push(`> ${ph("minutesFailed")}`, "");
   }

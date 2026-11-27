@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Pictures for the repository README, made from the built website (pnpm site:build first):
 // - site/readme/<name>.gif: the hero diagram and the three scenes, recorded while they play;
-// - site/readme/screen-<page>.jpg: screens of the live demo (sample data only), copied from site/dist/img.
+// - site/readme/screen-<page>.jpg (dark) and screen-<page>-light.jpg: screens of the live demo (sample data only),
+//   copied from site/dist/img, and the platform overview of the website (STILLS).
 // Usage: node site/scripts/readme-media.mjs [--site site/dist] [--out site/readme]
 // Needs ffmpeg on PATH and the Playwright browser of apps/web (KORTEX_CHROMIUM overrides its path).
 /* global document */ // inside page.addInitScript, which runs in the browser
@@ -30,6 +31,8 @@ const CLIPS = [
   { name: "mobile", sel: ".scene:nth-of-type(2) .scene-vis", w: 720, h: 576, skip: 0.3, secs: 10.6 },
   { name: "agents", sel: ".scene:nth-of-type(3) .scene-vis", w: 720, h: 576, skip: 0.3, secs: 11.6 },
 ];
+// Sections of the website saved as still pictures (screen-<name>.jpg and screen-<name>-light.jpg).
+const STILLS = [{ name: "platforms", sel: "#system .sys", w: 1180 }];
 
 const port = 4300 + Math.floor(Math.random() * 500);
 const server = spawn(process.execPath, [join(root, "site/scripts/serve.mjs"), siteDir, "--port", String(port)], { stdio: "ignore" });
@@ -51,7 +54,7 @@ try {
         style.textContent = `body > *:not(main), main > *:not(.keep) { display: none !important; } main { padding: 0 !important; max-width: none !important; }
           html, body { overflow: hidden !important; background: var(--night); } .keep-me { position: fixed !important; inset: 0 !important; margin: 0 !important;
           max-width: none !important; width: 100vw !important; height: 100vh !important; aspect-ratio: auto !important; border-radius: 0 !important; justify-self: auto !important; z-index: 50; }
-          .keep-me .o-nodes li { font-size: 13px; } .keep-me .o-ring, .keep-me .o-glow { animation: none !important; } .scene:not(:has(.keep-me)), .scenes > .section-head, .hero-copy { display: none !important; }`;
+          .keep-me .o-nodes li { font-size: 13px; } .keep-me .o-ring { animation: none !important; } .scene:not(:has(.keep-me)), .scenes > .section-head, .hero-copy { display: none !important; }`;
         document.head.appendChild(style);
         el.classList.add("keep-me");
         let p = el;
@@ -89,6 +92,21 @@ try {
     if (r.status !== 0) throw new Error(`ffmpeg ${clip.name}: ${r.stderr}`);
     rmSync(dir, { recursive: true, force: true });
     console.log(`readme-media: ${clip.name}.gif ${(statSync(gif).size / 1024).toFixed(0)} KB`);
+  }
+  // Still pictures of website sections, in dark and light (README <picture> picks by the reader's theme).
+  for (const still of STILLS) {
+    for (const theme of ["dark", "light"]) {
+      const ctx = await browser.newContext({ viewport: { width: still.w, height: 1000 }, colorScheme: theme, reducedMotion: "reduce" });
+      const page = await ctx.newPage();
+      await page.goto(`http://localhost:${port}/`);
+      const el = page.locator(still.sel);
+      await el.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(1500);
+      const file = join(out, `screen-${still.name}${theme === "light" ? "-light" : ""}.jpg`);
+      await el.screenshot({ path: file, type: "jpeg", quality: 82 });
+      await ctx.close();
+      console.log(`readme-media: ${file.split("/").pop()} ${(statSync(file).size / 1024).toFixed(0)} KB`);
+    }
   }
   for (const f of readdirSync(join(siteDir, "img")).filter((f) => f.endsWith(".jpg"))) {
     copyFileSync(join(siteDir, "img", f), join(out, `screen-${f}`));

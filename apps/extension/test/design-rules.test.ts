@@ -48,6 +48,13 @@ describe("extension design rules", () => {
     expect(hex.filter((h) => h !== "#FFFFFF")).toEqual([]);
   });
 
+  it("builds the Ruhe components only from the shared tokens (no raw hex, no serif)", () => {
+    const ruhe = all.find((f) => f.path === "styles/ruhe-ui.css")!.text.replace(/\/\*[\s\S]*?\*\//g, "");
+    const hex = [...ruhe.matchAll(/#[0-9a-f]{3,8}\b/gi)].map((m) => m[0].toUpperCase());
+    expect(hex.filter((h) => h !== "#FFFFFF")).toEqual([]);
+    expect(/Instrument|font-serif|var\(--font-mono\)/.test(ruhe)).toBe(false);
+  });
+
   it("keeps accent colour for actions: no accent-tinted fills in the shipped UI", () => {
     expect(offenders(tsx, /bg-ai-soft|bg-tag-ai|text-tag-ai|shadow-\[[^\]]*accent/)).toEqual([]);
   });

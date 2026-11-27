@@ -9,6 +9,12 @@ export interface KeyValueStore {
 
 export type ThemeSetting = "dark" | "light" | "auto";
 
+/**
+ * UI look: the calm "ruhe" look (default) or "vivid" (the former classic look), data-look like the web's
+ * Einstellungen > Erscheinungsbild > Look. A stored "classic" from before 0.6.7 was the old default and reads as "ruhe".
+ */
+export type LookSetting = "ruhe" | "vivid";
+
 /** Interface language: "auto" follows the browser language, "en" / "de" is the user's explicit choice. */
 export type LanguageSetting = "auto" | "en" | "de";
 
@@ -33,6 +39,7 @@ export interface ExtensionSettings {
   /** Personal Kortex API token `kx_…` (Bearer), created in Kortex under Settings. Kept in storage.local only, never synced. */
   token: string;
   theme: ThemeSetting;
+  look: LookSetting;
   language: LanguageSetting;
   highlighterEnabled: boolean;
   chatExportEnabled: boolean;
@@ -55,6 +62,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   baseUrl: DEFAULT_BASE_URL,
   token: "",
   theme: "dark",
+  look: "ruhe",
   language: "auto",
   highlighterEnabled: true,
   chatExportEnabled: true,
@@ -75,6 +83,7 @@ const SETTINGS_KEY = "settings";
 export async function loadSettings(store: KeyValueStore): Promise<ExtensionSettings> {
   const saved = await store.get<Partial<ExtensionSettings>>(SETTINGS_KEY);
   const merged = { ...DEFAULT_SETTINGS, ...saved };
+  merged.look = (merged.look as string) === "vivid" ? "vivid" : "ruhe";
   // An address cleared by hand (or saved empty by an older version) falls back to the build's Kortex, if it has one.
   return merged.baseUrl.trim() ? merged : { ...merged, baseUrl: DEFAULT_BASE_URL };
 }

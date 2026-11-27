@@ -5,6 +5,7 @@ const COMMANDS: &[&str] = &[
     "start_recording",
     "stop_recording",
     "upload_recording",
+    "discard_recording",
     "account_status",
     "connect_account",
     "disconnect_account",
@@ -51,11 +52,13 @@ const COMMANDS: &[&str] = &[
     "vault_open",
     "run_selftest",
     "stop_web_recording",
-    // Only these four reach the web app in `main` (runtime capability, main_bridge.rs).
+    "set_theme",
+    // Only these five reach the web app in `main` (runtime capability, main_bridge.rs).
     "main_meeting_state",
     "main_start_meeting",
     "main_stop_meeting",
     "main_web_recording",
+    "main_window",
 ];
 
 /// One string value of the instance file. No JSON dependency in the build script: the file is flat

@@ -86,7 +86,7 @@ describe("generated Markdown in English", () => {
 
     const digest = { summary: "Anna sends the offer.", actionItems: [{ title: "Reply to Anna" }] };
     const out = en(() => withEmailDigest(md, digest));
-    expect(out).toContain("## TL;DR\n\nAnna sends the offer.\n\n## Action Items\n\n- [ ] Reply to Anna");
+    expect(out).toContain("## TL;DR\n\nAnna sends the offer.\n\n## Tasks\n\n- [ ] Reply to Anna");
     expect(out.indexOf("## TL;DR")).toBeLessThan(out.indexOf("> **Note when forwarding:**"));
     // Readers take both languages: an English note is not digested twice by a German process,
     // and a German note not by an English one.

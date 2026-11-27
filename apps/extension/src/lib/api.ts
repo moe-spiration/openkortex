@@ -151,7 +151,8 @@ export type IngestKind = IngestRequest["kind"];
 
 export interface IngestSuccess {
   ok: true;
-  kind: IngestKind;
+  /** `file` = a multipart upload (screenshot), see `uploadFile`. */
+  kind: IngestKind | "file";
   /** knowledge_items.id (for highlights: the page item the highlight belongs to). */
   item_id: string;
   /** Only for kind `highlight` (item_highlights.id). */
@@ -358,11 +359,29 @@ export interface ApiClient {
    * Needs the token scope `search`. Mock mode and missing setup answer `setup_required` (the caller stays local).
    */
   listItems(type: "prompt" | "session", limit?: number): Promise<ApiResult<SearchHit[]>>;
+  /** Hybrid search `GET /api/search?q=` (side panel "Related in Kortex"); needs the scope `search`, like listItems. */
+  searchItems(query: string, limit?: number): Promise<ApiResult<SearchHit[]>>;
   /** Snooze a saved clip: sets `remind_at` of the item (null clears it). Mock mode answers locally. */
   remind(itemId: string, remindAt: string | null): Promise<ApiResult<{ remind_at: string | null }>>;
   /** Removes a saved highlight (the page item stays). Mock mode answers locally. */
   deleteHighlight(highlightId: string): Promise<ApiResult<{ deleted: true }>>;
+  /**
+   * Uploads a file (the popup's screenshot) as multipart/form-data to `POST /api/ingest` (`file` plus optional
+   * `title`, `note`, `folder_path`, `tags`); the server stores it and runs vision OCR. Not queued: a failure is
+   * reported to the caller. Mock mode answers locally.
+   */
+  uploadFile(file: Blob, name: string, fields: FileUploadFields): Promise<IngestResponse>;
 }
+
+export interface FileUploadFields {
+  title?: string;
+  note?: string;
+  folder_path?: string | null;
+  tags?: string[];
+}
+
+/** Images the ingest route takes as an upload (screenshots are PNG or JPEG). */
+export const UPLOAD_MAX_BYTES = 50 * 1024 * 1024;
 
 export const SEARCH_PATH = "/api/search";
 export const REMINDER_PATH = "/api/reminder";
@@ -387,11 +406,11 @@ export function createApiClient(deps: ApiDeps): ApiClient {
   const now = deps.now ?? (() => new Date());
 
   /** One authenticated request to the Kortex ingest route; the body is parsed by the caller. */
-  async function call(settings: ExtensionSettings, init: { method: "GET" | "POST"; query?: string; body?: unknown; path?: string }) {
+  async function call(settings: ExtensionSettings, init: { method: "GET" | "POST"; query?: string; body?: unknown; path?: string; form?: FormData; timeoutMs?: number }) {
     const url = new URL(init.path ?? INGEST_PATH, settings.baseUrl.endsWith("/") ? settings.baseUrl : `${settings.baseUrl}/`);
     if (init.query) url.search = init.query;
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), deps.timeoutMs ?? 15_000);
+    const timer = setTimeout(() => ctrl.abort(), init.timeoutMs ?? deps.timeoutMs ?? 15_000);
     try {
       const res = await fetchImpl(url, {
         method: init.method,
@@ -404,7 +423,8 @@ export function createApiClient(deps: ApiDeps): ApiClient {
           // CORS-safelisted and the server falls back to it (apps/web/src/i18n/server.ts).
           "Accept-Language": getLocale(),
         },
-        body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+        // multipart: the browser sets the content type with the boundary itself
+        body: init.form ?? (init.body !== undefined ? JSON.stringify(init.body) : undefined),
         signal: ctrl.signal,
         credentials: "omit",
       });
@@ -480,6 +500,48 @@ export function createApiClient(deps: ApiDeps): ApiClient {
       if ("ok" in r) return r;
       const results = (r.body as { ok?: unknown; results?: unknown } | null)?.results;
       if (r.res.ok && Array.isArray(results)) return { ok: true, data: results.filter(isSearchHit).filter((h) => h.type === type) };
+      if (r.res.status === 403) return fail("unauthorized", t("The API token lacks the “Search” access. Create a token with search in Kortex."));
+      if (isFailure(r.body)) return r.body;
+      return fail(codeForStatus(r.res.status), t("Unexpected answer (HTTP {status})", { status: r.res.status }));
+    },
+
+    async uploadFile(file, name, fields) {
+      if (file.size > UPLOAD_MAX_BYTES) return fail("invalid_request", t("The file is larger than 50 MB."));
+      const settings = await deps.getSettings();
+      if (isMockMode(settings)) {
+        const at = now();
+        return {
+          ok: true,
+          kind: "file",
+          item_id: `mock-${slugify(fields.title ?? name)}-${at.getTime().toString(36)}`,
+          type: "image",
+          status: "inbox",
+          folder_path: fields.folder_path ?? "00_Inbox",
+          auto_routed: !fields.folder_path,
+          duplicate: false,
+        };
+      }
+      if (needsSetup(settings)) return fail("setup_required", setupMessage());
+      const form = new FormData();
+      form.append("file", file, name);
+      if (fields.title) form.append("title", fields.title);
+      if (fields.note) form.append("note", fields.note);
+      if (fields.folder_path) form.append("folder_path", fields.folder_path);
+      if (fields.tags?.length) form.append("tags", fields.tags.join(","));
+      const r = await call(settings, { method: "POST", form, timeoutMs: 60_000 });
+      if ("ok" in r) return r;
+      if (r.res.ok && isSuccess(r.body)) return r.body;
+      if (!r.res.ok && isFailure(r.body)) return r.body;
+      return fail(codeForStatus(r.res.status), t("Unexpected answer (HTTP {status})", { status: r.res.status }));
+    },
+
+    async searchItems(query, limit = 6) {
+      const settings = await deps.getSettings();
+      if (isMockMode(settings) || needsSetup(settings)) return fail("setup_required", setupMessage());
+      const r = await call(settings, { method: "GET", path: SEARCH_PATH, query: new URLSearchParams({ q: query.slice(0, 200), limit: String(limit) }).toString() });
+      if ("ok" in r) return r;
+      const results = (r.body as { results?: unknown } | null)?.results;
+      if (r.res.ok && Array.isArray(results)) return { ok: true, data: results.filter(isSearchHit) };
       if (r.res.status === 403) return fail("unauthorized", t("The API token lacks the “Search” access. Create a token with search in Kortex."));
       if (isFailure(r.body)) return r.body;
       return fail(codeForStatus(r.res.status), t("Unexpected answer (HTTP {status})", { status: r.res.status }));

@@ -1,17 +1,20 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState as RNAppState } from "react-native";
 import type { CoverSource } from "../theme/cover";
+import { LOOKS, type Look } from "../theme/tokens";
+import { isMotionChoice, nextMotionChoice, setMotionChoice, type MotionChoice } from "../lib/motionPref";
 import { answerFor, clock, INITIAL_ASK, routeOf } from "../lib/answers";
 import { mockCheckinStreak } from "../lib/streak";
 import type { SortId } from "../lib/search";
 import { IMG, INBOX_JOBS, NOTE_TAGS } from "../data/mock";
 import { isoDay, parseCheckin, seedCheckin, streakOf, type DailyCheckin, type DailyFocus } from "../data/daily";
-import { AUTONOMY, skillOf, undoOf, type AgentProposal, type AgentResult, type AgentStep, type Autonomy } from "../lib/agent";
-import { agentExecute, agentUndo, askKortex, api, chatStatus, loadDaily, NothingHeardError, saveDaily, secureStorage, transcribe, type ChatTurn } from "../api/kortex";
+import { AUTONOMY, cleanSpoken, skillOf, undoOf, type AgentProposal, type AgentResult, type AgentStep, type Autonomy } from "../lib/agent";
+import { agentExecute, agentUndo, askKortex, chatStatus, loadDaily, saveDaily, secureStorage, transcribe, type ChatTurn } from "../api/kortex";
 import { citedSources } from "../api/chatStream";
 import { APP_VERSION } from "../api/config";
-import { clientInfo, isRetryable, requestFromShare, type IngestRequest } from "../api/ingest";
-import { createQueue, isNetworkError, type QueueJob, type SendResult } from "../capture/queue";
+import { requestFromShare } from "../api/ingest";
+import { createQueue, type QueueJob } from "../capture/queue";
+import { sendCapture } from "../capture/send";
 import { useVoice, VOICE_MIME } from "../capture/useVoice";
 import { takePeakDb } from "../capture/LevelWave";
 import { voiceRejection } from "../capture/level";
@@ -52,6 +55,8 @@ export type Msg = {
   done?: AgentResult[];
   /** Agent: the changes were taken back. */
   undone?: boolean;
+  /** The answer failed; it is not sent back to the model as part of the conversation. */
+  error?: boolean;
 };
 export interface MenuItem {
   label: string;
@@ -130,7 +135,15 @@ interface AppState {
   askText: string;
   setAskText: (t: string) => void;
   askRec: boolean;
+  /** The recording of the question is being turned into text. */
+  askTranscribing: boolean;
+  /** Mic button: starts the recording, or stops it and puts the text into the field. */
   toggleAskRec: () => void;
+  /**
+   * Ends a running recording (or waits for the running transcription) and gives the field's full
+   * text, the spoken part added; null when nothing came out. Without a recording: the field's text.
+   */
+  finishAskRec: () => Promise<string | null>;
   /** With an item id the answer is grounded on that one note (mode "note"). */
   ask: (text: string, itemId?: string) => void;
   resetChat: () => void;
@@ -197,8 +210,17 @@ interface AppState {
   cycleDefModel: () => void;
   accent: string;
   setAccent: (a: string) => void;
+  /** Device look (ruhe | vivid), like the web's `data-look`. */
+  look: Look;
+  cycleLook: () => void;
+  /** Ruhe: the Search tab shows the search field on top of the Bibliothek. */
+  searchOpen: boolean;
+  setSearchOpen: (v: boolean) => void;
   haptics: boolean;
   toggleHaptics: () => void;
+  /** Bewegung (System / Voll / Reduziert / Aus), per device; beats Android's reduce motion unless "System". */
+  motion: MotionChoice;
+  cycleMotion: () => void;
   // Toast
   toast: string;
   /** Optional toast button ("Undo"). */
@@ -211,6 +233,9 @@ interface AppState {
 }
 
 const Ctx = createContext<AppState | null>(null);
+
+/** Turns of the conversation sent with a question (the newest ones). */
+const HISTORY_TURNS = 12;
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const data = useData();
@@ -279,6 +304,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
   const [askText, setAskText] = useState("");
   const [askRec, setAskRec] = useState(false);
+  const [askTranscribing, setAskTranscribing] = useState(false);
+  // Read inside callbacks that run after an await (send after the transcription), never stale.
+  const askTextRef = useRef(askText);
+  askTextRef.current = askText;
+  const msgsRef = useRef(msgs);
+  msgsRef.current = msgs;
+  /** An answer is streaming (thinking turns false at its first words, the stream goes on). */
+  const streaming = useRef(false);
+  const transcription = useRef<Promise<string | null> | null>(null);
 
   const [inboxP, setInboxP] = useState(INBOX_JOBS.map((j) => j.start));
   const [caps, setCaps] = useState<Capture[]>([]);
@@ -300,7 +334,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [themePref, setThemePref] = useState(0);
   const [defModel, setDefModel] = useState(0);
   const [accent, setAccent] = useState("indigo");
+  const [look, setLook] = useState<Look>("ruhe");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [haptics, setHaptics] = useState(true);
+  const [motion, setMotion] = useState<MotionChoice>("system");
 
   // Appearance and haptics survive restarts (SecureStore, per device).
   const prefsLoaded = useRef(false);
@@ -308,10 +345,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void secureStorage
       .getItem("kortex.prefs")
       .then((raw) => {
-        const p = raw ? (JSON.parse(raw) as { themePref?: number; accent?: string; haptics?: boolean }) : {};
+        const p = raw ? (JSON.parse(raw) as { themePref?: number; accent?: string; look?: string; haptics?: boolean; motion?: string }) : {};
         if (typeof p.themePref === "number") setThemePref(p.themePref);
         if (typeof p.accent === "string") setAccent(p.accent);
+        setLook(p.look === "vivid" ? "vivid" : "ruhe"); // a stored "classic" (pre 0.6.7 default) reads as ruhe
         if (typeof p.haptics === "boolean") setHaptics(p.haptics);
+        if (isMotionChoice(p.motion)) setMotion(p.motion);
       })
       .catch(() => undefined)
       .finally(() => {
@@ -320,8 +359,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     setHapticsEnabled(haptics);
-    if (prefsLoaded.current) void secureStorage.setItem("kortex.prefs", JSON.stringify({ themePref, accent, haptics })).catch(() => undefined);
-  }, [themePref, accent, haptics]);
+    setMotionChoice(motion);
+    if (prefsLoaded.current)
+      void secureStorage
+        .setItem("kortex.prefs", JSON.stringify({ themePref, accent, look, haptics, motion }))
+        // The home screen widgets follow accent and look: redraw them with the new prefs.
+        .then(() => import("../widgets/refresh"))
+        .then((m) => m.refreshWidgets())
+        .catch(() => undefined);
+  }, [themePref, accent, look, haptics, motion]);
 
   const [toast, setToast] = useState("");
   const [toastAction, setToastAction] = useState<{ label: string; run: () => void } | null>(null);
@@ -390,33 +436,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [pendingCount, setPendingCount] = useState(0);
 
   /** Sends one capture; tells retry (offline) apart from permanent failures. */
-  const runJob = useCallback(async (job: QueueJob, onStep?: (s: string) => void): Promise<{ result: SendResult; duplicate?: boolean; error?: string; nothingHeard?: boolean }> => {
-    try {
-      let req: IngestRequest;
-      if (job.kind === "voice") {
-        const text = await transcribe(job.uri, VOICE_MIME);
-        onStep?.(t("Saving"));
-        req = {
-          kind: "note",
-          client: clientInfo(APP_VERSION),
-          captured_at: new Date().toISOString(),
-          content_md: text,
-          title: text.split(/\s+/).slice(0, 8).join(" ").slice(0, 80) || job.title,
-          type_hint: "voice",
-        };
-      } else if (job.kind === "file") {
-        const r = await api().ingestFile({ uri: job.uri, name: job.name, mimeType: job.mimeType }, { title: job.title, ...(job.note ? { note: job.note } : {}) });
-        if (r.ok) return { result: "ok", duplicate: r.duplicate };
-        return { result: isRetryable(r) ? "retry" : "drop", error: r.error.message };
-      } else req = job.req;
-      const r = await api().ingest(req);
-      if (r.ok) return { result: "ok", duplicate: r.duplicate };
-      return { result: isRetryable(r) ? "retry" : "drop", error: r.error.message };
-    } catch (e) {
-      if (e instanceof NothingHeardError) return { result: "drop", error: e.message, nothingHeard: true };
-      return { result: isNetworkError(e) ? "retry" : "drop", error: e instanceof Error ? e.message : String(e) };
-    }
-  }, []);
+  const runJob = sendCapture;
 
   /** Live capture: a pending card in the Inbox until /api/ingest answered; offline → queue. */
   const sendJob = useCallback(
@@ -513,7 +533,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const ask = useCallback(
     (text: string, itemId?: string) => {
       const v = text.trim();
-      if (!v || thinking) return;
+      if (!v) return;
+      if (thinking || streaming.current) {
+        // Never drop a question silently: it stays in the field and can be sent in a moment.
+        setAskText(v);
+        say(t("Kortex is still answering. Send your question again in a moment."));
+        return;
+      }
       setMsgs((m) => [...m, { me: true, text: v }]);
       setAskText("");
       setThinking(true);
@@ -546,18 +572,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (live) {
-        const history: ChatTurn[] = [...msgs.filter((m) => !m.action && m.text.trim()), { me: true, text: v }].map((m) => ({ role: m.me ? "user" : "assistant", content: m.text }));
-        // The answer streams into one assistant message that is replaced on every chunk.
-        let started = false;
+        // The conversation so far, without failed answers and status cards, and only the recent part.
+        const history: ChatTurn[] = [...msgsRef.current.filter((m) => !m.action && !m.error && m.text.trim()), { me: true, text: v }]
+          .slice(-HISTORY_TURNS)
+          .map((m) => ({ role: m.me ? "user" : "assistant", content: m.text }));
+        const key = ++answerKey.current;
+        // The answer streams into one assistant message (found by its key) that is replaced on every chunk.
         const show = (msg: Msg) =>
           setMsgs((m) => {
-            if (!started) {
-              started = true;
-              return [...m, msg];
-            }
-            return [...m.slice(0, -1), msg];
+            const i = m.findIndex((x) => !x.me && x.key === key);
+            if (i < 0) return [...m, msg];
+            const next = m.slice();
+            next[i] = msg;
+            return next;
           });
-        const key = ++answerKey.current;
+        streaming.current = true;
         askKortex(
           history,
           (partial) => {
@@ -577,6 +606,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               me: false,
               key,
               text,
+              ...(a.error || (!a.text && !a.proposal && !a.done.length) ? { error: true } : {}),
               ids: src.map((c) => c.item_id),
               titles: src.map((c) => c.title),
               steps: a.steps,
@@ -585,8 +615,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             });
             if (a.done.some((r) => r.ok)) void data.refreshItems();
           })
-          .catch((e: unknown) => show({ me: false, text: t("Error: {message}", { message: e instanceof Error ? e.message : String(e) }) }))
+          .catch((e: unknown) => show({ me: false, key, error: true, text: t("Error: {message}", { message: e instanceof Error ? e.message : String(e) }) }))
           .finally(() => {
+            streaming.current = false;
             setThinking(false);
             setAgentStep(null);
           });
@@ -599,8 +630,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setThinking(false);
       }, 1100);
     },
-    [thinking, live, msgs, data, autonomy],
+    [thinking, live, data, autonomy, say],
   );
+
+  const finishAskRec = useCallback((): Promise<string | null> => {
+    if (transcription.current) return transcription.current;
+    if (!askRec) return Promise.resolve(askTextRef.current.trim() || null);
+    setAskRec(false);
+    if (!live) {
+      const v = t("What did Tom say about conflicts?");
+      setAskText(v);
+      return Promise.resolve(v);
+    }
+    setAskTranscribing(true);
+    const run = voice
+      .stop()
+      .then((uri) => (uri ? transcribe(uri, VOICE_MIME) : Promise.reject(new Error(t("Recording failed")))))
+      .then((spoken) => {
+        const before = askTextRef.current.trim();
+        const v = before ? `${before} ${cleanSpoken(spoken)}` : cleanSpoken(spoken);
+        askTextRef.current = v;
+        setAskText(v);
+        return v || null;
+      })
+      .catch((e: unknown) => {
+        say(e instanceof Error ? e.message : String(e));
+        return null;
+      })
+      .finally(() => {
+        transcription.current = null;
+        setAskTranscribing(false);
+      });
+    transcription.current = run;
+    return run;
+  }, [askRec, live, voice, say]);
 
   const patchAnswer = useCallback((key: number, patch: (m: Msg) => Msg) => setMsgs((ms) => ms.map((m) => (m.key === key ? patch(m) : m))), []);
   const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -675,6 +738,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .then(() => {
             setDailyDays(days);
             setSaved(true);
+            void import("../widgets/refresh").then((m) => m.refreshWidgets());
             if (first) say(tn(next.streak, "Check-in saved, streak {n} day", "Check-in saved, streak {n} days"));
           })
           .catch((e: unknown) => say(e instanceof Error ? e.message : String(e)));
@@ -731,27 +795,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       askText,
       setAskText,
       askRec,
+      askTranscribing,
       toggleAskRec: () => {
-        if (!live) {
-          if (askRec) {
-            setAskRec(false);
-            setAskText(t("What did Tom say about conflicts?"));
-          } else setAskRec(true);
-          return;
-        }
-        if (!askRec) {
-          void voice.start().then((ok) => (ok ? setAskRec(true) : say(t("Microphone access not granted"))));
-          return;
-        }
-        setAskRec(false);
-        setThinking(true);
-        voice
-          .stop()
-          .then((uri) => (uri ? transcribe(uri, VOICE_MIME) : Promise.reject(new Error(t("Recording failed")))))
-          .then((text) => setAskText(text))
-          .catch((e: unknown) => say(e instanceof Error ? e.message : String(e)))
-          .finally(() => setThinking(false));
+        if (askRec) return void finishAskRec();
+        if (transcription.current) return;
+        if (!live) return setAskRec(true);
+        void voice.start().then((ok) => (ok ? setAskRec(true) : say(t("Microphone access not granted"))));
       },
+      finishAskRec,
       ask,
       pendingCount,
       flushQueue,
@@ -847,8 +898,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       cycleDefModel: () => setDefModel((m) => (m + 1) % 3),
       accent,
       setAccent,
+      look,
+      cycleLook: () => setLook((l) => LOOKS[(LOOKS.indexOf(l) + 1) % LOOKS.length]!),
+      searchOpen,
+      setSearchOpen,
       haptics,
       toggleHaptics: () => setHaptics((h) => !h),
+      motion,
+      cycleMotion: () => setMotion(nextMotionChoice),
       toast,
       toastAction,
       say,
@@ -856,7 +913,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openMenu: setMenu,
       closeMenu: () => setMenu(null),
     };
-  }, [q, chip, scope, view, sort, sortOpen, sheet, energy, saved, daily, dailyDays, dailyEnergy, mockFocus, data.tasks, journalText, journalState, cardsDone, model, msgs, thinking, autonomy, agentStep, decideProposal, undoAnswer, askText, askRec, inboxP, caps, newInbox, fan, hot, pressed, cap, vSec, noteText, noteTag, shot, camMode, photo, photoNote, pickPhoto, sets, themePref, defModel, accent, haptics, toast, toastAction, menu, say, ask, openCap, saveVoice, addCapture, live, voice, sendJob, pendingCount, flushQueue, queue, data.jobs, locale]);
+  }, [q, chip, scope, view, sort, sortOpen, sheet, energy, saved, daily, dailyDays, dailyEnergy, mockFocus, data.tasks, journalText, journalState, cardsDone, model, msgs, thinking, autonomy, agentStep, decideProposal, undoAnswer, askText, askRec, askTranscribing, finishAskRec, inboxP, caps, newInbox, fan, hot, pressed, cap, vSec, noteText, noteTag, shot, camMode, photo, photoNote, pickPhoto, sets, themePref, defModel, accent, look, searchOpen, haptics, motion, toast, toastAction, menu, say, ask, openCap, saveVoice, addCapture, live, voice, sendJob, pendingCount, flushQueue, queue, data.jobs, locale]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

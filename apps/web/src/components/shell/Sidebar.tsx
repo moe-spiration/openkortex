@@ -45,7 +45,8 @@ import { NAV_GROUPS, TOOL_LONG_LABEL, type NavGroup } from "@/lib/shell/nav";
 import { LIB_LENSES, type LibLens } from "@/lib/shell/prefs";
 import { useFavorites } from "@/lib/shell/favorites";
 import { ITEM_DRAG_TYPE } from "@/lib/shell/favorites-core";
-import { GripVertical } from "lucide-react";
+import { Folder, GripVertical, LayoutGrid, Library, Settings, Users } from "lucide-react";
+import { useLook } from "@/components/theme/look";
 import { msg, t, tx } from "@/i18n";
 import { Ico, type IconId } from "./icons";
 
@@ -65,6 +66,10 @@ import { Ico, type IconId } from "./icons";
 
 /** Same zone as the server and the shared today helper (lib/date/today.ts). */
 const REVIEW_TZ = "Europe/Berlin";
+/** Ruhe (mockup): the type lens lists the main kinds only; every other type stays one tab away in the view bar. */
+const RUHE_TYPE_ROWS = ["all", "meetings", "articles", "books", "recipes", "notes"];
+/** Ruhe (mockup): the object lens lists these kinds; goals and assets stay on /objects. */
+const RUHE_OBJECT_ROWS = ["person", "organization", "project", "concept", "tool"];
 
 function Badge({
   children,
@@ -105,6 +110,7 @@ function NavRow({
   trailing,
   tooltip,
   lucide,
+  glyph,
   railOnly,
 }: {
   href: string;
@@ -114,6 +120,8 @@ function NavRow({
   icon: IconId;
   /** Type registry icon name (registry spaces); replaces `icon`. */
   lucide?: string;
+  /** Own lucide component (Ruhe rows the registries lack); replaces `icon`. */
+  glyph?: typeof Library;
   active: boolean;
   /** Life area colour: the icon sits in a tile tinted with it. */
   tint?: string;
@@ -123,7 +131,7 @@ function NavRow({
   /** Only shown in the icon rail (e.g. the Life icon while the dock header is hidden). */
   railOnly?: boolean;
 }) {
-  const Registry = lucide ? registryIcon(lucide) : null;
+  const Registry = glyph ?? (lucide ? registryIcon(lucide) : null);
   return (
     <NavLink
       href={href}
@@ -513,8 +521,36 @@ function FavoritesSection() {
  * switch is one click and the current lens is always visible; the old dropdown needed two clicks and hid the options.
  * The one-line descriptions moved into the tooltips.
  */
+/** Ruhe lens icons (mockup): library shelf for the types, people for the objects, a folder for the vault. */
+const RUHE_LENS_ICON: Record<LibLens, typeof Library> = { types: Library, objects: Users, folders: Folder };
+
 function LibraryHead({ count }: { count: string | null }) {
   const { prefs, setLibLens } = useShell();
+  const look = useLook();
+  // Key chords (mockup lens variant A): G T types, G O objects, G V vault; never while typing.
+  useEffect(() => {
+    let armed = 0;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      const k = e.key.toLowerCase();
+      if (k === "g") {
+        armed = Date.now();
+        return;
+      }
+      if (!armed || Date.now() - armed > 900) return;
+      armed = 0;
+      const lens: LibLens | null = k === "t" ? "types" : k === "o" ? "objects" : k === "v" ? "folders" : null;
+      if (!lens) return;
+      e.preventDefault();
+      setLibLens(lens);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [setLibLens]);
+  // Classic: a labelled segment under the header. Ruhe (variant A, decided 2026-11-26): the same toggles as three icons inside
+  // the header row with a sliding pill. Both are rendered and CSS picks by <html data-look>, so hydration never differs.
   return (
     <div className="tc-lib-head kx-rail-hide">
       <div className="tc-lib-row">
@@ -525,16 +561,26 @@ function LibraryHead({ count }: { count: string | null }) {
         className="tc-lens"
         aria-label={t("Show library by")}
         value={[prefs.libLens]}
+        style={{ "--lens-i": LIB_LENSES.indexOf(prefs.libLens) } as CSSProperties}
         onValueChange={(v) => {
           const next = v[0] as LibLens | undefined;
           if (next) setLibLens(next);
         }}
       >
+        <span className="tc-lens-pill" aria-hidden />
         {LIB_LENSES.map((l) => {
           const it = LENS_INFO[l];
           return (
             <Tip key={l} label={t(it.desc)} side="bottom">
-              <Toggle value={l} data-lens={l}>
+              <Toggle value={l} data-lens={l} aria-label={t(it.label)}>
+                {look === "ruhe" ? (
+                  (() => {
+                    const L = RUHE_LENS_ICON[l];
+                    return <L aria-hidden className="kx-ico tc-lens-ico" />;
+                  })()
+                ) : (
+                  <Ico name={it.icon} className="tc-lens-ico" />
+                )}
                 <span>{t(it.label)}</span>
               </Toggle>
             </Tip>
@@ -550,14 +596,17 @@ export function Sidebar() {
   const info = routeInfo(pathname);
   const { prefs, toggleRail, toggleSection, setTheme } = useShell();
   const status = useShellStatus();
+  const look = useLook();
+  const ruhe = look === "ruhe";
   const { user, loading: settingsLoading } = useSettings();
   // Live: which areas are active (lib/data/life.ts); null = mock or still loading.
   const lifeScores = useLifeScores();
   const lifeRows = LIFE_AREAS.filter(
     (a) =>
-      a.key === "overview" ||
+      (a.key === "overview" ? !ruhe : true) &&
+      (a.key === "overview" ||
       !lifeScores ||
-      lifeScores.find((x) => x.key === a.key)?.active !== false,
+      lifeScores.find((x) => x.key === a.key)?.active !== false),
   );
   // W6/A-07: the review day from reviewDue() (time zone aware); no badge while the settings load.
   const due = settingsLoading ? null : reviewDue(todayDate(), REVIEW_TZ, user.weekly_digest_day);
@@ -616,7 +665,7 @@ export function Sidebar() {
     <section className="tc-sb-sec tc-lib" aria-label={t("Library")}>
       <LibraryHead count={libCount} />
       {lens === "types" &&
-        AUTO_SPACES.map((s) => {
+        AUTO_SPACES.filter((s) => !ruhe || RUHE_TYPE_ROWS.includes(s.key)).map((s) => {
           const n = badgeValue(s.count);
           return (
             <NavRow
@@ -626,6 +675,7 @@ export function Sidebar() {
               tooltip={spaceLongLabel(s.key, s.label)}
               icon={s.icon}
               lucide={s.lucide}
+              glyph={ruhe && s.key === "all" ? Library : undefined}
               tree
               active={info.view === "spaces" && (info.rest[0] ?? "all") === s.key}
               trailing={n ? <span className="kx-count">{n}</span> : null}
@@ -635,16 +685,29 @@ export function Sidebar() {
       {lens === "folders" && <VaultTree activePath={info.view === "vault" ? restPath : null} />}
       {lens === "objects" && (
         <>
-          {/* /objects redirects to the first object type, whose own row below then shows as active. */}
-          <NavRow
-            href="/objects"
-            label={t("All objects")}
-            tooltip={t("All objects (70_Objects)")}
-            icon="boxes"
-            tree
-            active={false}
-          />
-          {OBJECT_HUBS.map((h) => {
+          {/* /objects redirects to the first object type, whose own row below then shows as active.
+              Ruhe (mockup): "Alle Einträge" first, then the five main object kinds; the others stay on /objects. */}
+          {ruhe ? (
+            <NavRow
+              href={spaceHref("all")}
+              label={t("All entries")}
+              icon="zap"
+              glyph={Library}
+              tree
+              active={info.view === "spaces" && (info.rest[0] ?? "all") === "all"}
+              trailing={badgeValue(TOTAL_ENTRIES) ? <span className="kx-count">{badgeValue(TOTAL_ENTRIES)}</span> : null}
+            />
+          ) : (
+            <NavRow
+              href="/objects"
+              label={t("All objects")}
+              tooltip={t("All objects (70_Objects)")}
+              icon="boxes"
+              tree
+              active={false}
+            />
+          )}
+          {(ruhe ? RUHE_OBJECT_ROWS.map((k) => OBJECT_HUBS.find((h) => h.type === k)).filter((h): h is (typeof OBJECT_HUBS)[number] => !!h) : OBJECT_HUBS).map((h) => {
             const Icon = OBJECT_TYPES[h.type].Icon;
             const active = info.view === "objects" && info.rest[0] === h.type;
             const n = badgeValue(h.count);
@@ -700,40 +763,7 @@ export function Sidebar() {
     </section>
   );
 
-  return (
-    <aside className="kx-sidebar" aria-label={t("Sidebar")}>
-      {/* Icon rail (Settings > Kompakte Seitenleiste): one button to widen it again. */}
-      <button
-        type="button"
-        className="kx-row kxb kx-rail-only"
-        title={t("Expand sidebar")}
-        aria-label={t("Expand sidebar")}
-        onClick={toggleRail}
-      >
-        <Ico name="rail" />
-      </button>
-
-      <nav className="kx-scroll kx-sidebar-nav" aria-label={t("Navigation")}>
-        <div role="group" aria-label={mainGroup.label} className="kx-nav-group tc-sb-main">
-          {mainGroup.items.map((r) => (
-            <NavRow
-              key={r.id}
-              href={r.href}
-              label={r.label}
-              tooltip={navLongLabel(r.id, r.label)}
-              icon={r.icon}
-              active={info.view === r.id || (r.id === "journal" && info.view === "review")}
-              trailing={navBadge(r.id, r.badge)}
-            />
-          ))}
-        </div>
-        <FavoritesSection />
-        {library}
-        {tags}
-      </nav>
-
-      {/* A2: Life and the tools are pinned at the bottom, just above the profile line. */}
-      <div className="tc-sb-dock">
+  const lifeSection = (
         <section className="tc-sb-life" aria-label="Life">
           <button
             type="button"
@@ -745,6 +775,13 @@ export function Sidebar() {
             <Ico name="chev-u" />
             <span>Life</span>
           </button>
+          {ruhe && (
+            <span className="tc-sb-head-acts tc-life-acts">
+              <NavLink href={lifeHref("overview")} className="tc-sb-link" title={t("Life: overall view of all areas")} aria-label={t("Life: overall view of all areas")}>
+                <LayoutGrid aria-hidden className="kx-ico" />
+              </NavLink>
+            </span>
+          )}
           {sections.life && (
             <div className="tc-sb-life-list">
               {lifeRows.map((a) => {
@@ -777,6 +814,46 @@ export function Sidebar() {
             railOnly
           />
         </section>
+  );
+
+  return (
+    <aside className="kx-sidebar" aria-label={t("Sidebar")} data-ruhe-side={ruhe ? "" : undefined}>
+      {/* Icon rail (Settings > Kompakte Seitenleiste): one button to widen it again. */}
+      <button
+        type="button"
+        className="kx-row kxb kx-rail-only"
+        title={t("Expand sidebar")}
+        aria-label={t("Expand sidebar")}
+        onClick={toggleRail}
+      >
+        <Ico name="rail" />
+      </button>
+
+      <nav className="kx-scroll kx-sidebar-nav" aria-label={t("Navigation")}>
+        <div role="group" aria-label={mainGroup.label} className="kx-nav-group tc-sb-main">
+          {mainGroup.items.map((r) => (
+            <NavRow
+              key={r.id}
+              href={r.href}
+              label={r.label}
+              tooltip={navLongLabel(r.id, r.label)}
+              icon={r.icon}
+              active={info.view === r.id || (r.id === "journal" && info.view === "review")}
+              trailing={navBadge(r.id, r.badge)}
+            />
+          ))}
+        </div>
+        <FavoritesSection />
+        {library}
+        {/* Ruhe (mockup): no tag group in the sidebar (hashtags: the palette, /hashtags, the view bar filter); Life
+            follows the library inside the scrolling list, so the tools and the profile stay visible at the bottom. */}
+        {!ruhe && tags}
+        {ruhe && lifeSection}
+      </nav>
+
+      {/* A2: Life and the tools are pinned at the bottom, just above the profile line. */}
+      <div className="tc-sb-dock">
+        {!ruhe && lifeSection}
         <div role="group" aria-label={toolGroup.label} className="tc-sb-tools-wrap">
           <div className="kx-sidebar-group kx-rail-hide tc-sb-tools-h">{toolGroup.label}</div>
           <div className="tc-sb-tools">
@@ -862,7 +939,9 @@ export function Sidebar() {
               </div>
             )}
           </FooterPopover>
-          {/* Feinschliff A2: the theme switch moved here from the titlebar. */}
+          {/* Feinschliff A2: the theme switch moved here from the titlebar. Ruhe (mockup): only the gear stays; theme
+              and sign-out live in Settings (Erscheinungsbild, Profil). */}
+          {!ruhe && (
           <button
             type="button"
             className="tc-ibtn tc-ibtn--sm"
@@ -872,15 +951,17 @@ export function Sidebar() {
           >
             <Ico name={prefs.theme !== "light" ? "sun" : "moon"} />
           </button>
+          )}
           <NavLink
             href="/settings?section=look"
-            className={"tc-ibtn tc-ibtn--sm" + (info.view === "settings" ? " is-on" : "")}
+            className={"tc-ibtn tc-ibtn--sm tc-sb-gear" + (info.view === "settings" ? " is-on" : "")}
             aria-label={t("Settings")}
             title={t("Settings")}
           >
-            <Ico name="gear" />
+            {ruhe ? <Settings aria-hidden className="kx-ico" /> : <Ico name="gear" />}
           </NavLink>
           {/* Plain anchor, not <Link>: a prefetch must never hit the sign-out route. */}
+          {!ruhe && (
           <a
             href="/auth/logout"
             className="tc-ibtn tc-ibtn--sm"
@@ -889,6 +970,7 @@ export function Sidebar() {
           >
             <Ico name="logout" />
           </a>
+          )}
         </span>
       </div>
     </aside>

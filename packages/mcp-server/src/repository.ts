@@ -76,6 +76,11 @@ export interface SearchParams {
   tags?: string[];
   /** Only items with a reminder (`remind_at`) at or before this ISO instant (due reminders). */
   remindDueBy?: string;
+  /**
+   * Reading queue: only items unread at this ISO instant (no `metadata.read_status` read/skipped,
+   * not snoozed past it; see reading.ts `isUnread`).
+   */
+  unreadAt?: string;
   limit: number;
 }
 
@@ -195,6 +200,8 @@ export interface BrainRepository {
    * the agents guide's folder index. Optional: without it the guide has no index.
    */
   folderIndex?(): Promise<FolderCount[]>;
+  /** The daily note of a date (type daily_note, slug = YYYY-MM-DD), or null. */
+  findDailyNote?(date: string): Promise<BrainItem | null>;
 }
 
 /** Dedup candidate of an MCP save (@kortex/db dedup.ts). */

@@ -15,6 +15,8 @@ import { noteHrefById } from "@/lib/shell/routes";
 import { DAILY_NOTES, MOCK_TODAY, dailyStreakNow, isLiveData, noteById } from "@/lib/workspace-data";
 import { MOCK_ENTRY_DATES } from "@/lib/mock/journal";
 import { useShell } from "@/lib/shell/store";
+import { useLook } from "@/components/theme/look";
+import { JournalRuhe } from "./JournalRuhe";
 
 /*
  * Tagebuch, tab Tag (Feinschliff Live, prototype "TAGEBUCH"): one panel with two columns. Left: today's entry (the
@@ -50,7 +52,12 @@ const statusText = (state: SaveState): string => {
   }
 };
 
+/** Tagebuch, tab Tag: the Ruhe page (JournalRuhe.tsx) or the earlier panel in the Vivid look. */
 export function JournalView() {
+  return useLook() === "ruhe" ? <JournalRuhe /> : <JournalClassic />;
+}
+
+function JournalClassic() {
   const { openNote, setSplit, showToast } = useShell();
   const live = isLiveData();
   const today = MOCK_TODAY;

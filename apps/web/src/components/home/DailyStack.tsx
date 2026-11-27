@@ -11,12 +11,14 @@ import { useNotes } from "@/lib/notes/store";
 import { snoozePresets } from "@/lib/reminders";
 import { useShell } from "@/lib/shell/store";
 import { Ico, type IconId } from "@/components/shell/icons";
+import { Pictogram } from "@/components/motion/Pictogram";
 import { isLiveData, TASKS } from "@/lib/workspace-data";
 import { startAgentJob } from "@/server/agent/actions";
 import { agentJobHref } from "./AgentNight";
 import { Img } from "./Img";
 import { buildStack, presortPrompt, loadStackState, saveStackState, stackCopy, type StackCard, type StackKind, type StackOutcome } from "./stack";
 import { typeIcon } from "./Thumb";
+import { BarButton, KbdHints } from "@/components/shell/Bars";
 
 const KIND_ICON: Record<StackKind, IconId> = {
   task: "orbit-todo",
@@ -72,7 +74,7 @@ function Media({ card }: { card: StackCard }) {
  * aside (←); Z takes the last step back. The queue above shows every card of the day, done ones dimmed. Actions
  * are the real ones (task done, reminder cleared or moved, entry opened); what was decided is kept for the day.
  */
-export function DailyStack({ day, view, go }: { day: string | null; view: HomeView | null; go: (t: HomeTarget) => void }) {
+export function DailyStack({ day, view, go, ruhe = false }: { day: string | null; view: HomeView | null; go: (t: HomeTarget) => void; ruhe?: boolean }) {
   const { items, setReminder } = useNotes();
   const { showToast } = useShell();
   const cards = useMemo(
@@ -203,9 +205,23 @@ export function DailyStack({ day, view, go }: { day: string | null; view: HomeVi
     });
   }, [day]);
 
-  // Enter = main action, ← = put aside, Z = undo; never while typing or inside a dialog or menu.
-  const keys = useRef({ act, undo });
-  keys.current = { act, undo };
+  /** J / K: next / previous open card (Ruhe key row). */
+  const browse = useCallback(
+    (delta: number) => {
+      if (!open.length) return;
+      const i = Math.max(0, open.findIndex((c) => c.id === cur?.id));
+      const next = open[(i + delta + open.length) % open.length];
+      if (next) {
+        setPicked(next.id);
+        setFlipped(false);
+      }
+    },
+    [open, cur],
+  );
+
+  // Enter = main action, ← or S = put aside, Z = undo, J / K = browse; never while typing or inside a dialog or menu.
+  const keys = useRef({ act, undo, browse });
+  keys.current = { act, undo, browse };
   const active = !!cur || canUndo;
   useEffect(() => {
     if (!active) return;
@@ -214,8 +230,10 @@ export function DailyStack({ day, view, go }: { day: string | null; view: HomeVi
       const el = e.target as HTMLElement | null;
       if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(el.tagName) || el.closest("[role=dialog],[role=menu]"))) return;
       if (e.key === "Enter") keys.current.act("done");
-      else if (e.key === "ArrowLeft") keys.current.act("aside");
+      else if (e.key === "ArrowLeft" || e.key.toLowerCase() === "s") keys.current.act("aside");
       else if (e.key.toLowerCase() === "z") keys.current.undo();
+      else if (e.key.toLowerCase() === "j") keys.current.browse(1);
+      else if (e.key.toLowerCase() === "k") keys.current.browse(-1);
       else return;
       e.preventDefault();
     };
@@ -234,6 +252,130 @@ export function DailyStack({ day, view, go }: { day: string | null; view: HomeVi
   };
 
   if (!day || deck.length === 0) return null;
+
+  if (ruhe) {
+    // Ruhe (mockup "heute"): head with "1 von 8" and a segment bar, one flat card (picture 168 x 118 left), the quiet
+    // key row and "Als Nächstes" with the open cards after this one. "Vorsortieren" sits in the location bar.
+    const pos = Math.min(deck.length, deck.length - open.length + 1);
+    const next = open.filter((c) => c.id !== cur?.id);
+    return (
+      <section className="rz-stack" aria-label={t("Daily stack")}>
+        <div className="rz-stack-h">
+          <h2 className="rz-h2">{t("Daily stack")}</h2>
+          <span className="rz-faint kx-num">{t("{n} of {total}", { n: pos, total: deck.length })}</span>
+          <div className="rz-prog" role="list">
+            {deck.map((c) => {
+              const isDone = !!done[c.id];
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="listitem"
+                  className={"rz-prog-i" + (isDone ? " is-done" : "") + (cur?.id === c.id ? " is-on" : "")}
+                  aria-label={isDone ? t("Done: {title}", { title: c.title }) : c.title}
+                  title={c.title}
+                  disabled={isDone}
+                  onClick={() => {
+                    setPicked(c.id);
+                    setFlipped(false);
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+        {cur && copy ? (
+          <article key={cur.id} className={"rz-card" + (leaving ? ` out-${leaving}` : "")} aria-live="polite">
+            <div className="rz-card-img">
+              <Media card={cur} />
+            </div>
+            <div className="rz-card-b">
+              <span className="rz-card-kind">
+                <Ico name={KIND_ICON[cur.kind]} size={13} />
+                {copy.kind}
+              </span>
+              {cur.kind === "flash" ? (
+                <>
+                  <h3 className="rz-card-ti">{cur.title}</h3>
+                  {flipped && <p className="rz-card-sub">{cur.answer}</p>}
+                </>
+              ) : (
+                <>
+                  <h3 className="rz-card-ti">
+                    {cur.target ? (
+                      <button type="button" onClick={() => go(cur.target!)}>
+                        {cur.title}
+                      </button>
+                    ) : (
+                      cur.title
+                    )}
+                  </h3>
+                  {cur.sub && <p className="rz-card-sub">{cur.sub}</p>}
+                </>
+              )}
+              {cur.chips.length > 0 && <p className="rz-card-meta">{cur.chips.join(" · ")}</p>}
+              <div className="rz-card-acts">
+                {cur.kind === "flash" && !flipped ? (
+                  <BarButton variant="primary" kbd="↵" onClick={() => setFlipped(true)}>
+                    {t("Show answer")}
+                  </BarButton>
+                ) : (
+                  <>
+                    <BarButton variant="primary" kbd="↵" onClick={() => act("done")}>
+                      {copy.pri}
+                    </BarButton>
+                    <BarButton variant="soft" kbd="S" onClick={() => act("aside")}>
+                      {copy.sec}
+                    </BarButton>
+                  </>
+                )}
+              </div>
+            </div>
+          </article>
+        ) : (
+          <div className="rz-card rz-card--fin">
+            <Pictogram kind="stack" />
+            <div>
+              <strong className="rz-card-ti">{t("Stack done for today")}</strong>
+              <p className="rz-card-sub">{tn(deck.length, "{n} card decided.", "{n} cards decided.")}</p>
+            </div>
+          </div>
+        )}
+        {(cur || canUndo) && (
+          <KbdHints
+            items={[
+              { keys: ["↵"], label: t("done") },
+              { keys: ["S"], label: t("later") },
+              { keys: ["Z"], label: t("undo") },
+              { keys: ["J", "K"], label: t("browse") },
+            ]}
+          />
+        )}
+        {next.length > 0 && (
+          <div className="rz-next">
+            <h2 className="rz-ghead">
+              {t("Up next")} <span className="rz-c kx-num">{next.length}</span>
+            </h2>
+            {next.slice(0, 7).map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className="rz-lrow"
+                onClick={() => {
+                  setPicked(c.id);
+                  setFlipped(false);
+                }}
+              >
+                <Ico name={c.type ? typeIcon(c.type) : KIND_ICON[c.kind]} size={14} />
+                <span className="rz-lrow-t">{c.title}</span>
+                <span className="rz-lrow-r">{stackCopy(c.kind).kind}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
 
   return (
     <section className="hm-ds" aria-label={t("Daily stack")}>
@@ -356,9 +498,10 @@ export function DailyStack({ day, view, go }: { day: string | null; view: HomeVi
           </article>
         ) : (
           <div className="hm-ds-fin">
-            <span className="hm-ds-glyph" aria-hidden>
+            <span className="hm-ds-glyph kx-art-classic" aria-hidden>
               <Ico name="check" size={44} />
             </span>
+            <Pictogram kind="stack" className="kx-art-ruhe" />
             <strong>{t("Stack done for today")}</strong>
             <span className="e-meta">{tn(deck.length, "{n} card decided.", "{n} cards decided.")}</span>
           </div>

@@ -6,7 +6,7 @@ import { fullSources } from "@kortex/theme-packs";
 import { ACCENT_SWATCHES, accentHex, parseHex } from "@/lib/shell/accent";
 import { useShell } from "@/lib/shell/store";
 import { useSettings } from "@/lib/settings/store";
-import { FONT_SCALES, type Backdrop } from "@/lib/settings/appearance";
+import { FONT_SCALES, type Backdrop, type Look } from "@/lib/settings/appearance";
 import { useThemePack } from "@/lib/theme/pack";
 import { t } from "@/i18n";
 
@@ -68,6 +68,32 @@ export function AppearanceSettings() {
 
   return (
     <div className="tc-set">
+      <Row
+        title={t("Look")}
+        help={t(
+          "Calm is the standard: softer lines, dimmer navigation, no edge light. Vivid is the earlier look with edge light and coloured tiles.",
+        )}
+      >
+        <div className="kx-tabs" role="radiogroup" aria-label={t("Look")}>
+          {(
+            [
+              ["ruhe", t("Calm")],
+              ["vivid", t("Vivid")],
+            ] as [Look, string][]
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={appearance.look === id}
+              className={"kx-tab" + (appearance.look === id ? " is-on" : "")}
+              onClick={() => setAppearance({ look: id })}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </Row>
       <Row title={t("Theme")} help={t("System follows the setting of your device. Applies to web, desktop and mobile.")}>
         <div className="kx-tabs" role="radiogroup" aria-label={t("Theme")}>
           {(

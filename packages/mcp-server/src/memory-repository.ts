@@ -30,6 +30,7 @@ import type {
   TaskPatch,
 } from "./repository";
 import { candidateOf } from "./repository";
+import { isUnread } from "./reading";
 import {
   applyMetadataPatch,
   folderChain,
@@ -92,6 +93,7 @@ export class InMemoryBrainRepository implements EnrichableRepository {
         (types.length === 0 || types.includes(item.type)) &&
         metadataMatches(item.metadata, params.metadata) &&
         isDue(item.remind_at, params.remindDueBy) &&
+        (!params.unreadAt || isUnread(item.metadata, item.remind_at, params.unreadAt)) &&
         (!params.folderPath || isInFolder(item.folder_path, params.folderPath)) &&
         !params.tags?.some((t) => !tagMatches(item.tags, t)),
     );
@@ -231,6 +233,10 @@ export class InMemoryBrainRepository implements EnrichableRepository {
 
   async getItem(id: string) {
     return this.items.get(id) ?? null;
+  }
+
+  async findDailyNote(date: string) {
+    return [...this.items.values()].find((i) => i.type === "daily_note" && i.slug === date) ?? null;
   }
 
   async getHighlights(itemId: string) {

@@ -21,7 +21,7 @@ export function useCollection(entries: readonly ViewEntry[], opts: { archived?: 
   const archived = opts.archived === true;
   const router = useRouter();
   const { openNote, drawer, showToast } = useShell();
-  const { items, setReminder } = useNotes();
+  const { items, setReminder, loadBody } = useNotes();
   const act = useItemActions(entries, { refresh: () => router.refresh() });
   const rows = act.visible;
   const order = useMemo(() => rows.map((r) => r.id), [rows]);
@@ -50,6 +50,8 @@ export function useCollection(entries: readonly ViewEntry[], opts: { archived?: 
         e.dataTransfer.setData("text/plain", n.title);
         e.dataTransfer.effectAllowed = "copyLink";
       },
+      // Older notes come without their body: start loading it while the pointer rests on the row.
+      onPointerEnter: () => void loadBody(n.openId),
       onClick: (e: MouseEvent) => {
         if (!sel.onRowClick(n.id, e)) open(n);
       },

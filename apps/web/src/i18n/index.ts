@@ -9,8 +9,14 @@ import server from "./de/server.json";
 import settings from "./de/settings.json";
 import shell from "./de/shell.json";
 import views from "./de/views.json";
+import ruheWebLib from "./de/ruhe-web-lib.json";
+import ruheWebScr1 from "./de/ruhe-web-scr1.json";
+import ruheWebScr2 from "./de/ruhe-web-scr2.json";
+import ruheWebShell from "./de/ruhe-web-shell.json";
+import r2Motion from "./de/r2-motion.json";
+import r2Win from "./de/r2-win.json";
 
-for (const part of [app, shell, settings, views, content, lib, server]) registerCatalog("de", part as Catalog);
+for (const part of [app, shell, settings, views, content, lib, server, ruheWebLib, ruheWebScr1, ruheWebScr2, ruheWebShell, r2Motion, r2Win]) registerCatalog("de", part as Catalog);
 
 export { PRODUCT_NAME, feature, getLocale, intlLocale, msg, setLocale, t, tFor, tn, tx } from "@kortex/i18n";
 export type { Locale };

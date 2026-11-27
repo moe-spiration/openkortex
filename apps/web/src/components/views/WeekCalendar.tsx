@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, SquareCheck } from "lucide-react";
 import { HScroll } from "@kortex/ui";
-import { weekdayShort } from "@/lib/date/words";
+import { monthName, weekdayShort } from "@/lib/date/words";
 import { addDays, buildMonth, buildWeek, weekStart, type WeekEntryIn, type WeekPlanIn } from "@/lib/data/collections";
 import { t, tn } from "@/i18n";
+import { useLook } from "@/components/theme/look";
 
 /*
  * Calendar card of the collections (Feinschliff Live, prototype `.cal`): head with range title, back / next, "Heute",
@@ -50,6 +51,9 @@ export function WeekCalendar({ entries, plans, today, forceClosed, onOpen, onPic
   const [mode, setMode] = useState<"week" | "month">("week");
   const [open, setOpen] = useState(true);
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
+  // Ruhe look: the month is a taller grid with a day panel on the right; a click on a day selects it.
+  const ruhe = useLook() === "ruhe";
+  const [sel, setSel] = useState(today);
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
@@ -202,7 +206,11 @@ export function WeekCalendar({ entries, plans, today, forceClosed, onOpen, onPic
         </HScroll>
       )}
 
-      {shown && mode === "month" && month && (
+      {shown && mode === "month" && month && ruhe && (
+        <RuheMonth month={month} sel={sel} onSel={setSel} activeId={activeId} onOpen={onOpen} task={task} unit={unit} />
+      )}
+
+      {shown && mode === "month" && month && !ruhe && (
         <div className="kc-month" aria-label={month.title}>
           {DOW.map((d) => (
             <span key={d} className="kc-month-dow">
@@ -253,5 +261,111 @@ export function WeekCalendar({ entries, plans, today, forceClosed, onOpen, onPic
         </div>
       )}
     </section>
+  );
+}
+
+type MonthData = NonNullable<ReturnType<typeof buildMonth<WeekEntryIn>>>;
+
+/** "Thu, Nov 19" for the head of the day panel. */
+const dayTitle = (date: string) => {
+  const d = new Date(date + "T12:00:00Z");
+  return t("{weekday}, {month} {day}", { weekday: weekdayShort(d.getUTCDay()), month: monthName(d.getUTCMonth()), day: d.getUTCDate() });
+};
+
+/**
+ * Month of the Ruhe look (mockup round 3, screen 22): seven columns of day cells (number, coloured dots, task count,
+ * first title on the selected day and today) and the day panel with every entry and task of the selected day.
+ */
+function RuheMonth({
+  month,
+  sel,
+  onSel,
+  activeId,
+  onOpen,
+  task,
+  unit,
+}: {
+  month: MonthData;
+  sel: string;
+  onSel: (date: string) => void;
+  activeId?: string | null;
+  onOpen: (id: string) => void;
+  task: (p: WeekPlanIn) => React.ReactNode;
+  unit: "entries" | "tasks";
+}) {
+  const day = month.cells.find((c) => c.date === sel) ?? month.cells.find((c) => c.today) ?? month.cells.find((c) => c.inMonth)!;
+  const open = day.planned.filter((p) => !p.done).length;
+  return (
+    <div className="kc-monthsplit">
+      <div className="kc-rmonth" aria-label={month.title}>
+        {DOW.map((d) => (
+          <span key={d} className="kc-rmonth-dow">
+            {weekdayShort(d)}
+          </span>
+        ))}
+        {month.cells.map((c) => {
+          const isSel = c.date === day.date;
+          const tasks = c.planned.length;
+          const cls = ["kc-rmd", !c.inMonth && "is-out", c.today && "is-today", isSel && "is-sel"].filter(Boolean).join(" ");
+          return (
+            <div key={c.date} className={cls} aria-current={c.today ? "date" : undefined} onClick={() => onSel(c.date)}>
+              <button
+                type="button"
+                className="kc-rmd-n"
+                aria-pressed={isSel}
+                aria-label={t("{day} · {count}", { day: c.day, count: countLabel(c.entries.length + tasks, unit) })}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSel(c.date);
+                }}
+              >
+                {c.day}
+              </button>
+              {(c.entries.length > 0 || tasks > 0) && (
+                <span className="kc-rmd-dots" aria-hidden>
+                  {c.entries.slice(0, 4).map((e) => (
+                    <i key={e.id} style={e.color ? { background: e.color } : undefined} />
+                  ))}
+                  {tasks > 0 && (
+                    <span className="kc-rmd-tk">
+                      <SquareCheck />
+                      {tasks}
+                    </span>
+                  )}
+                </span>
+              )}
+              {(isSel || c.today) && c.entries[0] && <span className="kc-rmd-line">{c.entries[0].title}</span>}
+            </div>
+          );
+        })}
+      </div>
+      <aside className="kc-dayside" aria-label={dayTitle(day.date)}>
+        <div className="kc-dayside-h">
+          <b>{dayTitle(day.date)}</b>
+          <span className="kc-num">
+            {[countLabel(day.entries.length, "entries"), open > 0 && tn(open, "{n} task", "{n} tasks")].filter(Boolean).join(" · ")}
+          </span>
+        </div>
+        {day.entries.length === 0 && day.planned.length === 0 && <span className="kc-dayside-empty">{t("Nothing on this day")}</span>}
+        {day.entries.map((e) => (
+          <button
+            key={e.id}
+            type="button"
+            className={"kc-dayside-row" + (activeId === e.id ? " is-on" : "")}
+            aria-current={activeId === e.id || undefined}
+            onClick={() => onOpen(e.id)}
+          >
+            <span className="kc-clamp1">{e.title}</span>
+            <i aria-hidden style={e.color ? { background: e.color } : undefined} />
+            <span className="kc-num">{e.time}</span>
+          </button>
+        ))}
+        {day.planned.map((p) => (
+          <div key={p.id} className="kc-dayside-task">
+            {task(p)}
+          </div>
+        ))}
+      </aside>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 {
   "name": "@kortex/mobile",
-  "version": "0.6.4",
+  "version": "0.6.9",
   "private": true,
   "main": "index.ts",
   "scripts": {

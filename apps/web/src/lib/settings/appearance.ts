@@ -6,23 +6,41 @@
  *   data-backdrop="glow|pack"   effective frame backdrop (reduced transparency falls back to glow)
  *   data-density="komfort|kompakt|dicht"   default density (containers may set their own)
  *   data-glass="solid|on"       reduced transparency, or software rendering (lib/settings/gpu.ts)
+ *   data-look="ruhe|vivid"   UI look ("ruhe" is the standard since 0.6.7, "vivid" the former classic look)
  *   --kx-fs: <factor>           Schriftgröße: every font size in the UI is calc(Npx * var(--kx-fs)) (tokens.css)
+ *   --ruhe-h, --ruhe-c          Ruhe theme from three values: base hue (0-360) and how much of it tints the greys
+ *   data-contrast="soft|high"   Ruhe contrast (absent = normal); data-calm="on": reduced motion (Bewegung "Reduziert")
  * The pre-paint script (lib/shell/prefs.ts) applies them before hydration, so nothing flashes.
  * Theme (incl. "System") and accent stay in the shell prefs (lib/shell/prefs.ts).
  */
 
 /** Same union as @kortex/ui DensitySwitch (kept local: this module is also read by the server-rendered pre-paint script). */
 import { readGpuProbe } from "./gpu";
+import { isMotionChoice, type MotionChoice } from "./motion";
 
 export type Density = "komfort" | "kompakt" | "dicht";
 export const DENSITIES: readonly Density[] = ["komfort", "kompakt", "dicht"];
 const isDensity = (v: unknown): v is Density => typeof v === "string" && (DENSITIES as readonly string[]).includes(v);
 export type Backdrop = "glow" | "pack";
+/**
+ * Look of the whole UI, per device: "ruhe" (calm, Linear-derived, the standard) or "vivid" (Tactile Craft, the former
+ * default). A stored "classic" from before 0.6.7 was almost always the old default, so it reads as "ruhe".
+ */
+export type Look = "ruhe" | "vivid";
+export const LOOKS: readonly Look[] = ["ruhe", "vivid"];
+const isLook = (v: unknown): v is Look => v === "ruhe" || v === "vivid";
 
 export const APPEARANCE_KEY = "kortex.appearance.v1";
 
 /** Schriftgröße steps (factor on every font size). Per device, so Windows can run smaller than the browser. */
 export const FONT_SCALES = [0.85, 0.9, 1, 1.1, 1.2] as const;
+
+/** Ruhe contrast steps (Settings > Erscheinungsbild > Kontrast). */
+export type Contrast = "soft" | "normal" | "high";
+export const CONTRASTS: readonly Contrast[] = ["soft", "normal", "high"];
+const isContrast = (v: unknown): v is Contrast => v === "soft" || v === "normal" || v === "high";
+const hueOr = (v: unknown, d: number): number => (typeof v === "number" && Number.isFinite(v) ? ((Math.round(v) % 360) + 360) % 360 : d);
+const tintOr = (v: unknown, d: number): number => (typeof v === "number" && Number.isFinite(v) ? Math.min(8, Math.max(0, v)) : d);
 export type FontScale = (typeof FONT_SCALES)[number];
 const isFontScale = (v: unknown): v is FontScale => typeof v === "number" && (FONT_SCALES as readonly number[]).includes(v);
 
@@ -37,6 +55,18 @@ export interface AppearancePrefs {
   reduceTransparency: boolean;
   /** Schriftgröße for the whole app on this device. Default 1 (100 %). */
   fontScale: FontScale;
+  /** UI look (data-look on <html>). Default "ruhe". */
+  look: Look;
+  /** Ruhe base hue of the grey ladder (OKLCH hue, 0-359). Default 75 (warm grey). */
+  baseHue: number;
+  /** How strongly the base hue tints the greys (factor on the ladder's chroma, 0-8). Default 1. */
+  tint: number;
+  /** Ruhe contrast of the text ladder. Default "normal". */
+  contrast: Contrast;
+  /** Bewegung "Reduziert": shorter, spring-free motion (Aus is the settings store's reduced motion). */
+  calmMotion: boolean;
+  /** Bewegung as picked (System/Voll/Reduziert/Aus); absent = never picked, see ./motion.ts. Beats the OS setting. */
+  motion?: MotionChoice;
 }
 
 export const DEFAULT_APPEARANCE: AppearancePrefs = {
@@ -45,6 +75,11 @@ export const DEFAULT_APPEARANCE: AppearancePrefs = {
   densityByScope: {},
   reduceTransparency: false,
   fontScale: 1,
+  look: "ruhe",
+  baseHue: 75,
+  tint: 1,
+  contrast: "normal",
+  calmMotion: false,
 };
 
 const isBackdrop = (v: unknown): v is Backdrop => v === "glow" || v === "pack";
@@ -62,6 +97,12 @@ export function parseAppearance(raw: unknown): AppearancePrefs {
     densityByScope: scoped,
     reduceTransparency: p.reduceTransparency === true,
     fontScale: isFontScale(p.fontScale) ? p.fontScale : DEFAULT_APPEARANCE.fontScale,
+    look: isLook(p.look) ? p.look : DEFAULT_APPEARANCE.look,
+    baseHue: hueOr(p.baseHue, DEFAULT_APPEARANCE.baseHue),
+    tint: tintOr(p.tint, DEFAULT_APPEARANCE.tint),
+    contrast: isContrast(p.contrast) ? p.contrast : DEFAULT_APPEARANCE.contrast,
+    calmMotion: p.calmMotion === true,
+    ...(isMotionChoice(p.motion) ? { motion: p.motion } : {}),
   };
 }
 
@@ -117,4 +158,10 @@ export function applyAppearance(p: AppearancePrefs, d: HTMLElement = document.do
   d.dataset.density = a.density;
   d.dataset.glass = a.glass;
   d.style.setProperty("--kx-fs", String(p.fontScale));
+  d.dataset.look = p.look;
+  d.style.setProperty("--ruhe-h", String(p.baseHue));
+  d.style.setProperty("--ruhe-c", String(p.tint));
+  if (p.contrast === "normal") delete d.dataset.contrast;
+  else d.dataset.contrast = p.contrast;
+  // data-calm / data-motion: Bewegung is resolved together with the OS setting in ./motion.ts (settings store).
 }

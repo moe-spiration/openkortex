@@ -1,5 +1,5 @@
-import { headingRe, ph, phAlt } from "../i18n";
-import { formatTaskLine } from "@kortex/db";
+import { getLocale, headingRe, ph, phAlt } from "../i18n";
+import { renderTaskSection } from "@kortex/db";
 import PostalMime, { type Attachment, type Email } from "postal-mime";
 import { formatAddress, mailbox, mailboxes, type MailAddress } from "./address";
 import { NodeHtmlMarkdown } from "node-html-markdown";
@@ -314,12 +314,12 @@ export function withEmailDigest(contentMd: string, digest: EmailDigest): string 
   if (headingRe("tldr").test(contentMd)) return contentMd;
   const blocks: string[] = [];
   if (digest.summary?.trim()) blocks.push(`## ${ph("tldr")}\n\n${digest.summary.trim()}`);
-  const tasks = digest.actionItems.filter((a) => a.title.trim());
-  if (tasks.length) {
-    blocks.push(
-      `## ${ph("actionItems")}\n\n${tasks.map((a) => formatTaskLine({ title: a.title, due: a.due_date ?? null })).join("\n")}`,
-    );
-  }
+  // The one task section every entry type uses (@kortex/db task-section.ts).
+  const tasks = renderTaskSection(
+    digest.actionItems.map((a) => ({ title: a.title, due_date: a.due_date ?? null, timeframe: null, context: null })),
+    getLocale(),
+  );
+  if (tasks) blocks.push(tasks);
   if (!blocks.length) return contentMd;
   // The forwarder's note in either language (notes written before a language switch stay valid).
   const at = contentMd.search(new RegExp(`^(> \\*\\*${phAlt("mailForwardNote")}|## )`, "m"));

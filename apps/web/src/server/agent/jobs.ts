@@ -28,7 +28,7 @@ import {
   type AgentActionResult,
   type AgentSkill,
 } from "../chat/agent";
-import { AGENT_STEPS, createAgentTools } from "../chat/agent-tools";
+import { AGENT_STEPS, agentPrepareStep, createAgentTools } from "../chat/agent-tools";
 import { ChatRequestSchema } from "../chat/contract";
 import { modelSettingsFor, toCitations } from "../chat/handler";
 import { copilotSystemPrompt } from "../chat/prompts";
@@ -212,7 +212,7 @@ export async function runJob(deps: JobDeps, auth: AuthContext, jobId: string): P
           noteId: null,
           autonomy: job.autonomy,
           events: {
-            step: (s) => void (out.steps!.length < MAX_STEPS_KEPT && out.steps!.push(s)),
+            step: (s) => void (out.steps!.length < MAX_STEPS_KEPT && out.steps!.push({ ...s, at: deps.now().toISOString() })),
             sources: () => undefined,
             proposal: (actions, labels) => void (out.proposal = { actions, labels }),
             done: (results) => void (out.done = { results }),
@@ -228,12 +228,16 @@ export async function runJob(deps: JobDeps, auth: AuthContext, jobId: string): P
           temperature: 0.3,
           tools,
           stopWhen: stepCountIs(AGENT_STEPS),
+          prepareStep: agentPrepareStep,
         });
-        out.answer_md = (await run.text).trim();
+        // The whole answer, not only the last step's text (a model may write between tool calls).
+        out.answer_md = (await run.steps).map((s) => s.text.trim()).filter(Boolean).join("\n\n");
         out.sources = registry
           .list()
           .slice(0, MAX_SOURCES)
           .map((c) => ({ n: c.n, item_id: c.item_id, title: c.title, type: c.type }));
+        // Nothing said, nothing proposed, nothing done: a failed run, not an empty "done" card.
+        if (!out.answer_md && !out.proposal?.actions.length && !out.done?.results.length) throw new Error(t("The agent finished without a result. Start the job again."));
         // Cancelled while it ran: the row is no longer "running" and stays as the user left it.
         await saveJob(ctx, job.id, { status: out.proposal?.actions.length ? "waiting" : "done", result: out, error: null, finished_at: deps.now().toISOString() }, "running");
       }),

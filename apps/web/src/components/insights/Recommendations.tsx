@@ -16,6 +16,7 @@ import {
 import { coverSrc } from "@/lib/mock/views";
 import { InIco, type InIconId } from "./icons";
 import { msg, t } from "@/i18n";
+import { Pictogram } from "@/components/motion/Pictogram";
 
 /** UI labels of the filter chips and the kind eyebrow; the mock tables only supply keys and icons. */
 const CAT_LABEL: Record<RecFilter, string> = {
@@ -38,8 +39,8 @@ const KIND_LABEL: Record<RecCategory, string> = {
 };
 
 const card: CSSProperties = {
-  background: "var(--lum-2)",
-  boxShadow: "var(--edge-surface)",
+  background: "var(--kx-panel-bg, var(--lum-2))",
+  boxShadow: "var(--kx-panel-edge, var(--edge-surface))",
 };
 
 export interface RecState {
@@ -243,6 +244,7 @@ export function Recommendations({ d, s, h }: { d: InsightsData; s: RecState; h: 
 
       {nothing && (
         <div className="kx-emptystate kx-in" role="status">
+          <Pictogram kind="idea" size="lg" className="kx-art-ruhe" />
           <strong className="kx-h-section">{emptyTitle}</strong>
           <span className="kx-meta">{emptyBody}</span>
         </div>
@@ -254,6 +256,7 @@ export function Recommendations({ d, s, h }: { d: InsightsData; s: RecState; h: 
           <LeadThemeFull lead={d.lead} s={s} h={h} />
         ) : (
           <div className="kx-emptystate kx-in">
+            <Pictogram kind="search" size="lg" className="kx-art-ruhe" />
             <strong className="kx-h-section">{t("No lead theme yet")}</strong>
             <span className="kx-meta">
               {t("A lead theme emerges as soon as a tag occurs at least three times in the last 30 days.")}
@@ -263,14 +266,8 @@ export function Recommendations({ d, s, h }: { d: InsightsData; s: RecState; h: 
 
       {!nothing && s.cat === "all" && (
         <>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                d.lead && top3.length ? "minmax(0,1.3fr) minmax(0,1fr)" : "minmax(0,1fr)",
-              gap: 12,
-            }}
-          >
+          {/* Layout in CSS (ruhe-split.css): beside each other when the pane is wide, stacked when it is narrow. */}
+          <div className="kx-rec-top" data-two={d.lead && top3.length ? "" : undefined}>
             {d.lead && (
               <article
                 style={{
@@ -368,17 +365,7 @@ export function Recommendations({ d, s, h }: { d: InsightsData; s: RecState; h: 
                   </span>
                 </div>
                 {top3.map((r, i) => (
-                  <div
-                    key={r.k}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "40px minmax(0,1fr) auto",
-                      gap: 12,
-                      alignItems: "center",
-                      padding: "8px 0",
-                      boxShadow: i > 0 ? "inset 0 1px 0 0 var(--border-subtle)" : "none",
-                    }}
-                  >
+                  <div key={r.k} className="kx-rec-row" style={{ boxShadow: i > 0 ? "inset 0 1px 0 0 var(--border-subtle)" : "none" }}>
                     <span className="kx-icontile" style={{ width: 40, height: 40, background: "transparent", boxShadow: "none" }}>
                       <InIco name={iconOf(r)} style={{ color: REC_ICON_COLOR[r.cat] }} />
                     </span>
@@ -467,6 +454,7 @@ export function Recommendations({ d, s, h }: { d: InsightsData; s: RecState; h: 
           </div>
           {s.cat !== "deep" && visible.length === 0 && (
             <div className="kx-emptystate kx-in">
+              <Pictogram kind="stack" size="lg" className="kx-art-ruhe" />
               <strong className="kx-h-section">{t("All reviewed")}</strong>
               <span className="kx-meta">{t("New impulses arrive tomorrow morning at 06:00.")}</span>
               <button

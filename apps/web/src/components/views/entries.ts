@@ -1,4 +1,4 @@
-import { NOTE_TYPES, OBJECT_ITEMS, TASKS, tagTone, type KnowledgeItem, type NoteSummary, type NoteType } from "@/lib/workspace-data";
+import { NOTE_TYPES, OBJECT_ITEMS, tagTone, workspaceSnapshot, type KnowledgeItem, type NoteSummary, type NoteType, type WorkspaceSnapshot } from "@/lib/workspace-data";
 import { domainOf, lengthOf, monogram, progressOf, statusOf, taskCountOf, type EntryStatus } from "@/lib/data/collections";
 import { NOTE_COVER, OBJECTS, coverSrc, type DomainType } from "@/lib/mock/views";
 import type { IconId } from "@/components/shell/icons";
@@ -147,9 +147,60 @@ export function objectFacts(o: (typeof OBJECTS)[number]): EntryFacts {
   }
 }
 
+/**
+ * Lookups for the card context, built once per snapshot. Before, every entry scanned all tasks and all objects
+ * (1,500 entries × 3,000 tasks on a large vault) each time a list was derived.
+ */
+interface EntryIndex {
+  tasksBySource: Map<string, WorkspaceSnapshot["tasks"]>;
+  /** Object id → its position in the object list (keeps the list order for the chips). */
+  objectPos: Map<string, number>;
+  /** Item id → objects whose links point at it. */
+  objectsLinking: Map<string, number[]>;
+}
+const entryIndexCache = new WeakMap<WorkspaceSnapshot, EntryIndex>();
+function entryIndex(): EntryIndex {
+  const s = workspaceSnapshot();
+  let idx = entryIndexCache.get(s);
+  if (!idx) {
+    const tasksBySource = new Map<string, WorkspaceSnapshot["tasks"]>();
+    for (const task of s.tasks) {
+      if (!task.sourceId) continue;
+      const list = tasksBySource.get(task.sourceId);
+      if (list) list.push(task);
+      else tasksBySource.set(task.sourceId, [task]);
+    }
+    const objectPos = new Map<string, number>();
+    const objectsLinking = new Map<string, number[]>();
+    s.objects.forEach((o, i) => {
+      objectPos.set(o.id, i);
+      for (const target of o.links ?? []) {
+        const list = objectsLinking.get(target);
+        if (list) list.push(i);
+        else objectsLinking.set(target, [i]);
+      }
+    });
+    idx = { tasksBySource, objectPos, objectsLinking };
+    entryIndexCache.set(s, idx);
+  }
+  return idx;
+}
+
 /** Objects an item links to or that link back to it (both directions, like the note's backlinks). */
 export function linkedObjects(id: string, links: readonly string[]): EntryObject[] {
-  return OBJECT_ITEMS.filter((o) => o.id !== id && (links.includes(o.id) || o.links.includes(id))).map((o) => ({
+  const { objectPos, objectsLinking } = entryIndex();
+  const positions = new Set<number>(objectsLinking.get(id) ?? []);
+  for (const l of links) {
+    const p = objectPos.get(l);
+    if (p !== undefined) positions.add(p);
+  }
+  if (positions.size === 0) return [];
+  const objects = workspaceSnapshot().objects;
+  return [...positions]
+    .sort((a, b) => a - b)
+    .map((p) => objects[p]!)
+    .filter((o) => o.id !== id)
+    .map((o) => ({
     id: o.id,
     title: o.title,
     kind: o.type as DomainType,
@@ -163,7 +214,7 @@ type EntryContext = Pick<ViewEntry, "domain" | "length" | "progress" | "status" 
 export function itemContext(n: NoteSummary & Partial<KnowledgeItem>): EntryContext {
   const meta = n.metadata ?? {};
   const progress = progressOf(n.readingState);
-  const own = n.actionItems?.length ? n.actionItems : TASKS.filter((task) => task.sourceId === n.id);
+  const own = n.actionItems?.length ? n.actionItems : (entryIndex().tasksBySource.get(n.id) ?? []);
   const objects = linkedObjects(n.id, n.links ?? []);
   const metaDomain = typeof meta.domain === "string" && meta.domain ? meta.domain.replace(/^www\./, "") : undefined;
   const domain = domainOf(n.source?.url) ?? metaDomain;

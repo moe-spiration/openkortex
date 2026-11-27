@@ -67,6 +67,8 @@ export interface DefaultRegistryDeps {
   fetch?: FetchLike;
   jinaApiKey?: string;
   firecrawlApiKey?: string;
+  /** Keyless Jina Reader as the last try for blocked pages (default on, see WebArticleAdapterOptions). */
+  keylessReader?: boolean;
   /** OMDB_API_KEY (optional): film enrichment by IMDb id. Without it a routed LLM proposes metadata. */
   omdbApiKey?: string;
   youtube?: {
@@ -150,14 +152,12 @@ export function createDefaultRegistry(deps: DefaultRegistryDeps): IngestionRegis
   });
   r.register(createXTwitterAdapter(), { priority: p["x-twitter"] });
   r.register(createPinterestAdapter(), { priority: p.pinterest });
-  r.register(
-    createPdfDocumentAdapter({
-      storage: deps.storage,
-      documentParser: deps.documentParser,
-      models: deps.models,
-    }),
-    { priority: p["pdf-document"] },
-  );
+  const pdfAdapter = createPdfDocumentAdapter({
+    storage: deps.storage,
+    documentParser: deps.documentParser,
+    models: deps.models,
+  });
+  r.register(pdfAdapter, { priority: p["pdf-document"] });
   r.register(createEpubBookAdapter({ storage: deps.storage }), { priority: p["epub-book"] });
   r.register(createVisionOcrAdapter({ storage: deps.storage, models: deps.models }), {
     priority: p["vision-ocr"],
@@ -169,6 +169,8 @@ export function createDefaultRegistry(deps: DefaultRegistryDeps): IngestionRegis
       fetch: deps.fetch,
       jinaApiKey: deps.jinaApiKey,
       firecrawlApiKey: deps.firecrawlApiKey,
+      keylessReader: deps.keylessReader,
+      documentAdapter: pdfAdapter,
       models: deps.models,
     }),
     { priority: p["web-article"] },

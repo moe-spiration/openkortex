@@ -151,6 +151,11 @@ export interface KnowledgeItem extends NoteSummary, NoteContent {
   source?: ItemSource;
   /** Live only: knowledge_items.updated_at (ISO). */
   updatedAt?: string;
+  /**
+   * Live only: the body was left out of the workspace snapshot (older items, to keep the payload small); `contentMd`
+   * is "" until the notes store loads it (`loadBody`). Nothing may save the body of an item while this is set.
+   */
+  bodyPending?: true;
   /** Live only: knowledge_items.reading_state of PDF/EPUB items (shape owned by the reader). */
   readingState?: Record<string, unknown> | null;
   /** Page icon (knowledge_items.icon): a Lucide icon name, e.g. "book-open" (W4). null = the type glyph. */

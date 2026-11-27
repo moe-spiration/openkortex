@@ -314,5 +314,14 @@
   "{n} job is running": "{n} Auftrag läuft",
   "{n} jobs are running": "{n} Aufträge laufen",
   "{count} suggestions to decide": "{count} Vorschläge zu entscheiden",
-  "{count} results wait for you": "{count} Ergebnisse warten auf Dich"
+  "{count} results wait for you": "{count} Ergebnisse warten auf Dich",
+  "Becomes {as} in {dest}": "Wird zu {as} in {dest}",
+  "running": "läuft",
+  "queued": "wartet",
+  "Voice question": "Sprachfrage",
+  "Dictation": "Diktat",
+  "Look": "Look",
+  "Calm": "Ruhe",
+  "Vivid": "Lebendig",
+  "Calm is the standard: softer lines, dimmer navigation, no edge light. Vivid is the earlier look with edge light and coloured tiles.": "Ruhe ist der Standard: weichere Linien, gedämpfte Navigation, kein Kantenlicht. Lebendig ist der frühere Look mit Kantenlicht und farbigen Kacheln."
 }

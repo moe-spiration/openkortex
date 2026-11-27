@@ -964,3 +964,8 @@ export function SessionList({ sessions }: { sessions: SavedSession[] }) {
 }
 
 export const useBoardSessions = () => useBoard().sessions;
+/** The board's actions for shells around it (Ruhe tab manager: the agent suggestion adds open tabs to a session). */
+export const useBoardActions = () => {
+  const b = useBoard();
+  return { apply: b.apply, sessions: b.sessions };
+};

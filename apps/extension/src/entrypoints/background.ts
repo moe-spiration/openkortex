@@ -14,6 +14,9 @@ import { extractTab } from "../lib/tab-extract";
 import { rememberPendingClose, tabsStillToClose, takePendingClose } from "../lib/session-close";
 import { chromeStore, isMockMode, loadSettings, saveSettings } from "../lib/settings";
 import { renderPageToast, toastFor, type PageToastView } from "../lib/page-toast";
+import { rememberCapture, updateCaptureFolder } from "../lib/captured";
+import { ASK_DRAFT_KEY } from "../lib/messages";
+import { openSidePanel } from "../lib/side-panel";
 
 const SAVE_DEDUP_MS = 60_000;
 const MENU_ID = "kortex-highlight";
@@ -86,6 +89,18 @@ export default defineBackground(() => {
       if (request.kind === "note" && request.type_hint === "session" && request.idempotency_key) {
         await confirmSessionItem(chromeStore, request.idempotency_key, response.item_id).catch(() => undefined);
         await closeAfterDelivery(request.idempotency_key).catch(() => undefined);
+      }
+      // The popup's duplicate banner and the side panel's status line read this local index.
+      if (request.kind === "web_clip" || request.kind === "highlight") {
+        const local = isMockMode(await loadSettings(chromeStore));
+        await rememberCapture(chromeStore, request.url, {
+          item_id: response.item_id,
+          folder_path: response.folder_path,
+          at: new Date().toISOString(),
+          title: request.kind === "web_clip" ? request.title : request.page_title,
+          ...(local ? { local } : {}),
+          ...(response.suggested_tags?.length ? { tags: response.suggested_tags.slice(0, 6) } : {}),
+        }).catch(() => undefined);
       }
       const late = request.idempotency_key ? lateToasts.get(request.idempotency_key) : undefined;
       if (late && request.idempotency_key) {
@@ -225,8 +240,8 @@ export default defineBackground(() => {
       })();
       return;
     }
-    if (info.menuItemId === ACTION_PANEL_ID && tab?.windowId !== undefined) {
-      void chrome.sidePanel?.open({ windowId: tab.windowId }).catch(() => undefined);
+    if (info.menuItemId === ACTION_PANEL_ID) {
+      void openSidePanel(tab?.windowId);
       return;
     }
     if (info.menuItemId === ACTION_MANAGER_ID) {
@@ -308,6 +323,22 @@ export default defineBackground(() => {
     await pageToast(tabId, toastFor(done?.result ?? null, { mock, pageTitle: done?.page.title }));
   }
   chrome.action.onClicked.addListener((tab) => void clickSave(tab));
+
+  // Alt+S side panel, Alt+T tab manager (Alt+K is _execute_action). The panel must open inside the gesture.
+  chrome.commands?.onCommand.addListener((command, tab) => {
+    if (command === "open-sidepanel") void openSidePanel(tab?.windowId);
+    else if (command === "open-manager") void openManager();
+  });
+
+  /** Base64 data URL (the popup's screenshot) to a Blob for the multipart upload. */
+  function dataUrlToBlob(dataUrl: string): Blob {
+    const [head, body = ""] = dataUrl.split(",", 2);
+    const type = /^data:([^;,]+)/.exec(head ?? "")?.[1] ?? "image/png";
+    const bin = atob(body);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type });
+  }
 
   // Same set of tabs, same close choice: one save at a time and the same result shortly after (double click,
   // second listener, repeated message). Otherwise two sessions with identical content would appear.
@@ -392,8 +423,44 @@ export default defineBackground(() => {
         void Promise.allSettled(msg.urls.map((url) => chrome.tabs.create({ windowId: msg.windowId, url, active: false }))).then(() => sendResponse(null));
         return true;
       case "kortex/status":
-        void language.then(() => api.status(msg.itemId)).then(sendResponse);
+        void language
+          .then(() => api.status(msg.itemId))
+          .then((res) => {
+            if (res.ok && (res.data.status === "processed" || res.data.status === "archived")) void updateCaptureFolder(chromeStore, msg.itemId, res.data.folder_path).catch(() => undefined);
+            sendResponse(res);
+          });
         return true;
+      case "kortex/upload":
+        void language
+          .then(() => api.uploadFile(dataUrlToBlob(msg.dataUrl), msg.name, msg.fields))
+          .catch((e: unknown) => ({ ok: false as const, error: { code: "server_error" as const, message: e instanceof Error ? e.message : t("Error") } }))
+          .then(async (res) => {
+            if (res.ok && !isMockMode(await loadSettings(chromeStore))) {
+              await appendActivity(chromeStore, {
+                at: new Date().toISOString(),
+                kind: "file",
+                title: msg.fields.title ?? msg.name,
+                item_id: res.item_id,
+                folder_path: res.folder_path,
+                auto_routed: res.auto_routed,
+                status: res.status,
+                duplicate: res.duplicate,
+                replayed: false,
+              }).catch(() => undefined);
+            }
+            sendResponse(res);
+          });
+        return true;
+      case "kortex/open-sidepanel": {
+        // A question from the page's selection bar: the panel picks it up when it opens.
+        const windowId = sender.tab?.windowId;
+        // Open first (as close to the click as possible), the draft follows; the panel also watches storage.
+        const opened = openSidePanel(windowId, { fallbackWindow: false });
+        void (msg.ask ? chrome.storage.local.set({ [ASK_DRAFT_KEY]: msg.ask }) : Promise.resolve())
+          .then(() => opened)
+          .then(sendResponse, () => sendResponse("none"));
+        return true;
+      }
       case "kortex/remind":
         void language.then(() => api.remind(msg.itemId, msg.remindAt)).then(sendResponse);
         return true;

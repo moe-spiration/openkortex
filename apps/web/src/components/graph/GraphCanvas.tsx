@@ -5,6 +5,7 @@ import type { GraphData, GraphNode } from "@/server/graph/types";
 import type { CanvasPalette } from "./graph-utils";
 import type { GraphEngine, GraphMode } from "./graph-engine";
 import { t } from "@/i18n";
+import { motionOff } from "@/lib/settings/motion";
 
 /** Camera controls for the floating HUDs (Tactile Craft v2): zoom, fit, centre a node. */
 export interface GraphControls {
@@ -36,11 +37,14 @@ interface Props {
   suggestionOpen: boolean;
   onLink: () => void;
   controlsRef?: MutableRefObject<GraphControls | null>;
+  /** Ruhe: nodes coloured by tag domain, clusters named (domain → label); null keeps the monochrome nodes. */
+  clusters?: Partial<Record<string, string>> | null;
 }
 
-const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
+/** Bewegung "Aus" (or System on an OS that asks for reduced motion): lib/settings/motion.ts. */
+const reducedMotion = motionOff;
 
-export function GraphCanvas({ data, palette, activeId, loading, height, mode, onOpen, onMenu, suggestion, suggestionOpen, onLink, controlsRef }: Props) {
+export function GraphCanvas({ data, palette, activeId, loading, height, mode, onOpen, onMenu, suggestion, suggestionOpen, onLink, controlsRef, clusters = null }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const [engine, setEngine] = useState<GraphEngine | null>(null);
   const [failed, setFailed] = useState(false);
@@ -63,18 +67,20 @@ export function GraphCanvas({ data, palette, activeId, loading, height, mode, on
         setEngine(made);
       })
       .catch(() => !cancelled && setFailed(true));
-    const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
-    const onMq = () => made?.setReducedMotion(mq.matches);
-    mq?.addEventListener("change", onMq);
+    // The settings store re-resolves Bewegung (choice or OS change) into data-motion on <html>.
+    const mo = new MutationObserver(() => made?.setReducedMotion(reducedMotion()));
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-motion"] });
     return () => {
       cancelled = true;
-      mq?.removeEventListener("change", onMq);
+      mo.disconnect();
       made?.dispose();
       setEngine(null);
     };
   }, []);
 
   useEffect(() => engine?.setPalette(palette), [engine, palette]);
+  const clusterKey = clusters ? JSON.stringify(clusters) : "";
+  useEffect(() => engine?.setClusters(!!clusterKey, clusterKey ? (JSON.parse(clusterKey) as Partial<Record<string, string>>) : {}), [engine, clusterKey]);
   useEffect(() => engine?.setMode(mode), [engine, mode]);
   useEffect(() => engine?.setData(data), [engine, data]);
   useEffect(() => engine?.setActive(activeId), [engine, activeId, data]);

@@ -65,6 +65,19 @@ export async function updateNote(id: string, patch: { title?: string; contentMd?
   });
 }
 
+/**
+ * The Markdown body of one item (and its updated_at), for notes whose body the workspace snapshot left out
+ * (`bodyPending`, lib/supabase/snapshot.ts). Read-only.
+ */
+export async function loadItemBody(id: string): Promise<ActionResult<{ contentMd: string; updatedAt: string }>> {
+  return run("loadItemBody", async (ctx) => {
+    if (!isUuid(id)) throw new Error(t("Entry not found"));
+    const row = await getItem(ctx.client, ctx.userId, id, ["content_md", "updated_at"] as const);
+    if (!row) throw new Error(t("Entry not found"));
+    return { contentMd: row.content_md ?? "", updatedAt: row.updated_at };
+  });
+}
+
 /** W4: cover (URL) and page icon (Lucide name) of an item; undefined leaves a field unchanged, null clears it. */
 export async function setItemLook(id: string, patch: { coverUrl?: string | null; icon?: string | null }): Promise<ActionResult> {
   return run("setItemLook", async (ctx) => {

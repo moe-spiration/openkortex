@@ -13,6 +13,9 @@
 //!
 //! The main window's state is also polled (`spawn_watch`: 300 ms during a recording, 1 s otherwise),
 //! so a missed `Resized` / `Focused` event cannot leave the pill out.
+//!
+//! Since 0.6.8 (Ruhe) "pill" and "hud" are the same part, the meeting bar: collapsed (the bar)
+//! and expanded (bar plus panel). The mode names stay, so tray, hotkeys and the self-test keep working.
 
 use std::time::Duration;
 
@@ -42,18 +45,37 @@ pub fn set_capture_excluded<R: Runtime>(_window: &WebviewWindow<R>, _enabled: bo
     Ok(())
 }
 
-/// HUD window size per mode (matches the React layout: pill 48 px high, HUD 400 x 684).
+/// The meeting bar (MeetingBar.tsx, Ruhe mockup `hud`): one 560 px wide part. Collapsed ("pill") it
+/// is the 48 px bar; expanded ("hud") the panel with transcript, one coaching card and the chips
+/// hangs 8 px below it. The window is exactly as tall as what it shows: the frontend measures its
+/// content and sets the height (`core:window:allow-set-size`), so no transparent area blocks clicks
+/// into the app behind it. `HUD_PANEL_H` is only the first guess until that measurement arrives.
+pub const BAR_W: f64 = 560.0;
+pub const BAR_H: f64 = 48.0;
+pub const HUD_PANEL_H: f64 = 360.0;
+
+/// HUD window size per mode (logical px): the bar alone, or bar plus panel.
 pub fn hud_size(mode: &str) -> Option<(f64, f64)> {
     match mode {
-        "pill" => Some((440.0, 64.0)),
-        "hud" => Some((400.0, 684.0)),
+        "pill" => Some((BAR_W, BAR_H)),
+        "hud" => Some((BAR_W, HUD_PANEL_H)),
         _ => None,
     }
 }
 
-/// Top-left of the HUD window: the user's last place (its top-right corner `anchor`, so pill and
-/// HUD share the corner) when that is still on a screen, else 48 px from the right edge and 150 px
-/// from the top of `monitor` (all physical px).
+/// Window size for `mode`, never taller than the screen's `max_h` (logical px).
+pub fn window_size(mode: &str, max_h: Option<f64>) -> Option<(f64, f64)> {
+    let (w, h) = hud_size(mode)?;
+    let h = match max_h {
+        Some(m) if m.is_finite() && m > 0.0 => h.min(m.max(BAR_H)),
+        _ => h,
+    };
+    Some((w, h))
+}
+
+/// Top-left of the HUD window: the user's last place (its top-right corner `anchor`, so bar and
+/// panel stay where the user put them) when that is still on a screen, else centred at the top of
+/// `monitor`, 16 px below its edge like the mockup's bar (all physical px).
 pub fn hud_position(anchor: Option<(i32, i32)>, width: i32, monitor: (i32, i32, i32, i32), screens: &[(i32, i32, i32, i32)], scale: f64) -> (i32, i32) {
     let on = |x: i32, y: i32| screens.iter().any(|&(mx, my, mw, mh)| x >= mx && x < mx + mw && y >= my && y < my + mh);
     if let Some((right, top)) = anchor {
@@ -63,7 +85,7 @@ pub fn hud_position(anchor: Option<(i32, i32)>, width: i32, monitor: (i32, i32, 
         }
     }
     let (mx, my, mw, _) = monitor;
-    (mx + mw - width - (48.0 * scale) as i32, my + (150.0 * scale) as i32)
+    (mx + (mw - width) / 2, my + (16.0 * scale) as i32)
 }
 
 /// Show / resize / hide the HUD window ("qc" = the launcher instead).
@@ -78,9 +100,14 @@ pub fn apply_hud_mode<R: Runtime>(app: &tauri::AppHandle<R>, mode: &str) -> anyh
                 c.set_focus()?;
             }
         }
-        (_, Some((w, h))) => {
-            hud.set_size(LogicalSize::new(w, h))?;
+        (_, Some(_)) => {
             let monitor = hud.current_monitor()?.or(hud.primary_monitor()?);
+            // Never taller than the screen (minus a margin for the taskbar).
+            let max_h = monitor.as_ref().map(|m| m.size().height as f64 / m.scale_factor() - 80.0);
+            let (w, h) = window_size(mode, max_h).unwrap_or((BAR_W, BAR_H));
+            // Not resized by hand: the height follows the content (MeetingBar.tsx).
+            hud.set_resizable(false)?;
+            hud.set_size(LogicalSize::new(w, h))?;
             if let Some(m) = monitor {
                 let scale = m.scale_factor();
                 let rect = |m: &tauri::Monitor| (m.position().x, m.position().y, m.size().width as i32, m.size().height as i32);
@@ -306,9 +333,21 @@ mod tests {
     }
 
     #[test]
-    fn hud_sizes() {
-        assert_eq!(hud_size("pill"), Some((440.0, 64.0)));
+    fn the_bar_is_560_wide_collapsed_and_expanded() {
+        assert_eq!(hud_size("pill"), Some((560.0, 48.0)));
+        assert_eq!(hud_size("hud"), Some((560.0, HUD_PANEL_H)));
         assert_eq!(hud_size("off"), None);
+    }
+
+    #[test]
+    fn the_expanded_bar_is_never_taller_than_the_screen() {
+        assert_eq!(window_size("hud", None), Some((560.0, HUD_PANEL_H)));
+        assert_eq!(window_size("hud", Some(300.0)), Some((560.0, 300.0)));
+        // Not below the bar itself, garbage ignored.
+        assert_eq!(window_size("hud", Some(10.0)), Some((560.0, BAR_H)));
+        assert_eq!(window_size("hud", Some(f64::NAN)), Some((560.0, HUD_PANEL_H)));
+        assert_eq!(window_size("pill", Some(1000.0)), Some((560.0, 48.0)));
+        assert_eq!(window_size("off", Some(1000.0)), None);
     }
 
     fn m(next: &str, restore: Option<&str>) -> Option<(String, Option<String>)> {
@@ -363,12 +402,12 @@ mod tests {
     fn the_hud_returns_to_where_the_user_dragged_it_if_that_is_on_screen() {
         let primary = (0, 0, 1920, 1080);
         let screens = [primary, (1920, 0, 2560, 1440)];
-        // Default: 48 px from the right, 150 px from the top of the monitor it is on.
-        assert_eq!(hud_position(None, 400, primary, &screens, 1.0), (1920 - 400 - 48, 150));
-        assert_eq!(hud_position(None, 600, (1920, 0, 2560, 1440), &screens, 1.5), (1920 + 2560 - 600 - 72, 225));
+        // Default: centred at the top of the monitor it is on, 16 px below the edge (mockup `hud`).
+        assert_eq!(hud_position(None, 560, primary, &screens, 1.0), ((1920 - 560) / 2, 16));
+        assert_eq!(hud_position(None, 840, (1920, 0, 2560, 1440), &screens, 1.5), (1920 + (2560 - 840) / 2, 24));
         // Dragged onto the second screen: pill and HUD share the top-right corner.
-        assert_eq!(hud_position(Some((3000, 300)), 440, primary, &screens, 1.0), (2560, 300));
+        assert_eq!(hud_position(Some((3000, 300)), 560, primary, &screens, 1.0), (2440, 300));
         // Screen gone: back to the default place.
-        assert_eq!(hud_position(Some((6000, 300)), 440, primary, &screens, 1.0), (1920 - 440 - 48, 150));
+        assert_eq!(hud_position(Some((6000, 300)), 560, primary, &screens, 1.0), ((1920 - 560) / 2, 16));
     }
 }

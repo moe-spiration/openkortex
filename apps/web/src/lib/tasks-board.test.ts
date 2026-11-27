@@ -1,6 +1,6 @@
 import { FEATURES } from "@kortex/i18n";
 import { describe, expect, it } from "vitest";
-import { AGENT_ASSIGNEE, boardCounts, boardMeta, bucketOf, columnOf, digestText, doneRate, dropPatch, newDueDate, stageCounts, stageMeta, stageOf, stagePatch, weekSunday } from "./tasks-board";
+import { AGENT_ASSIGNEE, boardCounts, boardMeta, bucketOf, columnOf, digestText, doneRate, dropPatch, newDueDate, ruheColumnOf, ruheDrop, stageCounts, stageMeta, stageOf, stagePatch, weekSunday } from "./tasks-board";
 
 // Thursday, 22 Oct 2026 (the prototype's day); the week runs Mon 19 to Sun 25.
 const TODAY = "2026-10-22";
@@ -93,5 +93,29 @@ describe("status board", () => {
     } finally {
       FEATURES.griply = initial;
     }
+  });
+});
+
+describe("ruhe board columns", () => {
+  const base = { done: false, ai: false };
+  it("puts stages into Offen / Heute / In Arbeit / Erledigt", () => {
+    expect(ruheColumnOf({ ...base, due: "2026-10-30" }, TODAY)).toBe("open");
+    expect(ruheColumnOf({ ...base }, TODAY)).toBe("open");
+    expect(ruheColumnOf({ ...base, due: TODAY }, TODAY)).toBe("today");
+    expect(ruheColumnOf({ ...base, due: "2026-10-20" }, TODAY)).toBe("today");
+    expect(ruheColumnOf({ ...base, ai: true, due: TODAY }, TODAY)).toBe("today");
+    expect(ruheColumnOf({ ...base, exportedAt: "2026-10-20T10:00:00Z", due: "2026-10-30" }, TODAY)).toBe("open");
+    expect(ruheColumnOf({ ...base, assignee: AGENT_ASSIGNEE, due: TODAY }, TODAY)).toBe("doing");
+    expect(ruheColumnOf({ ...base, done: true, assignee: AGENT_ASSIGNEE }, TODAY)).toBe("done");
+  });
+  it("drops change stage and due date", () => {
+    expect(ruheDrop({ ...base, due: "2026-10-30" }, "today", TODAY)).toEqual({ stage: null, due: TODAY });
+    expect(ruheDrop({ ...base, due: TODAY }, "open", TODAY)).toEqual({ stage: null, due: "2026-10-23" });
+    expect(ruheDrop({ ...base, due: TODAY }, "today", TODAY)).toEqual({ stage: null });
+    expect(ruheDrop({ ...base, due: TODAY }, "doing", TODAY)).toEqual({ stage: "agent" });
+    expect(ruheDrop({ ...base, due: TODAY }, "done", TODAY)).toEqual({ stage: "done" });
+    expect(ruheDrop({ ...base, done: true, due: "2026-10-30" }, "open", TODAY)).toEqual({ stage: "accepted" });
+    expect(ruheDrop({ ...base, done: true, exportedAt: "2026-10-20T10:00:00Z", due: "2026-10-30" }, "today", TODAY)).toEqual({ stage: "external", due: TODAY });
+    expect(ruheDrop({ ...base, assignee: AGENT_ASSIGNEE }, "open", TODAY)).toEqual({ stage: "accepted" });
   });
 });

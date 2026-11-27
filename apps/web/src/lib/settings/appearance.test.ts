@@ -16,12 +16,23 @@ beforeEach(() => window.localStorage.clear());
 
 describe("appearance prefs (Tactile Craft v2)", () => {
   it("defaults: accent glow, kompakt, full transparency", () => {
-    expect(DEFAULT_APPEARANCE).toEqual({ backdrop: "glow", density: "kompakt", densityByScope: {}, reduceTransparency: false, fontScale: 1 });
+    expect(DEFAULT_APPEARANCE).toEqual({
+      backdrop: "glow",
+      density: "kompakt",
+      densityByScope: {},
+      reduceTransparency: false,
+      fontScale: 1,
+      look: "ruhe",
+      baseHue: 75,
+      tint: 1,
+      contrast: "normal",
+      calmMotion: false,
+    });
     expect(loadAppearance()).toEqual(DEFAULT_APPEARANCE);
   });
 
   it("round-trips through localStorage", () => {
-    const p = { backdrop: "pack" as const, density: "dicht" as const, densityByScope: { life: "komfort" as const }, reduceTransparency: true, fontScale: 0.9 as const };
+    const p = { backdrop: "pack" as const, density: "dicht" as const, densityByScope: { life: "komfort" as const }, reduceTransparency: true, fontScale: 0.9 as const, look: "ruhe" as const, baseHue: 260, tint: 2, contrast: "high" as const, calmMotion: true };
     saveAppearance(p);
     expect(JSON.parse(window.localStorage.getItem(APPEARANCE_KEY)!)).toEqual(p);
     expect(loadAppearance()).toEqual(p);
@@ -36,10 +47,37 @@ describe("appearance prefs (Tactile Craft v2)", () => {
       densityByScope: { a: "dicht" },
       reduceTransparency: false,
       fontScale: 1,
+      look: "ruhe",
+      baseHue: 75,
+      tint: 1,
+      contrast: "normal",
+      calmMotion: false,
     });
+    expect(parseAppearance({ look: "ruhe" }).look).toBe("ruhe");
+    expect(parseAppearance({ baseHue: 400, tint: 99, contrast: "loud" })).toMatchObject({ baseHue: 40, tint: 8, contrast: "normal" });
+    expect(parseAppearance({ baseHue: "75" }).baseHue).toBe(75);
+    expect(parseAppearance({ look: "neon" }).look).toBe("ruhe");
+    expect(parseAppearance({ look: "classic" }).look).toBe("ruhe");
+    expect(parseAppearance({ look: "vivid" }).look).toBe("vivid");
     expect(parseAppearance({ fontScale: 3 }).fontScale).toBe(1);
     expect(parseAppearance({ fontScale: 0.85 }).fontScale).toBe(0.85);
     expect(parseAppearance(null)).toEqual(DEFAULT_APPEARANCE);
+  });
+});
+
+describe("Ruhe theme from three values", () => {
+  // data-calm moved to ./motion.ts (Bewegung is resolved with the OS setting there, see motion.test.ts).
+  it("writes base hue and tint as CSS variables, contrast only when set, and leaves motion to motion.ts", () => {
+    const el = document.createElement("html");
+    applyAppearance({ ...DEFAULT_APPEARANCE, baseHue: 160, tint: 4, contrast: "high", calmMotion: true }, el);
+    expect(el.style.getPropertyValue("--ruhe-h")).toBe("160");
+    expect(el.style.getPropertyValue("--ruhe-c")).toBe("4");
+    expect(el.dataset.contrast).toBe("high");
+    expect(el.dataset.calm).toBeUndefined();
+    applyAppearance(DEFAULT_APPEARANCE, el);
+    expect(el.dataset.contrast).toBeUndefined();
+    expect(el.dataset.calm).toBeUndefined();
+    expect(el.style.getPropertyValue("--ruhe-h")).toBe("75");
   });
 });
 
@@ -53,7 +91,12 @@ describe("backdrop choice", () => {
   it("writes the <html> attributes", () => {
     const el = document.createElement("html");
     applyAppearance({ ...DEFAULT_APPEARANCE, backdrop: "pack", density: "komfort" }, el);
-    expect({ ...el.dataset }).toEqual({ backdrop: "pack", density: "komfort", glass: "on" });
+    expect({ ...el.dataset }).toEqual({
+      backdrop: "pack",
+      density: "komfort",
+      glass: "on",
+      look: "ruhe",
+    });
     expect(el.style.getPropertyValue("--kx-fs")).toBe("1");
     applyAppearance({ ...DEFAULT_APPEARANCE, fontScale: 0.9 }, el);
     expect(el.style.getPropertyValue("--kx-fs")).toBe("0.9");

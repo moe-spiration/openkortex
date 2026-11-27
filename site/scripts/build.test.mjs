@@ -12,10 +12,22 @@ test("English and German texts have the same keys, and the page uses only known 
   assert.deepEqual(Object.keys(de).sort(), Object.keys(en).sort());
   const template = read("../src/index.html");
   const values = { lang: "", home: "", otherHref: "", otherLang: "", otherLabel: "", autolang: "", repoUrl: "", repoName: "", siteUrl: "", canonical: "", mark: "", markLarge: "", fonts: "", codeUrl: "", guideUrl: "", contributeUrl: "", licenseUrl: "", imprintLink: "", themeboot: "", themeToggle: "", releasesUrl: "", issueBugUrl: "", issueIdeaUrl: "" };
-  for (const [, name] of template.matchAll(/\{\{(icon:[a-z0-9-]+)\}\}/g)) values[name] = "";
+  for (const [, name] of template.matchAll(/\{\{((?:icon|shot):[a-z0-9-]+)\}\}/g)) values[name] = "";
   assert.doesNotThrow(() => render(template, en, values));
   assert.doesNotThrow(() => render(template, de, values));
   assert.throws(() => render("{{nope}}", en, values), /missing text "nope"/);
+});
+
+test("the platform drawings use only known texts", () => {
+  const en = JSON.parse(read("../src/i18n/en.json"));
+  const de = JSON.parse(read("../src/i18n/de.json"));
+  for (const name of ["windows", "android", "clipper"]) {
+    const part = read(`../src/shots/${name}.html`);
+    const values = { mark: "" };
+    for (const [, k] of part.matchAll(/\{\{(icon:[a-z0-9-]+)\}\}/g)) values[k] = "";
+    assert.doesNotThrow(() => render(part, en, values), name);
+    assert.doesNotThrow(() => render(part, de, values), name);
+  }
 });
 
 test("the demo shim names page payloads like the build", () => {

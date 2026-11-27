@@ -1,6 +1,6 @@
 {
   "name": "@kortex/md-sync",
-  "version": "0.6.4",
+  "version": "0.6.9",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",

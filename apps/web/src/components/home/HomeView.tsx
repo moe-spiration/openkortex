@@ -29,6 +29,8 @@ import { SessionsCard } from "./Sessions";
 import { TodayOverview } from "./TodayOverview";
 import { watchToday } from "./today";
 import { useHomeNav } from "./useHomeNav";
+import { useLook } from "@/components/theme/look";
+import { HomeRuhe } from "./HomeRuhe";
 
 const PREFS_KEY = "kortex.home.v1";
 
@@ -147,6 +149,7 @@ export function HomeView() {
   const visible = order.filter(show);
   const spans = bentoSpans(visible);
 
+  const look = useLook();
   const sectionFor = (k: string): ReactNode => {
     switch (k) {
       case "t":
@@ -186,6 +189,38 @@ export function HomeView() {
         return null;
     }
   };
+
+  // Ruhe (mockup "heute"): its own page (HomeRuhe) on the same state; the briefing card unfolds under the greeting.
+  if (look === "ruhe") {
+    return (
+      <HomeRuhe
+        day={day}
+        now={now}
+        view={view}
+        go={nav.go}
+        openNote={nav.openNote}
+        checkin={checkin}
+        onCheckin={updateCheckin}
+        hidden={hidden}
+        onToggleSection={toggleSection}
+        briefing={
+          briefing?.summary || briefing?.items.length ? (
+            <MorningBriefing
+              briefing={briefing}
+              done={done}
+              today={day}
+              tag={mixes?.[0]?.tag ?? null}
+              onToggle={toggle}
+              onOpenNote={nav.openNote}
+              onInbox={() => router.push("/inbox")}
+              onTag={pickTag}
+              inboxCount={inboxCount}
+            />
+          ) : null
+        }
+      />
+    );
+  }
 
   return (
     <div className="hm-page fs-home">

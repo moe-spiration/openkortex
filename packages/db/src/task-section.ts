@@ -43,20 +43,99 @@ export interface SectionTask {
   context: string | null;
   /** Title of the linked project / goal object (rendered as `Projekt: [[…]]`, read-only). */
   project?: string | null;
+  /** Who does it (meeting tasks; rendered as `Zuständig: …` unless it is the user, read-only). */
+  assignee?: string | null;
 }
 
 const clean = (s: string | null | undefined) => (s ?? "").replace(/\s+/g, " ").trim();
 
 /**
+ * Where a section stops: the next `#`/`##` heading or a callout such as the folded transcript
+ * (`> [!toggle]- Transkript`) that meetings and voice memos put after their tasks.
+ */
+const SECTION_END = /^(#{1,2} |> \[!)/m;
+
+/**
  * [start, end) of the section incl. heading plus the language of its heading; null without one.
- * Ends at the next `#`/`##` heading. With several task headings the first one is the section.
+ * Ends at the next `#`/`##` heading or callout. With several task headings the first one is the section.
  */
 function sectionRange(md: string): [number, number, Locale] | null {
   const m = HEADING_RE.exec(md);
   if (!m) return null;
   const rest = md.slice(m.index + m[0].length);
-  const next = /^#{1,2} /m.exec(rest);
+  const next = SECTION_END.exec(rest);
   return [m.index, next ? m.index + m[0].length + next.index : md.length, headingLocale(m[1]!)];
+}
+
+/**
+ * Task lists the extractors wrote before there was one task section per item: meetings
+ * ("## Extrahierte Action Items", lines like `- [ ] @Max: Folien senden (Due: 2026-11-30) · [00:12:03]`),
+ * voice memos and e-mails ("## Action Items"). They showed the same tasks a second time.
+ */
+const LEGACY_HEADING_RE = /^## (Extracted action items|Extrahierte Action Items|Action Items)[ \t]*$/im;
+
+/** Title of a legacy line without the meeting decorations (`@Owner: `, ` (Due: …)`, ` · [hh:mm:ss]`). */
+const legacyTitle = (title: string): string =>
+  title
+    .replace(/^@[^:]{1,80}:\s*/, "")
+    .replace(/\s*·\s*\[\d{1,2}(:\d{2}){1,2}\]/g, "")
+    .replace(/\s*\((Due|Fällig): [^)]*\)/g, "")
+    .trim();
+
+/**
+ * [start, end) of a legacy task list that only repeats the item's tasks (every line is one of them with
+ * the same done state, nothing else in it), so it can go. Null otherwise: a list with anything of the
+ * user's in it stays untouched.
+ */
+function redundantLegacyRange(md: string, tasks: readonly SectionTask[]): [number, number, Locale] | null {
+  if (!tasks.length) return null;
+  const m = LEGACY_HEADING_RE.exec(md);
+  if (!m) return null;
+  const rest = md.slice(m.index + m[0].length);
+  const next = SECTION_END.exec(rest);
+  const end = next ? m.index + m[0].length + next.index : md.length;
+  const byKey = new Map(tasks.map((t) => [matchKey(t.title), t]));
+  const lines = md.slice(m.index + m[0].length, end).split("\n");
+  let seen = 0;
+  for (const l of lines) {
+    if (!l.trim()) continue;
+    const p = parseTaskLine(l);
+    if (!p) return null;
+    const t = byKey.get(matchKey(legacyTitle(p.title)));
+    if (!t || t.status === "cancelled" || p.done !== (t.status === "done")) return null;
+    seen++;
+  }
+  // The meeting heading tells the note's language; "Action Items" was the same in both.
+  const word = m[1]!.toLowerCase();
+  const locale: Locale = word.startsWith("extracted") ? "en" : word.startsWith("extrahierte") ? "de" : getLocale();
+  return seen ? [m.index, end, locale] : null;
+}
+
+/**
+ * The task section as the extractors write it into a new item: the heading of `locale` and one line per
+ * task, without id markers (the first refresh adds them in place, matching by title).
+ */
+export function renderTaskSection(
+  tasks: readonly (Omit<SectionTask, "id" | "status"> & { done?: boolean })[],
+  locale: Locale = getLocale(),
+): string {
+  const lines = tasks
+    .filter((t) => clean(t.title))
+    .map((t) =>
+      formatTaskLine(
+        {
+          title: t.title,
+          done: !!t.done,
+          assignee: t.assignee ?? null,
+          project: t.project ?? null,
+          timeframe: t.timeframe,
+          due: t.due_date,
+          context: t.context,
+        },
+        locale,
+      ),
+    );
+  return lines.length ? `${TASKS_HEADINGS[locale]}\n\n${lines.join("\n")}` : "";
 }
 
 /** Task lines of the "## Aufgaben" / "## Tasks" section; null when the note has none (then nothing changes). */
@@ -82,7 +161,18 @@ export function parseTaskSection(md: string): ParsedTaskLine[] | null {
  * section keeps its heading and is rendered in that heading's language; a new one uses the current language.
  */
 export function withTaskSection(md: string, tasks: readonly SectionTask[]): string {
-  const norm = md.replace(/\r\n?/g, "\n");
+  let norm = md.replace(/\r\n?/g, "\n");
+  // An old extractor list that repeats these tasks goes; the task section takes its place (above the
+  // transcript instead of below it).
+  const legacy = redundantLegacyRange(norm, tasks);
+  if (legacy) {
+    const before = norm.slice(0, legacy[0]).trimEnd();
+    const after = norm.slice(legacy[1]).trim();
+    const current = sectionRange(after);
+    const sectionText = current ? after.slice(current[0], current[1]).trim() : TASKS_HEADINGS[legacy[2]];
+    const rest = current ? `${after.slice(0, current[0]).trimEnd()}\n\n${after.slice(current[1]).trim()}`.trim() : after;
+    norm = [before, sectionText, rest].filter(Boolean).join("\n\n") + (norm.endsWith("\n") ? "\n" : "");
+  }
   const range = sectionRange(norm);
   const outside = range ? norm.slice(0, range[0]) + norm.slice(range[1]) : norm;
   const bodyKeys = new Set(
@@ -102,6 +192,7 @@ export function withTaskSection(md: string, tasks: readonly SectionTask[]): stri
         title: t.title,
         done: t.status === "done",
         project: t.project ?? null,
+        assignee: t.assignee ?? null,
         timeframe: t.timeframe,
         due: t.due_date,
         context: t.context,
@@ -249,7 +340,7 @@ export async function loadSectionTasks(
 ): Promise<SectionTask[]> {
   const { data, error } = await db
     .from("action_items")
-    .select("id,title,status,due_date,timeframe,context,project_item_id,created_at")
+    .select("id,title,status,due_date,timeframe,context,assignee,project_item_id,created_at")
     .eq("user_id", userId)
     .eq("source_item_id", itemId)
     .order("created_at")
@@ -274,6 +365,7 @@ export async function loadSectionTasks(
     due_date: r.due_date,
     timeframe: r.timeframe,
     context: r.context,
+    assignee: r.assignee,
     project: r.project_item_id ? (titles.get(r.project_item_id) ?? null) : null,
   }));
 }

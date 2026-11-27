@@ -6,12 +6,13 @@ import { kortexUrl } from "../api/config";
 import { Icon } from "../ui/Icon";
 import { useData } from "../state/Data";
 import { useApp } from "../state/AppState";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
 import { RADIUS } from "../theme/tokens";
 import { Eyebrow, Help, Photo, ring, T } from "../ui/primitives";
 import { lifeTopic } from "../theme/lifeTopic";
 import { ScreenScroll } from "../ui/Screen";
 import { useEntryActions } from "../ui/entryActions";
+import { LifeRuhe } from "./ruhe/LifeRuhe";
 
 /*
  * Life (like the web since the Griply decision): the areas as pages for vision, ideas and images. No scores:
@@ -61,6 +62,8 @@ export function Life() {
   const { areas, auth } = useData();
   const { open, busy } = useOpenLifeArea();
   const griply = useGriply(areas, auth === "live");
+  const ruhe = useRuhe();
+  if (ruhe) return <LifeRuhe griply={griply} open={open} busy={busy} />;
   return (
     <ScreenScroll gap={16}>
       <View>

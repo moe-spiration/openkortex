@@ -28,7 +28,9 @@ import { Sidebar } from "./Sidebar";
 import { SidebarResizer } from "./SidebarResizer";
 import { readWidth, SIDEBAR_DEFAULT, writeWidth } from "./sidebar-width";
 import { Titlebar } from "./Titlebar";
+import { HeaderHosts, HeaderSlotProvider } from "./Bars";
 import { TipProvider } from "@/components/ui/primitives";
+import { TitleTips } from "@/components/ui/TitleTips";
 import { ShellBackdrop } from "@/components/theme/ShellBackdrop";
 
 /*
@@ -202,12 +204,16 @@ function ShellLayout({ children }: { children: ReactNode }) {
         <SidebarResizer width={sidebarWidth} onChange={setSidebarWidth} onCommit={commitSidebarWidth} />
         <NavScrim />
         <main className="kx-main-window">
+          <HeaderSlotProvider>
+          {/* Ruhe header system: the view's LocationBar and ViewBar render here (./Bars), above list, split and drawer. */}
+          <HeaderHosts />
           <div style={{ position: "relative", flex: 1, minHeight: 0, display: "flex" }}>
             <div style={{ position: "relative", flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
               {/* --kx-footbar-safe: space the floating Orbit-Bar takes at the bottom (16 + 58 px, Tactile Craft) plus 16px air.
                   Views that scroll on their own (graph, inbox detail) pad their bottom with it. */}
               <div
                 className="kx-scroll"
+                data-view-host
                 style={{ flex: 1, minHeight: 0, "--kx-footbar-safe": "90px", scrollPaddingBottom: "var(--kx-footbar-safe)" } as CSSProperties}
               >
                 {children}
@@ -242,7 +248,9 @@ function ShellLayout({ children }: { children: ReactNode }) {
             {keys && <KeysOverlay />}
             {shell.onboarding > 0 && <Onboarding />}
             <Toast />
+            <TitleTips />
           </div>
+          </HeaderSlotProvider>
         </main>
       </div>
       </TipProvider>

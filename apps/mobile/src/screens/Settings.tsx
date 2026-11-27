@@ -10,6 +10,7 @@ import { APP_VERSION, kortexUrl, versionLine } from "../api/config";
 import { loadInboundMail, loadSettings, patchSettings } from "../api/kortex";
 import { inboundMailRow, routingRows, WEEKDAYS, type InboundMail, type MobileSettings } from "../data/settings";
 import { initialOf } from "../lib/greeting";
+import { tick } from "../lib/haptics";
 import { useApp } from "../state/AppState";
 import { useTheme } from "../theme/ThemeProvider";
 import { ACCENTS, RADIUS } from "../theme/tokens";
@@ -18,11 +19,16 @@ import { Icon } from "../ui/Icon";
 import { Btn, FadeIn, Help, Micro, T, Toggle } from "../ui/primitives";
 import { PackPickerRow } from "../theme/PackPicker";
 import { checkRow, restartRow } from "../lib/updateStatus";
+import { motionHelp, motionLabel } from "../lib/motionPref";
+import { useReduceMotion } from "../ui/ruhe/motion";
 import { useAppUpdate } from "../ui/useAppUpdate";
+import { SettingsRuhe } from "./ruhe/SettingsRuhe";
+import { loadPrefs, savePrefs } from "../widgets/data";
+import { DEFAULT_LOOK, OPACITIES, WIDGET_CAPTURE, WIDGET_CHECKIN, WIDGET_ENTRIES, WIDGET_THEMES, WIDGET_TODAY, withDefaultLook, type WidgetLook } from "../widgets/model";
 
 /* Einstellungen (Mobile.dc.html "Settings"): profile, vault and sync, AI, notifications, appearance. */
 
-type Row =
+export type SettingsRow =
   | { kind: "toggle"; on: boolean; flip: () => void; label: string; help: string }
   | { kind: "value"; label: string; help: string; value: string; pick: () => void }
   | { kind: "accent"; label: string; help: string }
@@ -33,6 +39,7 @@ export function Settings() {
   const router = useRouter();
   const { top } = useChrome();
   const a = useApp();
+  const osReduce = useReduceMotion();
   const d = useData();
   const live = d.auth === "live";
   const locale = useLocale();
@@ -74,14 +81,36 @@ export function Settings() {
   };
   const flip = (key: "auto_tag_enabled" | "auto_cluster_enabled") => write({ [key]: !us?.[key] });
 
+  // Home screen widgets (Android): default look of all widgets, and the launcher's "add widget" prompt.
+  const [widgetLook, setWidgetLook] = useState<WidgetLook>(DEFAULT_LOOK);
+  useEffect(() => {
+    if (Platform.OS === "android") void loadPrefs().then((p) => setWidgetLook(p.look));
+  }, []);
+  const changeWidgetLook = (patch: Partial<WidgetLook>) => {
+    const next = { ...widgetLook, ...patch };
+    setWidgetLook(next);
+    void loadPrefs()
+      .then((p) => savePrefs(withDefaultLook(p, next)))
+      .then(() => import("../widgets/refresh"))
+      .then((m) => m.refreshWidgets())
+      .catch(() => undefined);
+  };
+  const nextOf = <T,>(list: readonly T[], cur: T) => list[(list.indexOf(cur) + 1) % list.length]!;
+  const pinWidget = (widgetName: string) =>
+    void import("react-native-android-widget")
+      .then((m) => m.requestPinWidget({ widgetName }))
+      .then((ok) => !ok && a.say(t("Your launcher cannot add widgets from the app. Hold the home screen, then Widgets, Kortex.")))
+      .catch(() => a.say(t("Your launcher cannot add widgets from the app. Hold the home screen, then Widgets, Kortex.")));
+  const opacityLabel = (o: number) => (o === 0 ? t("Glass") : `${Math.round(o * 100)} %`);
+
   const rows = routingRows(us?.ai_routing_config ?? null);
-  const groups: { title: string; rows: Row[] }[] = [
+  const groups: { title: string; rows: SettingsRow[] }[] = [
     {
       title: t("Profile"),
       rows: [
         { kind: "value", label: t("Account"), help: d.auth === "demo" ? t("Demo mode · sample data") : (d.email ?? ""), value: d.auth === "demo" ? t("Sign in") : t("Sign out"), pick: () => void d.signOut() },
         // A server entered on first start can be changed; one that is part of the build cannot.
-        ...(d.server && !d.serverFixed ? ([{ kind: "value", label: t("Server"), help: d.server.replace(/^https?:\/\//, ""), value: t("Change"), pick: () => void d.forgetServer() }] as Row[]) : []),
+        ...(d.server && !d.serverFixed ? ([{ kind: "value", label: t("Server"), help: d.server.replace(/^https?:\/\//, ""), value: t("Change"), pick: () => void d.forgetServer() }] as SettingsRow[]) : []),
         // Language switch: one tap changes the app now, stores the choice on the device and writes it to the account.
         { kind: "value", label: t("Language"), help: live ? t("For this app and your account") : t("For this app"), value: locale === "en" ? "English" : "Deutsch", pick: pickLanguage },
       ],
@@ -107,14 +136,43 @@ export function Settings() {
               },
             ],
           },
-        ] as { title: string; rows: Row[] }[])
+        ] as { title: string; rows: SettingsRow[] }[])
+      : []),
+    ...(Platform.OS === "android"
+      ? ([
+          {
+            title: t("Widgets"),
+            rows: [
+              { kind: "value", label: t("Widget background"), help: t("For all widgets; single widgets: hold them, then Settings"), value: opacityLabel(widgetLook.opacity), pick: () => changeWidgetLook({ opacity: nextOf(OPACITIES, widgetLook.opacity as (typeof OPACITIES)[number]) }) },
+              { kind: "value", label: t("Widget look"), help: t("Light, dark or like the system"), value: { system: t("System"), light: t("Light"), dark: t("Dark") }[widgetLook.theme], pick: () => changeWidgetLook({ theme: nextOf(WIDGET_THEMES, widgetLook.theme) }) },
+              { kind: "value", label: t("Today"), help: t("Due tasks and reminders, tick them off right there"), value: t("Add"), pick: () => pinWidget(WIDGET_TODAY) },
+              { kind: "value", label: t("Entries"), help: t("Newest entries, favorites or inbox as cards"), value: t("Add"), pick: () => pinWidget(WIDGET_ENTRIES) },
+              { kind: "value", label: t("Energy"), help: t("Check in with one tap, with streak and week"), value: t("Add"), pick: () => pinWidget(WIDGET_CHECKIN) },
+              { kind: "value", label: t("Quick capture"), help: t("Voice, note, photo; two rows add Ask Kortex"), value: t("Add"), pick: () => pinWidget(WIDGET_CAPTURE) },
+            ],
+          },
+        ] as { title: string; rows: SettingsRow[] }[])
       : []),
     {
       title: t("Appearance"),
       rows: [
-        { kind: "value", label: t("Mode"), help: t("Follows the system or fixed (per device)"), value: [t("System"), t("Light"), t("Dark")][a.themePref]!, pick: a.cycleTheme },
+        {
+          kind: "value",
+          label: t("Mode"),
+          help: t("Follows the system or fixed (per device)"),
+          value: [t("System"), t("Light"), t("Dark")][a.themePref]!,
+          pick: a.cycleTheme,
+        },
+        {
+          kind: "value",
+          label: t("Look"),
+          help: t("Calm: quieter, flat, floating tab bar (per device)"),
+          value: a.look === "ruhe" ? t("Calm") : t("Vivid"),
+          pick: a.cycleLook,
+        },
         { kind: "accent", label: t("Accent color"), help: t("Orb, buttons and links") },
         { kind: "pack", label: t("Theme pack"), help: t("Covers and backgrounds for Home, Life and Entries") },
+        { kind: "value", label: t("Motion"), help: motionHelp(a.motion, osReduce), value: motionLabel(a.motion), pick: a.cycleMotion },
         { kind: "toggle", on: a.haptics, flip: a.toggleHaptics, label: t("Haptic feedback"), help: t("On swipe gestures and long presses") },
       ],
     },
@@ -148,12 +206,12 @@ export function Settings() {
               ...(us ? [{ kind: "value", label: t("Weekly digest"), help: t("Day of the weekly review"), value: WEEKDAYS[us.weekly_digest_day] ? t(WEEKDAYS[us.weekly_digest_day]!) : "–", pick: () => a.say(t("Change the day on the web")) }] : []),
             ],
           },
-        ] as { title: string; rows: Row[] }[])
+        ] as { title: string; rows: SettingsRow[] }[])
       : []),
     {
       title: t("Privacy and access"),
       rows: [
-        ...(kortexUrl() ? ([{ kind: "value", label: t("Open web app"), help: kortexUrl().replace(/^https?:\/\//, ""), value: t("Open"), pick: () => void Linking.openURL(kortexUrl()) }] as Row[]) : []),
+        ...(kortexUrl() ? ([{ kind: "value", label: t("Open web app"), help: kortexUrl().replace(/^https?:\/\//, ""), value: t("Open"), pick: () => void Linking.openURL(kortexUrl()) }] as SettingsRow[]) : []),
       ],
     },
     {
@@ -166,11 +224,26 @@ export function Settings() {
     },
   ];
 
+  const back = () => (router.canGoBack() ? router.back() : router.navigate("/"));
+  if (th.look === "ruhe")
+    return (
+      <FadeIn style={{ position: "absolute", left: 0, right: 0, top, bottom: 0, zIndex: 7, backgroundColor: th.bgMainWindow }}>
+        <SettingsRuhe
+          groups={groups}
+          onBack={back}
+          name={d.name ?? t("Profile")}
+          account={d.auth === "demo" ? t("Demo mode · sample data") : `${d.email ?? ""} · ${tn(d.entries.length, "{n} entry", "{n} entries")}`}
+          initials={initialOf(d.name)}
+          onSignOut={() => void d.signOut()}
+          version={versionLine()}
+        />
+      </FadeIn>
+    );
   return (
     <FadeIn style={{ position: "absolute", left: 0, right: 0, top, bottom: 0, zIndex: 7, backgroundColor: th.bgMainWindow }}>
       <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 120, gap: 16 }} showsVerticalScrollIndicator={false}>
         <View style={{ flexDirection: "row", marginLeft: -8 }}>
-          <Btn variant="ghost" sm minHeight={44} onPress={() => (router.canGoBack() ? router.back() : router.navigate("/"))}>
+          <Btn variant="ghost" sm minHeight={44} onPress={back}>
             <Icon name="chev" rotate={180} color={th.textSecondary} />
             <T size={13} lh={18} color={th.textSecondary}>
               {t("Back")}
@@ -215,7 +288,8 @@ export function Settings() {
                         </T>
                         <Help>{r.help}</Help>
                       </View>
-                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                      {/* One row on every phone width: the swatches share the row instead of wrapping a single one. */}
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 6 }}>
                         {ACCENTS.map((sw) => {
                           const on = a.accent === sw.key;
                           return (
@@ -224,9 +298,14 @@ export function Settings() {
                               accessibilityRole="radio"
                               accessibilityState={{ checked: on }}
                               accessibilityLabel={t(sw.label)}
-                              onPress={() => a.setAccent(sw.key)}
-                              style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: sw.accent, boxShadow: on ? `0 0 0 3px ${th.bgSurfaceFlat}, 0 0 0 5px ${sw.accent}` : "none" } as ViewStyle}
-                            />
+                              onPress={() => {
+                                tick();
+                                a.setAccent(sw.key);
+                              }}
+                              style={{ flex: 1, maxWidth: 40, aspectRatio: 1, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: sw.accent, boxShadow: on ? `0 0 0 3px ${th.bgSurfaceFlat}, 0 0 0 5px ${sw.accent}` : "none" } as ViewStyle}
+                            >
+                              {on && <Icon name="check" size={16} strokeWidth={2.4} color="#FFFFFF" />}
+                            </Pressable>
                           );
                         })}
                       </View>

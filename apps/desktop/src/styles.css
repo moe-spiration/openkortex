@@ -2,6 +2,8 @@
 @import "@kortex/ui/styles";
 /* Tactile Craft v2: the desktop's own windows (quick capture orbit capsule, HUD, titlebars). */
 @import "./tactile.css";
+/* Ruhe (D2 to D5): meeting bar, quick capture and the small windows, light and dark. */
+@import "./ruhe-desktop.css";
 
 /* Tailwind must scan the shared UI package for utility classes. */
 @source "../../../packages/ui/src";

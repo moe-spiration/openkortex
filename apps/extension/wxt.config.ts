@@ -33,6 +33,9 @@ export default defineConfig({
         suggested_key: { default: "Alt+K" },
         description: "__MSG_commandOpenClipper__",
       },
+      // Chrome registers at most four suggested keys; these are three of them.
+      "open-sidepanel": { suggested_key: { default: "Alt+S" }, description: "__MSG_commandOpenSidePanel__" },
+      "open-manager": { suggested_key: { default: "Alt+T" }, description: "__MSG_commandOpenManager__" },
     },
     action: { default_title: `${NAME} Clipper (Alt+K)` },
   }),

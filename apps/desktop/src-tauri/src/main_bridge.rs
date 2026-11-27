@@ -11,10 +11,21 @@
 //!   restore then switch the pill like for any native recording (window.rs);
 //! - `main_web_recording`: the web app's own microphone recording (dictation in the Orbit-Bar)
 //!   is reported, so a minimize shows the pill for it too; its stop button comes back here as
-//!   `stop_web_recording`.
+//!   `stop_web_recording`;
+//! - `main_window` (0.6.8, Ruhe D1): `main` has no native frame (`decorations: false`), the web
+//!   titlebar is the only head and draws minimise / maximise / close. "frame" announces that, the
+//!   other actions are the buttons ("close" hides to the tray), "drag" moves the window. The web
+//!   titlebar starts a move itself on a press on any free surface (apps/web window-drag.ts) through
+//!   Tauri's own `start_dragging` ("drag" is its fallback); the double click maximises.
+//!   `internal_toggle_maximize` stays granted for `data-tauri-drag-region`; nothing else of the
+//!   window API is. A page that does not
+//!   announce its frame within [`FRAME_FALLBACK`] (an older web app) gets the native frame back.
 //!
 //! Core → web app: [`notify_main`] dispatches a `kortex:desktop` DOM event in `main` (script eval,
 //! no event permission for the remote page).
+
+use std::sync::atomic::Ordering;
+use std::time::Duration;
 
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -24,7 +35,14 @@ use crate::{window, AppState};
 type CmdResult<T> = Result<T, String>;
 
 /// The only commands the remote web app in `main` may call.
-pub const MAIN_COMMANDS: [&str; 4] = ["main_meeting_state", "main_start_meeting", "main_stop_meeting", "main_web_recording"];
+pub const MAIN_COMMANDS: [&str; 5] = ["main_meeting_state", "main_start_meeting", "main_stop_meeting", "main_web_recording", "main_window"];
+
+/// Tauri's own window commands behind `data-tauri-drag-region` (drag, double click maximises).
+pub const MAIN_CORE_PERMISSIONS: [&str; 2] = ["core:window:allow-start-dragging", "core:window:allow-internal-toggle-maximize"];
+
+/// How long a page in `main` may take to announce its own window buttons before the native frame
+/// comes back (an older web app without them, or a page that failed to load).
+pub const FRAME_FALLBACK: Duration = Duration::from_secs(10);
 
 /// URL pattern of the web app's origin (`https://host[:port]/*`); None for anything that is not http(s).
 pub fn remote_pattern(web: &str) -> Option<String> {
@@ -37,9 +55,14 @@ pub fn remote_pattern(web: &str) -> Option<String> {
     Some(format!("{}://{host}{port}/*", url.scheme()))
 }
 
-/// Permission ids of [`MAIN_COMMANDS`] (tauri-build: `allow-<command in kebab case>`).
+/// Permission ids of [`MAIN_COMMANDS`] (tauri-build: `allow-<command in kebab case>`) plus the
+/// two core window permissions of the drag region.
 pub fn permissions() -> Vec<String> {
-    MAIN_COMMANDS.iter().map(|c| format!("allow-{}", c.replace('_', "-"))).collect()
+    MAIN_COMMANDS
+        .iter()
+        .map(|c| format!("allow-{}", c.replace('_', "-")))
+        .chain(MAIN_CORE_PERMISSIONS.iter().map(|p| p.to_string()))
+        .collect()
 }
 
 /// Grants the [`MAIN_COMMANDS`] to the `main` window while it shows the web app at `web`.
@@ -128,6 +151,97 @@ pub fn stop_web_recording(app: AppHandle) -> CmdResult<()> {
     Ok(())
 }
 
+/// What a click on the web titlebar asks for.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum WindowAction {
+    /// The page draws its own window buttons: the native frame goes.
+    Frame,
+    Minimize,
+    ToggleMaximize,
+    /// Like the native close button: Kortex keeps running in the tray.
+    Close,
+    /// Move the window with the mouse (the native move loop, Aero Snap): the web titlebar's fallback when
+    /// Tauri's own `start_dragging` is not reachable (Ruhe round 2).
+    Drag,
+}
+
+impl WindowAction {
+    pub fn parse(action: &str) -> Option<Self> {
+        match action {
+            "frame" => Some(Self::Frame),
+            "minimize" => Some(Self::Minimize),
+            "toggle_maximize" => Some(Self::ToggleMaximize),
+            "close" => Some(Self::Close),
+            "drag" => Some(Self::Drag),
+            _ => None,
+        }
+    }
+}
+
+/// Window buttons of the web titlebar (and of the bundled page `main` shows while it loads).
+#[tauri::command]
+pub fn main_window(app: AppHandle, state: State<'_, AppState>, action: String) -> CmdResult<()> {
+    let act = WindowAction::parse(&action).ok_or_else(|| format!("unknown window action {action}"))?;
+    let main = app.get_webview_window("main").ok_or("main window missing")?;
+    let err = |e: tauri::Error| e.to_string();
+    match act {
+        WindowAction::Frame => {
+            state.custom_frame.store(true, Ordering::SeqCst);
+            main.set_decorations(false).map_err(err)?;
+        }
+        WindowAction::Minimize => main.minimize().map_err(err)?,
+        WindowAction::ToggleMaximize => {
+            if main.is_maximized().map_err(err)? {
+                main.unmaximize().map_err(err)?;
+            } else {
+                main.maximize().map_err(err)?;
+            }
+        }
+        WindowAction::Close => {
+            main.hide().map_err(err)?;
+            window::sync_main(&app);
+        }
+        WindowAction::Drag => main.start_dragging().map_err(err)?,
+    }
+    Ok(())
+}
+
+/// A page starts loading in `main`: its "frame" is still to come (the previous page's no longer counts).
+///
+/// Ruhe round 2: 0.6.8 reset the flag only when the load had finished, but the web app hydrates and
+/// announces "frame" before that, so the reset could swallow the announcement and the native frame came
+/// back after 10 s. The reset now happens at the start of the load, the watcher at its end.
+pub fn page_started(app: &AppHandle) {
+    let st = app.state::<AppState>();
+    st.custom_frame.store(false, Ordering::SeqCst);
+    st.frame_gen.fetch_add(1, Ordering::SeqCst);
+}
+
+/// A page finished loading in `main`: it has [`FRAME_FALLBACK`] to announce its window buttons,
+/// else the native frame comes back (the window must never be left without a way to close it).
+/// A "frame" that came between [`page_started`] and now counts.
+pub fn watch_frame(app: &AppHandle) {
+    let st = app.state::<AppState>();
+    let generation = st.frame_gen.load(Ordering::SeqCst);
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(FRAME_FALLBACK).await;
+        let st = app.state::<AppState>();
+        if !needs_native_frame(st.frame_gen.load(Ordering::SeqCst), generation, st.custom_frame.load(Ordering::SeqCst)) {
+            return;
+        }
+        log::info!("main: the page drew no window buttons, native frame back");
+        if let Some(main) = app.get_webview_window("main") {
+            let _ = main.set_decorations(true);
+        }
+    });
+}
+
+/// The fallback acts only for the latest page load and only when that page announced no frame.
+pub fn needs_native_frame(current_gen: u64, watched_gen: u64, custom_frame: bool) -> bool {
+    current_gen == watched_gen && !custom_frame
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -142,11 +256,39 @@ mod tests {
     }
 
     #[test]
-    fn four_commands_and_nothing_else() {
+    fn five_commands_and_the_drag_region_and_nothing_else() {
         assert_eq!(
             permissions(),
-            ["allow-main-meeting-state", "allow-main-start-meeting", "allow-main-stop-meeting", "allow-main-web-recording"]
+            [
+                "allow-main-meeting-state",
+                "allow-main-start-meeting",
+                "allow-main-stop-meeting",
+                "allow-main-web-recording",
+                "allow-main-window",
+                "core:window:allow-start-dragging",
+                "core:window:allow-internal-toggle-maximize",
+            ]
         );
+    }
+
+    #[test]
+    fn the_titlebar_actions_are_a_closed_list() {
+        assert_eq!(WindowAction::parse("frame"), Some(WindowAction::Frame));
+        assert_eq!(WindowAction::parse("minimize"), Some(WindowAction::Minimize));
+        assert_eq!(WindowAction::parse("toggle_maximize"), Some(WindowAction::ToggleMaximize));
+        assert_eq!(WindowAction::parse("close"), Some(WindowAction::Close));
+        assert_eq!(WindowAction::parse("drag"), Some(WindowAction::Drag));
+        assert_eq!(WindowAction::parse("set_size"), None);
+        assert_eq!(WindowAction::parse(""), None);
+    }
+
+    #[test]
+    fn the_native_frame_comes_back_only_for_the_latest_page_without_its_own_buttons() {
+        assert!(needs_native_frame(3, 3, false));
+        // The page announced its buttons.
+        assert!(!needs_native_frame(3, 3, true));
+        // Another page load started in between: its own watcher decides.
+        assert!(!needs_native_frame(4, 3, false));
     }
 
     #[test]

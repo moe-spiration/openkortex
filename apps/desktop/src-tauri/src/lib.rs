@@ -3,7 +3,7 @@
 //! Windows (see tauri.conf.json; the React bundle picks its view from the window label):
 //! - `main`     the Kortex web app, loaded top-level from `webUrl` (the server entered on first start, or the build's own)
 //!              so its Supabase session cookies are first-party
-//! - `hud`      frameless, transparent, always-on-top meeting HUD (pill 440x56 / hud 400x684)
+//! - `hud`      frameless, transparent, always-on-top meeting bar (560x48, expanded with its panel)
 //! - `capture`  Alt+Space launcher: quick capture, ask, `?` search, `>` prompts (launcher.rs, inject.rs)
 //! - `tray`     styled tray menu, anchored to the tray icon
 //! - `meetings` / `audio` / `settings`  small native windows, created on demand
@@ -12,8 +12,8 @@
 //!
 //! Security (review N5 #8): every app command has a generated permission (build.rs) and only the
 //! local windows get them (capabilities/local.json). `main` shows the remote web app and gets only
-//! the four Orbit-Bar recording commands of main_bridge.rs, for the configured web origin (runtime
-//! capability `main-web`); every other command stays out of its reach.
+//! the four Orbit-Bar recording commands and the window buttons of main_bridge.rs, for the
+//! configured web origin (runtime capability `main-web`); every other command stays out of its reach.
 
 pub mod audio;
 pub mod autostart;
@@ -89,6 +89,11 @@ pub struct AppState {
     pub main_state: Mutex<window::MainState>,
     /// Top-right corner (physical px) where the user dragged the HUD; None = default place.
     pub hud_anchor: Mutex<Option<(i32, i32)>>,
+    /// The web app in `main` draws the window buttons itself (main_bridge.rs `main_window`
+    /// "frame"); until it says so after a page load, the native frame comes back as a fallback.
+    pub custom_frame: AtomicBool,
+    /// Bumped on every page load of `main`: only the latest load's frame fallback may act.
+    pub frame_gen: std::sync::atomic::AtomicU64,
     /// Pending self-test substitutions (selftest.rs).
     pub selftest: Mutex<Option<SelfTestStart>>,
     /// A `kortex://connect` link waiting for the user's "Verbinden" (connect.rs).
@@ -188,11 +193,17 @@ pub fn run() {
         .manage(AppState { stealth: Mutex::new(true), hud_mode: Mutex::new("off".into()), ..Default::default() })
         .on_page_load(|webview, payload| {
             // `main` starts hidden (tauri.conf.json) and appears once the web app has loaded.
+            if webview.label() == "main" && payload.event() == PageLoadEvent::Started {
+                main_bridge::page_started(webview.app_handle());
+            }
             if webview.label() == "main" && payload.event() == PageLoadEvent::Finished {
                 let host = payload.url().host_str().unwrap_or_default();
                 if matches!(payload.url().scheme(), "http" | "https") && host != "tauri.localhost" && !payload.url().as_str().starts_with("http://localhost:3400") {
                     reveal_main(webview.app_handle());
                 }
+                // Every page of `main` has to draw its own window buttons; an older web app that
+                // does not gets the native frame back (main_bridge.rs).
+                main_bridge::watch_frame(webview.app_handle());
             }
         })
         .setup(move |app| {
@@ -223,6 +234,8 @@ pub fn run() {
                 }
             }
             let cfg = commands::load_config(&handle);
+            // Light or dark for every window (WebView2 follows it in prefers-color-scheme); None = Windows.
+            handle.set_theme(commands::theme_of(cfg.theme.as_deref()));
             // Language of the core's texts: the stored choice, else the Windows display language.
             log::info!("language: {}", i18n::init(cfg.locale.as_deref()).code());
             // Audio-Setup choice from the last run.
@@ -355,9 +368,12 @@ pub fn run() {
             main_bridge::main_stop_meeting,
             main_bridge::main_web_recording,
             main_bridge::stop_web_recording,
+            main_bridge::main_window,
+            commands::set_theme,
             commands::start_recording,
             commands::stop_recording,
             commands::upload_recording,
+            commands::discard_recording,
             commands::account_status,
             commands::connect_account,
             commands::disconnect_account,

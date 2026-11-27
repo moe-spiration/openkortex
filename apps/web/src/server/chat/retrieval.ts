@@ -39,6 +39,27 @@ const terms = (s: string) => [
   ),
 ];
 
+/** Filler of spoken and typed questions; never a useful full-text term. */
+const STOPWORDS = new Set(
+  (
+    "aber alle allem allen aller alles also auch auf aus bei beim bin bis bist dann das dass dem den der des dich die dies diese diesem diesen dieser dieses dir doch dort durch ein eine einem einen einer eines etwas euch für gab gibt hab habe haben hast hat hatte hätte hier ihr ihre ich ihm ihn im in ist jetzt kann kannst kein keine mal man mehr mein meine meinem meinen meiner mich mir mit muss nach nicht noch nun nur oder ohne schon sehr sein seine sich sie sind soll sollte über um und uns unser vom von vor war waren was weil welche welcher welches wenn wer werde werden wie wieder will wir wird wo zu zum zur zwischen bitte sag sage sagen zeig zeige zeigen erzähl erzähle gerne einfach eigentlich ähm äh okay hey kortex " +
+    "the and are was were you your yours what which who whom this that these those have has had can could would should will with from for about into over please tell show give find did does doing been being there their them they then than just some any all also"
+  ).split(" "),
+);
+
+/**
+ * The full-text side of a hybrid search. websearch_to_tsquery joins every word with AND, so a
+ * spoken or chatty question ("kannst du mir sagen, was ich über Hyrox notiert habe") finds
+ * nothing at all. A sentence (five words or more) is cut to its content words, joined with OR;
+ * ts_rank_cd still puts entries with more of them first. Short keyword queries stay as typed.
+ */
+export function ftsQueryOf(query: string): string {
+  const q = query.trim();
+  if (q.split(/\s+/).length < 5 || /["]|\bor\b|\s-\S/i.test(q)) return q;
+  const words = terms(q).filter((w) => !STOPWORDS.has(w));
+  return words.length ? words.slice(0, 12).join(" or ") : q;
+}
+
 /** Cheap lexical relevance for ranking a note's own chunks. */
 export function overlapScore(query: string, text: string): number {
   const hay = text.toLowerCase();
@@ -274,7 +295,7 @@ export async function retrieveSources(
   if (req.mode === "folder" && req.cluster && !req.folder_path) {
     // The RPC has no cluster filter: over-fetch and filter, then fall back to recent cluster items.
     const rows = await search({
-      queryText: query,
+      queryText: ftsQueryOf(query),
       queryEmbedding: embedding,
       matchCount: 50,
       filterEmbeddingModel,
@@ -287,7 +308,7 @@ export async function retrieveSources(
   }
 
   const rows = await search({
-    queryText: query,
+    queryText: ftsQueryOf(query),
     queryEmbedding: embedding,
     matchCount: req.match_count,
     filterFolderPath: req.mode === "folder" ? req.folder_path : undefined,

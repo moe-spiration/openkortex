@@ -9,7 +9,7 @@ import { alpha } from "../theme/color";
 import { useTheme } from "../theme/ThemeProvider";
 import { RADIUS } from "../theme/tokens";
 import { Icon, type IconName } from "./Icon";
-import { Btn, Help, Micro, Section, T } from "./primitives";
+import { Btn, Help, Micro, panel, Section, T } from "./primitives";
 
 /*
  * Journal week on the phone (like the web journal tab Woche): the seven days and what stands out in them, topics
@@ -18,7 +18,7 @@ import { Btn, Help, Micro, Section, T } from "./primitives";
  */
 
 const localDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-const shortDay = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+export const shortDay = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
 const weekday = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "narrow", timeZone: "UTC" });
 
 function Group({ icon, title, empty, children }: { icon: IconName; title: string; empty: string | null; children: ReactNode }) {
@@ -48,17 +48,14 @@ function Row({ label, meta, late, onPress }: { label: string; meta: string; late
   );
 }
 
-export function JournalWeek({ embedded = false }: { embedded?: boolean } = {}) {
-  const th = useTheme();
+/** The week's numbers and signals (shared by this panel and the Ruhe journal, screens/ruhe/JournalRuhe.tsx). */
+export function useWeekSignals() {
   const a = useApp();
   const d = useData();
   const router = useRouter();
-  const [openState, setOpen] = useState(false);
-  const open = embedded || openState;
   const today = localDay();
   const monday = mondayOf(today);
   const sunday = addDays(monday, 6);
-
   const notes = useMemo(() => signalNotes(d.entries, d.tagsOf, today), [d.entries, d.tagsOf, today]);
   const rising = useMemo(() => risingTags(notes, monday), [notes, monday]);
   const loops = useMemo(
@@ -93,8 +90,18 @@ export function JournalWeek({ embedded = false }: { embedded?: boolean } = {}) {
     router.navigate("/entries");
   };
 
+  return { today, days, perDay, stats, signals, rising, loops, links, back, review, showTag };
+}
+
+export function JournalWeek({ embedded = false }: { embedded?: boolean } = {}) {
+  const th = useTheme();
+  const a = useApp();
+  const [openState, setOpen] = useState(false);
+  const open = embedded || openState;
+  const { today, days, perDay, stats, signals, rising, loops, links, back, review, showTag } = useWeekSignals();
+
   return (
-    <View style={{ gap: 12, padding: 14, borderRadius: RADIUS.card, backgroundColor: alpha(th.bgSurfaceFlat, 0.72) }}>
+    <View style={panel(th, 12)}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} disabled={embedded} onPress={() => setOpen(!open)} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <View style={{ flex: 1, gap: 2 }}>
           <Section>{t("This week")}</Section>

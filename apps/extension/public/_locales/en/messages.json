@@ -1,4 +1,6 @@
 {
   "extDescription": { "message": "Web clipper, inline highlighter and ChatGPT/Claude saver for your OpenKortex second brain." },
-  "commandOpenClipper": { "message": "Open OpenKortex Clipper" }
+  "commandOpenClipper": { "message": "Open OpenKortex Clipper" },
+  "commandOpenSidePanel": { "message": "Open the OpenKortex side panel" },
+  "commandOpenManager": { "message": "Open the OpenKortex tab manager" }
 }

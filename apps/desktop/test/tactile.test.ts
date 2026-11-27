@@ -1,67 +1,63 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import {
-  currentWindowControls,
-  internalsInvoke,
-  mainWindowControlsCapability,
-  tauriWindowControls,
-} from "@/bridge/windowControls";
+import { announceFrame, currentWindowControls, internalsInvoke, tauriWindowControls } from "@/bridge/windowControls";
 import { ACCENT_STORAGE_KEY, FONT_SCALE_KEY, accentHex, applyAccent, applyFontScale, onAccentColor, parseFontScale, readFontScale, resolveAccent } from "@/theme";
 
-describe("window controls adapter (web titlebar buttons in the desktop app)", () => {
-  it("sends Tauri's core window commands for the given window", async () => {
+describe("window controls adapter (one titlebar: the web app's buttons in main)", () => {
+  it("sends every titlebar action through the one command main_window", async () => {
     const invoke = vi.fn(async () => undefined);
-    const c = tauriWindowControls(invoke, "main");
+    const c = tauriWindowControls(invoke);
     await c.minimize();
     await c.toggleMaximize();
     await c.close();
+    await announceFrame(invoke);
     expect(invoke.mock.calls).toEqual([
-      ["plugin:window|minimize", { label: "main" }],
-      ["plugin:window|toggle_maximize", { label: "main" }],
-      ["plugin:window|close", { label: "main" }],
+      ["main_window", { action: "minimize" }],
+      ["main_window", { action: "toggle_maximize" }],
+      ["main_window", { action: "close" }],
+      ["main_window", { action: "frame" }],
     ]);
   });
 
-  it("finds invoke and the window label in __TAURI_INTERNALS__, null in a plain browser", async () => {
+  it("finds invoke in __TAURI_INTERNALS__, only for main, null in a plain browser", async () => {
     expect(internalsInvoke({})).toBeNull();
     expect(internalsInvoke(null)).toBeNull();
     expect(currentWindowControls({})).toBeNull();
     const calls: unknown[] = [];
-    const internals = {
-      metadata: { currentWindow: { label: "main" } },
+    const internals = (label: string) => ({
+      metadata: { currentWindow: { label } },
       invoke(this: unknown, cmd: string, args: unknown) {
-        calls.push([this === internals, cmd, args]);
+        calls.push([cmd, args]);
         return Promise.resolve();
       },
-    };
-    const c = currentWindowControls({ __TAURI_INTERNALS__: internals });
+    });
+    expect(currentWindowControls({ __TAURI_INTERNALS__: internals("hud") })).toBeNull();
+    const c = currentWindowControls({ __TAURI_INTERNALS__: internals("main") });
     expect(c).not.toBeNull();
     await c!.minimize();
-    expect(calls).toEqual([[true, "plugin:window|minimize", { label: "main" }]]);
+    expect(calls).toEqual([["main_window", { action: "minimize" }]]);
   });
 
-  it("prepares a remote capability that only allows the four titlebar actions", () => {
-    const cap = mainWindowControlsCapability(["https://kortex.example.com/*"]);
-    expect(cap.windows).toEqual(["main"]);
-    expect(cap.remote.urls).toEqual(["https://kortex.example.com/*"]);
-    expect(cap.permissions).toEqual([
-      "core:window:allow-minimize",
-      "core:window:allow-toggle-maximize",
-      "core:window:allow-close",
-      "core:window:allow-start-dragging",
-    ]);
-  });
-
-  it("is not active yet: main keeps native decorations and gets no capability until the web registers it", () => {
+  it("main has no native frame and the bundled page only its buttons and the drag region", () => {
     const conf = JSON.parse(readFileSync(resolve(process.cwd(), "src-tauri/tauri.conf.json"), "utf8")) as {
-      app: { windows: { label: string; decorations?: boolean }[] };
+      app: { windows: { label: string; decorations?: boolean; minWidth?: number }[] };
     };
-    expect(conf.app.windows.find((w) => w.label === "main")?.decorations).toBe(true);
-    const local = JSON.parse(readFileSync(resolve(process.cwd(), "src-tauri/capabilities/local.json"), "utf8")) as {
-      windows: string[];
-    };
-    expect(local.windows).not.toContain("main");
+    expect(conf.app.windows.find((w) => w.label === "main")?.decorations).toBe(false);
+    // Ruhe round 2: Aero Snap to half a screen must fit (1536 px logical at 125 % → 768 px per half).
+    expect(conf.app.windows.find((w) => w.label === "main")?.minWidth).toBeLessThanOrEqual(768);
+    const cap = (f: string) =>
+      JSON.parse(readFileSync(resolve(process.cwd(), "src-tauri/capabilities", f), "utf8")) as {
+        windows: string[];
+        permissions: string[];
+        remote?: unknown;
+      };
+    expect(cap("local.json").windows).not.toContain("main");
+    const main = cap("main-local.json");
+    expect(main.windows).toEqual(["main"]);
+    // No `remote`: it applies to the bundled page only; the web app gets the runtime capability main-web.
+    expect(main.remote).toBeUndefined();
+    expect(main.permissions).toEqual(["allow-main-window", "core:window:allow-start-dragging", "core:window:allow-internal-toggle-maximize"]);
   });
 });
 

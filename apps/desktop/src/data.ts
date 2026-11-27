@@ -10,7 +10,8 @@ import type { DIconId } from "./components/icons";
 export interface QcAction {
   icon: DIconId;
   label: string;
-  hint: string;
+  /** The one key shown on the right of the row (Ruhe: a single flat key), null = none. */
+  key: string | null;
   /** Toast after running it; empty = answers inline. */
   done: string;
 }
@@ -25,22 +26,22 @@ export const QC_ACTIONS: QcAction[] = [
   {
     icon: "file",
     get label() { return t("Save as note"); },
-    hint: "10_Notes",
+    key: null,
     get done() { return t("Saved as note in 10_Notes"); },
   },
   {
     icon: "inbox",
     get label() { return t("Drop into Universal Inbox"); },
-    hint: "Inbox",
+    key: null,
     get done() { return t("Dropped into Universal Inbox"); },
   },
-  { icon: "task", get label() { return t("Create as task"); }, hint: "Tasks", get done() { return t("Task created"); } },
-  { icon: "file", get label() { return t("Write to scratchpad"); }, hint: "Scratchpad", get done() { return t("Written to scratchpad"); } },
-  { icon: "sparkles", get label() { return t("Ask Second Brain"); }, hint: "Hybrid RAG", done: "" },
+  { icon: "task", get label() { return t("Create as task"); }, key: null, get done() { return t("Task created"); } },
+  { icon: "file", get label() { return t("Write to scratchpad"); }, key: null, get done() { return t("Written to scratchpad"); } },
+  { icon: "sparkles", get label() { return t("Ask Second Brain"); }, key: "Tab", done: "" },
   // Launcher modes and the selection grab (QuickCapture.tsx runs these, not runQc).
-  { icon: "search", get label() { return t("Search the vault"); }, hint: "?", done: "" },
-  { icon: "msg", get label() { return t("Insert prompt"); }, hint: ">", done: "" },
-  { icon: "clip", get label() { return t("Use selection"); }, hint: "Alt+Shift+Space", done: "" },
+  { icon: "search", get label() { return t("Search the vault"); }, key: "?", done: "" },
+  { icon: "msg", get label() { return t("Insert prompt"); }, key: ">", done: "" },
+  { icon: "clip", get label() { return t("Use selection"); }, key: null, done: "" },
 ];
 
 export const HOTKEYS = [

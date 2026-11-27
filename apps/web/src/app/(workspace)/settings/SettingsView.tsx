@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Ico, type IconId } from "@/components/shell/icons";
+import { Ico } from "@/components/shell/icons";
 import { PackPicker } from "@/components/theme/PackPicker";
 import { AppearanceSettings } from "@/components/theme/AppearanceSettings";
+import { AppearanceRuhe } from "@/components/theme/AppearanceRuhe";
+import { useLook } from "@/components/theme/look";
+import { LocationBar } from "@/components/shell/Bars";
 import { useShell } from "@/lib/shell/store";
 import { useSettings } from "@/lib/settings/store";
 import { AiRoutingSection } from "@/components/settings/AiRoutingSection";
@@ -21,7 +24,9 @@ import { DEFAULT_TIMEZONE, PLAN_TIERS, TIMEZONES, formatBytes, monthYear, planOf
 import { useAccount } from "@/lib/settings/useAccount";
 import { useMcpStatus } from "@/lib/settings/useMcpStatus";
 import { useSyncStatus } from "@/lib/settings/useSyncStatus";
+import { EmptyPic } from "@/components/motion/EmptyPic";
 import { dropzonePath } from "@/lib/settings/sync-status";
+import { SETTINGS_GROUPS, SETTINGS_SECTIONS, resolveSection } from "@/lib/settings/sections";
 
 /** App version (apps/web/package.json, inlined by next.config.ts). */
 const APP_VERSION = process.env.NEXT_PUBLIC_KORTEX_VERSION ?? "0.0.0";
@@ -36,42 +41,35 @@ import { KeysRow, RowsCard, TextEditRow, ToggleRow, ValueRow, card } from "./row
  * same row styles (spec: enabled_connectors, headless MCP server).
  */
 
-export const SETTINGS_SECTIONS: { id: string; label: string; icon: IconId }[] = [
-  { id: "profile", label: msg("Profile"), icon: "user" },
-  { id: "look", label: msg("Appearance"), icon: "palette" },
-  { id: "ai", label: msg("AI models & routing"), icon: "sparkles" },
-  { id: "connectors", label: msg("Connectors"), icon: "link" },
-  { id: "cap", label: msg("Capture and hotkeys"), icon: "key" },
-  { id: "vault", label: msg("Vault and sync"), icon: "vault" },
-  { id: "mcp", label: msg("MCP server"), icon: "monitor" },
-  { id: "notif", label: msg("Notifications"), icon: "bell" },
-  { id: "priv", label: msg("Privacy and access"), icon: "lock" },
-];
+/* Chapters, their order and groups, and the old deep links: lib/settings/sections.ts (Ruhe round 2). */
 
 const LANGUAGES = [
   { value: "de", label: "Deutsch" },
   { value: "en", label: "English" },
 ];
 
+/** Saves an account field and refreshes the server-rendered sidebar (name, avatar); null or the error. */
+function useAccountSave() {
+  const { user } = useSettings();
+  const { showToast } = useShell();
+  const router = useRouter();
+  const acc = useAccount(user.subscription_tier);
+  const save = async (patch: AccountPatch, done: string) => {
+    const err = await acc.update(patch);
+    if (err) return err;
+    showToast(done);
+    if (acc.live) router.refresh();
+    return null;
+  };
+  return { ...acc, save };
+}
+
 function Profile() {
   const { user } = useSettings();
-  const { setOnboarding, showToast } = useShell();
-  const router = useRouter();
-  const { account, error, live, update } = useAccount(user.subscription_tier);
+  const { account, error, save } = useAccountSave();
   const [showMail, setShowMail] = useState(false);
   const avatarEdit = useRef<(() => void) | null>(null);
   const plan = planOf(user.subscription_tier);
-  const browserTz = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : DEFAULT_TIMEZONE;
-  const tz = account?.timezone ?? DEFAULT_TIMEZONE;
-  const tzOptions = [...new Set([...TIMEZONES, browserTz, tz])].map((z) => ({ value: z, label: z.replace(/_/g, " ") }));
-  // Name and avatar also show in the sidebar (server-rendered snapshot): refresh after a change.
-  const save = async (patch: AccountPatch, done: string) => {
-    const err = await update(patch);
-    if (err) return err;
-    showToast(done);
-    if (live) router.refresh();
-    return null;
-  };
   const meta = account
     ? [
         plan.label + (plan.founder ? " · Founder" : ""),
@@ -116,7 +114,6 @@ function Profile() {
         </button>
       </div>
       <RowsCard>
-        <ValueRow label={t("Setup")} help={t("Choose vault, life areas and color again")} value={t("Start")} onClick={() => setOnboarding(1)} />
         <TextEditRow
           label={t("Display name")}
           help={t("How Kortex greets you")}
@@ -130,6 +127,31 @@ function Profile() {
           value={<span className="kx-mono">{showMail ? (account?.email ?? "–") : (account?.emailMasked ?? "–")}</span>}
           onClick={() => setShowMail((v) => !v)}
         />
+        <TextEditRow
+          label={t("Profile picture")}
+          help={t("Image URL (https), empty = initial")}
+          value={account?.avatarUrl ?? ""}
+          display={account?.avatarUrl ? t("Own picture") : t("Initial")}
+          placeholder="https://…"
+          openRef={avatarEdit}
+          onSave={(v) => save({ avatarUrl: v }, v ? t("Profile picture saved") : t("Profile picture removed"))}
+        />
+      </RowsCard>
+      <Plan tier={user.subscription_tier} />
+    </>
+  );
+}
+
+/** "Allgemein" (Ruhe round 2): language, time zone, the setup, and the notifications (former chapter "notif"). */
+function General() {
+  const { setOnboarding, showToast } = useShell();
+  const { account, save } = useAccountSave();
+  const browserTz = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : DEFAULT_TIMEZONE;
+  const tz = account?.timezone ?? DEFAULT_TIMEZONE;
+  const tzOptions = [...new Set([...TIMEZONES, browserTz, tz])].map((z) => ({ value: z, label: z.replace(/_/g, " ") }));
+  return (
+    <>
+      <RowsCard>
         <ValueRow
           label={t("Language")}
           help={t("Interface and AI answers")}
@@ -152,17 +174,12 @@ function Profile() {
           selected={tz}
           onSelect={(v) => void save({ timezone: v }, t("Time zone: {zone}", { zone: v.replace(/_/g, " ") })).then((err) => err && showToast(t("Not saved: {error}", { error: err })))}
         />
-        <TextEditRow
-          label={t("Profile picture")}
-          help={t("Image URL (https), empty = initial")}
-          value={account?.avatarUrl ?? ""}
-          display={account?.avatarUrl ? t("Own picture") : t("Initial")}
-          placeholder="https://…"
-          openRef={avatarEdit}
-          onSave={(v) => save({ avatarUrl: v }, v ? t("Profile picture saved") : t("Profile picture removed"))}
-        />
+        <ValueRow label={t("Setup")} help={t("Choose vault, life areas and color again")} value={t("Start")} onClick={() => setOnboarding(1)} />
       </RowsCard>
-      <Plan tier={user.subscription_tier} />
+      <h2 className="kx-h-section" style={{ margin: "4px 0 0" }}>
+        {t("Notifications")}
+      </h2>
+      <Notifications />
     </>
   );
 }
@@ -202,6 +219,33 @@ function Plan({ tier }: { tier: string }) {
 function Look() {
   const { prefs, toggleRail } = useShell();
   const { local, setLocal } = useSettings();
+  const ruhe = useLook() === "ruhe";
+  if (ruhe)
+    return (
+      <>
+        <AppearanceRuhe />
+        <div className="rzs-grp">
+          <div className="rzs-k">
+            {t("Theme pack")}
+            <small>{t("Covers and backgrounds for Home, Life, Spaces, weekly review and Insights, and the frame background “Theme pack”. Your own covers and article images stay.")}</small>
+          </div>
+          <div className="rzs-v">
+            <PackPicker />
+          </div>
+        </div>
+        <div className="rzs-grp">
+          <div className="rzs-k">
+            {t("Compact sidebar")}
+            <small>{t("Icons only, more room for content. Hide completely: Ctrl+\\")}</small>
+          </div>
+          <div className="rzs-v">
+            <label className="rzs-switch">
+              <input type="checkbox" role="switch" className="kx-switch" aria-label={t("Compact sidebar")} checked={prefs.rail} onChange={() => toggleRail()} />
+            </label>
+          </div>
+        </div>
+      </>
+    );
   return (
     <>
       {/* Tactile Craft v2: theme, accent, frame backdrop, default density, reduced transparency. */}
@@ -267,6 +311,10 @@ function Connectors() {
           <ToggleRow key={c.id} icon={c.icon} label={t(c.label)} help={t(c.help)} on={on.includes(c.id)} onChange={() => toggleConnector(c.id)} />
         ))}
       </RowsCard>
+      {/* Ruhe round 2: the apps, devices and tokens below are their own block, apart from the source switches. */}
+      <h2 className="kx-h-section" style={{ margin: "4px 0 0" }}>
+        {t("Apps, devices and tokens")}
+      </h2>
       {feature("griply") && <GriplyCard />}
       <InboundMailCard />
       <DesktopConnectCard />
@@ -310,7 +358,15 @@ function Vault() {
         : view.online
           ? { cls: "kx-status--done", text: t("Daemon online") }
           : { cls: "kx-status--blocked", text: t("Daemon offline") };
+  // Ruhe: the "Vault synchron" pictogram while the daemon is up (or a sync runs); an error or offline shows none.
+  const inSync = !live || busy || (view.known && view.online && !view.error && !error);
   return (
+    <>
+    {inSync && (
+      <EmptyPic kind="sync" title={busy ? t("Syncing") : t("Vault in sync")}>
+        {t("Markdown files and the database exchange every change in both directions.")}
+      </EmptyPic>
+    )}
     <RowsCard>
       <ValueRow
         label={t("Vault folder")}
@@ -356,6 +412,7 @@ function Vault() {
         onClick={() => void sync()}
       />
     </RowsCard>
+    </>
   );
 }
 
@@ -561,49 +618,115 @@ function Privacy() {
 
 const SECTION_VIEWS: Record<string, () => React.JSX.Element> = {
   profile: Profile,
+  general: General,
   look: Look,
   ai: Ai,
   connectors: Connectors,
   cap: Capture,
   vault: Vault,
   mcp: Mcp,
-  notif: Notifications,
   priv: Privacy,
 };
 
+/** One line under the section title (Ruhe frame). */
+const SECTION_HELP: Record<string, string> = {
+  look: msg("Calm look: the colour ladder comes from base tone, accent and contrast."),
+};
+
 export function SettingsView({ section }: { section: string }) {
-  const sec = SETTINGS_SECTIONS.find((s) => s.id === section) ?? SETTINGS_SECTIONS[1]!;
+  const sec = resolveSection(section);
   const View = SECTION_VIEWS[sec.id]!;
+  const router = useRouter();
+  const ruhe = useLook() === "ruhe";
+  if (ruhe) {
+    // Ruhe (mockup "einstellungen"): location bar "Einstellungen › <Bereich>" with a close button, a 220 px section
+    // list on the left with a hairline, the section on the right as flat rows. Sign-out sits at the end of the list
+    // (the sidebar footer keeps only the gear).
+    const help = SECTION_HELP[sec.id];
+    return (
+      <>
+        <LocationBar
+          icon="gear"
+          crumbs={[{ label: t("Settings"), href: "/settings?section=profile" }, { label: t(sec.label) }]}
+          onClose={() => (window.history.length > 1 ? router.back() : router.push("/home"))}
+        />
+        <div className="rzs-frame">
+          <nav aria-label={t("Settings sections")} className="rzs-nav">
+            {SETTINGS_GROUPS.map((g) => (
+              <div key={g.label} role="group" aria-label={t(g.label)} className="rzs-nav-group">
+                <span className="rzs-nav-glabel" aria-hidden>
+                  {t(g.label)}
+                </span>
+                {g.sections.map((n) => {
+                  const on = n.id === sec.id;
+                  return (
+                    <Link key={n.id} href={`/settings?section=${n.id}`} className={"rzs-nav-row" + (on ? " is-on" : "")} aria-current={on ? "page" : undefined}>
+                      <Ico name={n.icon} />
+                      <span>{t(n.label)}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+            <span className="rzs-nav-sp" />
+            {/* Plain anchor, not <Link>: a prefetch must never hit the sign-out route. */}
+            <a href="/auth/logout" className="rzs-nav-row">
+              <Ico name="logout" />
+              <span>{t("Sign out")}</span>
+            </a>
+            <span className="rzs-ver">
+              {PRODUCT_NAME} · Version {APP_VERSION}
+            </span>
+          </nav>
+          <div className="rzs-sc kx-settings-body">
+            <h1 className="rzs-h1">{t(sec.label)}</h1>
+            {help && <p className="rzs-help">{t(help)}</p>}
+            <View />
+          </div>
+        </div>
+      </>
+    );
+  }
   return (
     // Prototype: max-width 1000, padding 30px 32px 170px, gap 22 (a little more top air than other views).
-    <div className="kx-settings-page">
-      <div>
-        <span className="kx-eyebrow">{PRODUCT_NAME} · Version {APP_VERSION}</span>
-        <h1 className="kx-h-page" style={{ margin: "4px 0 0" }}>
-          {t("Settings")}
-        </h1>
-      </div>
-      <div className="kx-settings-grid">
-        <nav aria-label={t("Settings sections")} className="kx-settings-nav">
-          {SETTINGS_SECTIONS.map((n) => {
-            const on = n.id === sec.id;
-            return (
-              <Link
-                key={n.id}
-                href={`/settings?section=${n.id}`}
-                className={"kx-row kxb" + (on ? " is-active" : "")}
-                aria-current={on ? "page" : undefined}
-              >
-                <Ico name={n.icon} />
-                <span>{t(n.label)}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="kx-settings-body">
-          <View />
+    <>
+      <div className="kx-pagetitle kx-settings-head">
+        <span className="kx-pagetitle-ico" aria-hidden>
+          <Ico name="gear" />
+        </span>
+        <div className="kx-pagetitle-text">
+          <span className="kx-eyebrow">
+            {PRODUCT_NAME} · Version {APP_VERSION}
+          </span>
+          <h1 className="kx-h-page" style={{ margin: "4px 0 0" }}>
+            {t("Settings")}
+          </h1>
+          <span className="kx-pagetitle-meta">Version {APP_VERSION}</span>
         </div>
       </div>
-    </div>
+      <div className="kx-settings-page">
+        <div className="kx-settings-grid">
+          <nav aria-label={t("Settings sections")} className="kx-settings-nav">
+            {SETTINGS_SECTIONS.map((n) => {
+              const on = n.id === sec.id;
+              return (
+                <Link
+                  key={n.id}
+                  href={`/settings?section=${n.id}`}
+                  className={"kx-row kxb" + (on ? " is-active" : "")}
+                  aria-current={on ? "page" : undefined}
+                >
+                  <Ico name={n.icon} />
+                  <span>{t(n.label)}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="kx-settings-body">
+            <View />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

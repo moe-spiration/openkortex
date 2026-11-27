@@ -11,8 +11,8 @@ const panel: CSSProperties = {
   gap: 12,
   padding: 18,
   borderRadius: 16,
-  background: "var(--lum-2)",
-  boxShadow: "var(--edge-surface)",
+  background: "var(--kx-panel-bg, var(--lum-2))",
+  boxShadow: "var(--kx-panel-edge, var(--edge-surface))",
 };
 const dayLabel = (d: Date) => t("{month} {day}", { day: d.getUTCDate(), month: monthAbbr(d.getUTCMonth()) });
 const axis: CSSProperties = { fontSize: "calc(12px * var(--kx-fs, 1))", color: "var(--text-muted)" };

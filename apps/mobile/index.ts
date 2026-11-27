@@ -7,7 +7,11 @@ import { Platform } from "react-native";
 // because Android starts them headless (without the React tree).
 if (Platform.OS === "android") {
   require("./src/widgets/handler");
+  // Settings of a placed widget (hold it, then "Settings"): its own React root, started by Android.
+  require("react-native-android-widget").registerWidgetConfigurationScreen(require("./src/widgets/config").WidgetConfig);
   require("./src/notify/background");
+  // Quick overlay of the widgets (note, voice, task): its own small activity and React root, not the app.
+  require("react-native").AppRegistry.registerComponent("KortexQuick", () => require("./src/quick/QuickCapture").QuickCapture);
 }
 
 import "expo-router/entry";

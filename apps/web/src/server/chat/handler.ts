@@ -40,7 +40,7 @@ import {
 import { z } from "zod";
 import { loadFocusContext } from "../digest/synthesis";
 import { SourceRegistry, agentPrompt, type DoneData, type ProposalData, type StepData } from "./agent";
-import { AGENT_STEPS, createAgentTools } from "./agent-tools";
+import { AGENT_STEPS, agentPrepareStep, createAgentTools } from "./agent-tools";
 
 export type CopilotUIMessage = UIMessage<
   never,
@@ -220,6 +220,7 @@ export function createChatHandlers(getDeps: DepsProvider) {
               ? {
                   tools: agentToolSet as ToolSet,
                   stopWhen: stepCountIs(AGENT_STEPS),
+                  prepareStep: agentPrepareStep,
                 }
               : editing
                 ? { tools: tools as ToolSet, stopWhen: stepCountIs(5) }

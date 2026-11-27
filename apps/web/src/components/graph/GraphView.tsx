@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { Scan, Search, SlidersHorizontal, Sparkles, ZoomIn, ZoomOut } from "lucide-react";
+import Link from "next/link";
+import { Box, Clock, Hash, ListFilter, Network, RotateCcw, Scan, Search, SlidersHorizontal, Sparkles, Square, ZoomIn, ZoomOut } from "lucide-react";
+import { TypeIcon } from "@/components/note/icons";
+import { useLook } from "@/components/theme/look";
+import { RuhePop } from "@/components/views/RuhePop";
+import { LocationBar } from "@/components/shell/Bars";
+import { MenuItem } from "@/components/ui/primitives";
 import { ContextMenu, Kbd, TAG_DOMAINS, menuFor, type ActionId, type TagDomain } from "@kortex/ui";
 import { Ico } from "@/components/shell/icons";
+import { Pictogram } from "@/components/motion/Pictogram";
 import { setFavorite } from "@/lib/api/actions";
 import { announceFavorites } from "@/lib/shell/favorites";
 import { linkItems } from "@/lib/api/graph-actions";
@@ -60,7 +67,7 @@ const MIN_STAGE_H = 380;
 
 function EmptyArt() {
   return (
-    <svg viewBox="0 0 160 110" width={160} height={110} aria-hidden fill="none">
+    <svg viewBox="0 0 160 110" width={160} height={110} aria-hidden fill="none" className="kx-art-classic">
       <circle cx="80" cy="56" r="40" stroke="var(--hair-strong)" strokeWidth="1.5" />
       <circle cx="80" cy="56" r="26" stroke="var(--hair-strong)" strokeWidth="1.5" strokeDasharray="3 5" />
       <path d="M80 34l4.2 11 11 4.2-11 4.2-4.2 11-4.2-11-11-4.2 11-4.2z" fill="var(--accent)" opacity="0.9" />
@@ -185,12 +192,17 @@ export function GraphView({ initial }: { initial: GraphData }) {
   }, []);
 
   const [mode, setMode] = useState<GraphMode>("3d");
+  const ruhe = useLook() === "ruhe";
   useEffect(() => {
+    // Ruhe starts flat like the mockup; a mode chosen before wins in both looks.
+    const flatFirst = document.documentElement.dataset.look !== "vivid";
     try {
       if (localStorage.getItem(DOCK_KEY) === "float") setDocked(false);
-      if (localStorage.getItem(MODE_KEY) === "2d") setMode("2d");
+      const stored = localStorage.getItem(MODE_KEY);
+      if (stored === "2d" || (!stored && flatFirst)) setMode("2d");
     } catch {
-      /* storage blocked: stays docked, 3D */
+      /* storage blocked: stays docked, 3D (Ruhe: 2D) */
+      if (flatFirst) setMode("2d");
     }
   }, []);
   const chooseMode = (m: GraphMode) => {
@@ -388,8 +400,7 @@ export function GraphView({ initial }: { initial: GraphData }) {
     </div>
   );
 
-  const toolsHud = (
-    <div className="gr-hud gr-hud--tools tc-float" role="toolbar" aria-label={t("Search and zoom")}>
+  const searchBox = (
       <div className="gr-search">
         <Search className="kx-ico" aria-hidden />
         <input
@@ -445,6 +456,109 @@ export function GraphView({ initial }: { initial: GraphData }) {
           </div>
         )}
       </div>
+  );
+
+  // Ruhe: clusters by tag domain (colour + name) and the legend of the clusters in view.
+  const domainCounts = useMemo(() => {
+    const m = new Map<TagDomain, number>();
+    for (const n of data.nodes) if (n.domain) m.set(n.domain, (m.get(n.domain) ?? 0) + 1);
+    return [...m].sort((a, b) => b[1] - a[1]);
+  }, [data.nodes]);
+  const clusterNames = useMemo(
+    () => (ruhe ? Object.fromEntries(domainCounts.filter(([, n]) => n >= 3).map(([d]) => [d, t(DOMAIN_LABEL[d])])) : null),
+    [ruhe, domainCounts],
+  );
+  const since = SINCE.find((x) => x.value === query.sinceDays) ?? SINCE[SINCE.length - 1]!;
+  const ruheBar = (
+    <>
+      <LocationBar
+        icon={<Network aria-hidden size={14} strokeWidth={1.75} />}
+        crumbs={[{ label: "Graph" }]}
+        actions={
+          <>
+            {!empty && <div className="gr-rz-search">{searchBox}</div>}
+            <RuhePop label={t("Types")} icon={<ListFilter aria-hidden size={14} strokeWidth={1.75} />} count={typeKeys.size}>
+              {TYPE_CHIPS.map((g) => {
+                const on = groupShown(typeKeys, g.key);
+                return (
+                  <button key={g.key} type="button" className="rz-pop-item" aria-pressed={on} onClick={() => toggleType(g.key)}>
+                    <Shape square={g.key === "objects"} />
+                    {t(g.label)}
+                    <span className="rz-pop-c">{counts[g.key] ?? 0}</span>
+                  </button>
+                );
+              })}
+              <span className="rz-pop-sep" />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={query.semantic}
+                className="rz-pop-item"
+                title={semanticHint ? semanticHintLong : t("Connect entries with similar content (dashed)")}
+                onClick={() => setQuery((x) => ({ ...x, semantic: !x.semantic }))}
+              >
+                <i aria-hidden style={{ display: "block", width: 12, borderTop: "1px dashed var(--accent-ink)" }} />
+                {t("Semantic")}
+                <span className="rz-pop-c">{semanticHint ?? (query.semantic ? t("on") : t("off"))}</span>
+              </button>
+            </RuhePop>
+            <RuhePop label={t("Tags")} icon={<Hash aria-hidden size={14} strokeWidth={1.75} />} count={query.domains?.length ?? 0}>
+              {TAG_DOMAINS.map((d) => {
+                const on = !!query.domains?.includes(d);
+                return (
+                  <button key={d} type="button" className="rz-pop-item" aria-pressed={on || !query.domains?.length} onClick={() => toggleDomain(d)}>
+                    <i className="gr-rz-dot" aria-hidden style={{ background: `var(--tag-${d}-dot)` }} />
+                    {t(DOMAIN_LABEL[d])}
+                    <span className="rz-pop-c">{on ? t("on") : ""}</span>
+                  </button>
+                );
+              })}
+            </RuhePop>
+            <RuhePop label={t(since.title)} icon={<Clock aria-hidden size={14} strokeWidth={1.75} />}>
+              {(close) =>
+                SINCE.map((x) => (
+                  <button key={x.label} type="button" className="rz-pop-item" aria-pressed={query.sinceDays === x.value} onClick={() => (close(), setQuery((q) => ({ ...q, sinceDays: x.value })))}>
+                    {t(x.title)}
+                  </button>
+                ))
+              }
+            </RuhePop>
+          </>
+        }
+        meta={loading ? <span className="kx-spinner" aria-label={t("Loading")} style={{ margin: "0 4px" }} /> : undefined}
+        more={
+          <>
+            <MenuItem onSelect={() => chooseMode(mode === "3d" ? "2d" : "3d")}>
+              {mode === "3d" ? <Square aria-hidden size={14} strokeWidth={1.75} /> : <Box aria-hidden size={14} strokeWidth={1.75} />}
+              {mode === "3d" ? t("Flat view") : t("Spatial view")}
+            </MenuItem>
+            <MenuItem closeOnClick={false} onSelect={() => controls.current?.zoomBy(1.35)}>
+              <ZoomIn aria-hidden size={14} strokeWidth={1.75} />
+              {t("Zoom in")}
+            </MenuItem>
+            <MenuItem closeOnClick={false} onSelect={() => controls.current?.zoomBy(1 / 1.35)}>
+              <ZoomOut aria-hidden size={14} strokeWidth={1.75} />
+              {t("Zoom out")}
+            </MenuItem>
+            <MenuItem onSelect={() => controls.current?.fit()}>
+              <Scan aria-hidden size={14} strokeWidth={1.75} />
+              {t("Fit the whole graph")}
+            </MenuItem>
+            {filtered && (
+              <MenuItem onSelect={reset}>
+                <RotateCcw aria-hidden size={14} strokeWidth={1.75} />
+                {t("Reset filters")}
+              </MenuItem>
+            )}
+          </>
+        }
+      />
+    </>
+  );
+
+  const toolsHud = (
+    <div className="gr-hud gr-hud--tools tc-float" role="toolbar" aria-label={t("Search and zoom")}>
+      {searchBox}
       {loading && <span className="kx-spinner" aria-label={t("Loading")} style={{ margin: "0 4px" }} />}
       <div className="tc-seg tc-seg--text gr-mode" role="group" aria-label={t("View")}>
         {(["3d", "2d"] as const).map((m) => (
@@ -466,14 +580,16 @@ export function GraphView({ initial }: { initial: GraphData }) {
   );
 
   return (
-    <div className="gr-page">
+    <div className={"gr-page" + (ruhe ? " gr-page--ruhe" : "")}>
       <h1 style={srOnly} data-testid="graph-title">
         Knowledge Graph
       </h1>
+      {ruhe && ruheBar}
       <div ref={stageRef} className="gr-stage" style={{ height: stageH }}>
         {empty ? (
           <div className="kx-emptystate kx-in" style={{ position: "absolute", inset: "70px 16px auto", margin: "0 auto", maxWidth: 520 }}>
             <EmptyArt />
+            <Pictogram kind={stats.total === 0 ? "idea" : "search"} className="kx-art-ruhe" />
             <strong className="kx-h-section">{stats.total === 0 ? t("Your graph is still empty") : t("No results for these filters")}</strong>
             <span className="kx-help" style={{ fontSize: "calc(13px * var(--kx-fs, 1))", lineHeight: 1.4, maxWidth: 440 }}>
               {stats.total === 0
@@ -517,13 +633,78 @@ export function GraphView({ initial }: { initial: GraphData }) {
             suggestionOpen={ser === "open"}
             onLink={link}
             controlsRef={controls}
+            clusters={clusterNames}
           />
         )}
 
-        {filterHud}
-        {!empty && toolsHud}
+        {!ruhe && filterHud}
+        {!ruhe && !empty && toolsHud}
 
-        {sel && (
+        {sel && ruhe && (
+          <aside className="gr-rz-ins kx-in" aria-label={t("Selected node")}>
+            <div className="gr-rz-ins-h">
+              <span className="gr-rz-av" aria-hidden>
+                {sel.type === "person" ? initials(sel.label) : <TypeIcon type={sel.type} size={15} />}
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <div className="gr-rz-ins-t">{sel.label}</div>
+                <div className="gr-rz-ins-s">
+                  {NOTE_TYPES[sel.type]?.label ?? sel.type} · {tn(selDegree, "{n} connection", "{n} connections")}
+                </div>
+              </div>
+            </div>
+            {take ? <div className="gr-rz-ins-ai">{take}</div> : <div className="gr-rz-ins-s">{t("Changed on {date}", { date: new Date(sel.updated).toLocaleDateString(intlLocale()) })}</div>}
+            {nbs.length > 0 && (
+              <>
+                <div className="gr-rz-lab">{t("Strongest connections")}</div>
+                {nbs.map((i) => {
+                  const n = data.nodes[i]!;
+                  return (
+                    <button
+                      key={n.id}
+                      type="button"
+                      className="gr-rz-link"
+                      onClick={() => {
+                        controls.current?.centerOn(n.id);
+                        openNote(n.id);
+                      }}
+                    >
+                      <TypeIcon type={n.type} size={14} />
+                      <span className="e-clamp1">{n.label}</span>
+                      <span className="gr-rz-n">{n.degree}</span>
+                    </button>
+                  );
+                })}
+              </>
+            )}
+            <div className="gr-rz-acts">
+              <Link href={noteHrefById(sel.id)} className="rz-btn">
+                {shapeOf(sel.type) === "square" ? t("Open dossier") : tx("verb", "Open")}
+              </Link>
+              <button type="button" className="rz-btn rz-btn--ghost" onClick={() => controls.current?.centerOn(sel.id)}>
+                {t("Only neighbours")}
+              </button>
+            </div>
+          </aside>
+        )}
+
+        {!empty && ruhe && (
+          <div className="gr-rz-leg" aria-label={t("Legend")}>
+            {error && <span style={{ color: "var(--crit)" }}>{t("Graph could not be updated ({error})", { error })}</span>}
+            {domainCounts.slice(0, 6).map(([d]) => (
+              <span key={d}>
+                <i aria-hidden style={{ background: `var(--tag-${d}-dot)` }} />
+                {t(DOMAIN_LABEL[d])}
+              </span>
+            ))}
+            <span className="gr-rz-faint">
+              {t("{nodes} entries · {edges} links", { nodes: stats.shown.toLocaleString(intlLocale()), edges: stats.edges.toLocaleString(intlLocale()) })}
+              {stats.truncated && ` · ${t("{n} of {total}", { n: stats.limit, total: stats.matching })}`}
+            </span>
+          </div>
+        )}
+
+        {sel && !ruhe && (
           <aside className="gr-hud gr-hud--inspector tc-float kx-in" aria-label={t("Selected node")}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span className="e-micro" style={{ padding: 0, color: "var(--accent-ink)" }}>
@@ -568,7 +749,7 @@ export function GraphView({ initial }: { initial: GraphData }) {
           </aside>
         )}
 
-        {!empty && (
+        {!empty && !ruhe && (
           <div className="gr-hud gr-hud--legend tc-float" style={{ bottom: cardShown && docked ? 156 : 96 }} aria-label={t("Legend")}>
             <span className="e-meta e-num" aria-live="polite">
               {error ? <span style={{ color: "var(--crit)" }}>{t("Graph could not be updated ({error})", { error })} · </span> : null}
@@ -664,5 +845,14 @@ export function GraphView({ initial }: { initial: GraphData }) {
     </div>
   );
 }
+
+/** "Jonas Weber" → "JW". */
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter((w) => /^\p{L}/u.test(w))
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
 
 const srOnly: CSSProperties = { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", margin: 0 };

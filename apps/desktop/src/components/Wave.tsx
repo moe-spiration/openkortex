@@ -14,11 +14,12 @@ export interface WaveProps {
   level?: number;
   live?: boolean;
   /**
-   * Live meter of channel 0 (microphone) or 1 (system) from the level store (state/levels.ts): the
+   * Live meter of channel 0 (microphone), 1 (system) or "both" (the louder one: the meeting bar's single wave)
+   * from the level store (state/levels.ts): the
    * meter updates its own DOM per animation frame, React does not re-render. `showDb` adds the live
    * dB value; `live` gates the motion (e.g. only while recording).
    */
-  channel?: 0 | 1;
+  channel?: 0 | 1 | "both";
   /** With `channel`: show the live dB value on the right. */
   showDb?: boolean;
   label?: string;
@@ -48,6 +49,10 @@ export function waveBars(n: number, level: number) {
 }
 
 const dbText = (db: number) => `${Math.round(db)} dB`;
+
+/** dBFS a meter shows for `channel`: one channel, or the louder of both. */
+export const channelDb = (l: { a: number; b: number }, channel: 0 | 1 | "both") =>
+  channel === "both" ? Math.max(l.a, l.b) : channel === 0 ? l.a : l.b;
 
 /**
  * Animated level meter (`.kx-wv`, Wave.dc.html). Visual motion is the CSS animation; the level
@@ -88,7 +93,7 @@ export const Wave = memo(function Wave({
     let last = NaN;
     let lastOn: boolean | null = null;
     return levelStore.subscribe((l) => {
-      const db = channel === 0 ? l.a : l.b;
+      const db = channelDb(l, channel ?? 0);
       const on = live && isAudible(db);
       if (db === last && on === lastOn) return;
       last = db;
@@ -101,8 +106,8 @@ export const Wave = memo(function Wave({
       if (dbEl.current) dbEl.current.textContent = dbText(db);
     });
   }, [bound, channel, live]);
-  const shown = bound && showDb ? dbText(channel === 0 ? levelStore.get().a : levelStore.get().b) : meta;
-  const idle = bound ? !(live && isAudible(channel === 0 ? levelStore.get().a : levelStore.get().b)) : !live;
+  const shown = bound && showDb ? dbText(channelDb(levelStore.get(), channel ?? 0)) : meta;
+  const idle = bound ? !(live && isAudible(channelDb(levelStore.get(), channel ?? 0))) : !live;
   // Block host around the inline-flex meter, like the prototype's embedded component: the line box
   // (body line-height 20px) gives the row its height and the meter keeps its content width.
   return (

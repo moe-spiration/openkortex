@@ -25,7 +25,7 @@ import {
 } from "./live-core";
 
 /*
- * POST /api/meeting/live  start | append | clip | task | end (desktop HUD, web card)
+ * POST /api/meeting/live  start | append | clip | task | end | discard (desktop HUD, web card)
  * GET  /api/meeting/live  the running session for the web card, or null
  * Spec: docs/plans/2026-10-30-meeting-capture.md. No new table: the session is the meeting item.
  */
@@ -158,6 +158,19 @@ export async function endSession(deps: ServerDeps, ctx: AuthContext, a: Extract<
   return { ok: true as const, item_id: row.id, queued: true };
 }
 
+/**
+ * Discards a running session: the meeting item is deleted (no protocol, no model run). Only while it
+ * still records, so an ended meeting with its minutes can never be deleted through this route (a
+ * capture-only token may call it). Tasks the user created by hand during the call stay.
+ */
+export async function discardSession(ctx: AuthContext, a: Extract<LiveAction, { action: "discard" }>) {
+  const { row, live } = await loadLive(ctx, a.item_id);
+  if (live.state !== "recording") throw new ApiError("invalid_request", t("The meeting has already ended"), { status: 409 });
+  const { error } = await ctx.client.from("knowledge_items").delete().eq("user_id", ctx.userId).eq("id", row.id);
+  if (error) throw new ApiError("server_error", `discard meeting: ${error.message}`);
+  return { ok: true as const, item_id: row.id, discarded: true as const };
+}
+
 /** Newest meeting item that is a fresh live session, or null. */
 export async function currentSession(deps: ServerDeps, ctx: AuthContext): Promise<LiveSession | null> {
   const { data, error } = await ctx.client
@@ -196,6 +209,8 @@ export function createMeetingLiveHandlers(getDeps: DepsProvider) {
         case "end":
           await enforceLimits({ auth, deps }, "ingest");
           return json(await endSession(deps, auth, a));
+        case "discard":
+          return json(await discardSession(auth, a));
       }
     }),
     OPTIONS: preflight(getDeps),

@@ -53,6 +53,11 @@ pub struct DesktopConfig {
     pub vault_setup_done: Option<bool>,
     /// Language of the app's own texts ("en" | "de", i18n.rs); None = the Windows display language.
     pub locale: Option<String>,
+    /// Size of the former resizable HUD (0.6.5 to 0.6.7). Read and kept, no longer used: the meeting
+    /// bar sizes itself to its content (window.rs).
+    pub hud_size: Option<[f64; 2]>,
+    /// Light or dark windows: "light" | "dark"; None or "system" = follow Windows (commands.rs `set_theme`).
+    pub theme: Option<String>,
 }
 
 fn env(key: &str) -> Option<String> {

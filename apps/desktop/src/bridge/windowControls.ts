@@ -1,21 +1,23 @@
 /*
- * Window buttons of the Tactile Craft titlebar (decision 2: Windows style, only in the desktop app).
+ * Window buttons of the one titlebar in `main` (Ruhe D1, since 0.6.8): the window has no native frame
+ * (`decorations: false`), the web app draws minimise / maximise / close in its own titlebar.
  *
- * The web app (package A) draws minimise / maximise / close in its titlebar and calls an adapter,
- * `registerWindowControls({ minimize, toggleMaximize, close })` in apps/web/src/lib/shell/window-controls.ts.
- * The `main` Tauri window loads that web app top-level from a remote URL, so the adapter has to be registered
- * INSIDE the web bundle; the desktop bundle cannot reach it. This module is the ready, tested implementation the
- * web side can copy (or import once it moves to a shared package): it talks to Tauri's core window plugin through
+ * The `main` Tauri window loads the web app top-level from a remote URL, so the buttons are wired INSIDE the web
+ * bundle (apps/web/src/lib/shell/window-controls.ts, `connectDesktopWindow`); this module is the same adapter for the
+ * desktop's own bundled page (MainWindow.tsx) and pins the contract in tests. Both talk to the core through
  * `window.__TAURI_INTERNALS__.invoke`, which Tauri injects into every webview, so the web app needs no
- * @tauri-apps/api dependency. The same commands are what @tauri-apps/api/window sends.
+ * @tauri-apps/api dependency.
  *
- * What it needs to work in `main` (not active yet, see docs/2026-10-25-desktop.md "Tactile Craft v2"):
- *  1. web: registerWindowControls(tauriWindowControls(internalsInvoke(window)!)) when isTauri()
- *  2. desktop: a remote capability for `main` with core:window:allow-minimize, -toggle-maximize, -close and
- *     -start-dragging (data-tauri-drag-region), scoped to the web app's URL
- *  3. desktop: `decorations: false` on `main` (only after 1 and 2, otherwise the window has no working buttons)
- * Closing `main` hides it to the tray (lib.rs CloseRequested), so `close` keeps Kortex running.
+ * Rights (review N5 #8, keep them small): the remote page gets the runtime capability `main-web` (main_bridge.rs):
+ * the five `main_*` commands plus `core:window:allow-start-dragging` and `-internal-toggle-maximize` for
+ * `data-tauri-drag-region`. No core window plugin commands: minimise, maximise and close are ONE command,
+ * `main_window { action }`, with a closed list of actions. Closing hides `main` to the tray (Kortex keeps running).
+ *
+ * Handshake: the page says `frame` once it shows its own buttons. A page that does not (an older web app) gets the
+ * native frame back after 10 s (main_bridge.rs `watch_frame`), so the window is never left without buttons.
  */
+
+export type WindowAction = "frame" | "minimize" | "toggle_maximize" | "close" | "drag";
 
 export interface WindowControls {
   minimize: () => Promise<void>;
@@ -25,12 +27,20 @@ export interface WindowControls {
 
 export type Invoke = (cmd: string, args?: Record<string, unknown>) => Promise<unknown>;
 
-/** Tauri v2 core window commands for the window `label` (default: the current webview's main window). */
-export function tauriWindowControls(invoke: Invoke, label = "main"): WindowControls {
-  const run = (cmd: string) => async () => {
-    await invoke(`plugin:window|${cmd}`, { label });
+/** The core command behind every titlebar button of `main`. */
+export const MAIN_WINDOW_COMMAND = "main_window";
+
+/** The titlebar actions for `main` through `main_window`. */
+export function tauriWindowControls(invoke: Invoke): WindowControls {
+  const run = (action: WindowAction) => async () => {
+    await invoke(MAIN_WINDOW_COMMAND, { action });
   };
   return { minimize: run("minimize"), toggleMaximize: run("toggle_maximize"), close: run("close") };
+}
+
+/** Tells the core that the page draws its own window buttons (keeps `decorations: false`). */
+export async function announceFrame(invoke: Invoke): Promise<void> {
+  await invoke(MAIN_WINDOW_COMMAND, { action: "frame" satisfies WindowAction });
 }
 
 /** Tauri's IPC `invoke` from a window object (v2: __TAURI_INTERNALS__), or null outside Tauri. */
@@ -48,29 +58,9 @@ export function currentLabel(w: unknown): string | null {
   return typeof meta === "string" ? meta : null;
 }
 
-/** Window controls for the current Tauri window, or null in a plain browser. */
+/** Window controls when this page runs in the `main` Tauri window, else null (plain browser, other windows). */
 export function currentWindowControls(w: unknown = typeof window === "undefined" ? undefined : window): WindowControls | null {
   const invoke = internalsInvoke(w);
-  return invoke ? tauriWindowControls(invoke, currentLabel(w) ?? "main") : null;
-}
-
-/**
- * The capability `main` needs for the web titlebar buttons (prepared, not shipped: shipping it before the web side
- * registers the adapter would only widen what the remote page may call). Kept here so a test pins its shape.
- */
-export function mainWindowControlsCapability(webUrls: string[]) {
-  return {
-    $schema: "../gen/schemas/desktop-schema.json",
-    identifier: "main-window-controls",
-    description:
-      "Titlebar buttons of the remote web app in `main` (Tactile Craft v2): minimise, maximise, close (to tray) and dragging. Nothing else.",
-    windows: ["main"],
-    remote: { urls: webUrls },
-    permissions: [
-      "core:window:allow-minimize",
-      "core:window:allow-toggle-maximize",
-      "core:window:allow-close",
-      "core:window:allow-start-dragging",
-    ],
-  };
+  const label = currentLabel(w);
+  return invoke && (label === null || label === "main") ? tauriWindowControls(invoke) : null;
 }

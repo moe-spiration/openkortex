@@ -1,0 +1,193 @@
+/*
+ * Ruhe, wave 2 (stream G): Aufgaben (Kanban), Tagebuch, Life, Graph, Akte/Notiz. Screens 06, 12 to 15 of the
+ * "Kortex Ruhe-Iteration" artifact. Only under <html data-look="ruhe">; Classic stays as it is.
+ *
+ * The same rules everywhere: structure is felt, not seen (no boxed panels where a heading does the job, hairlines
+ * only on real surfaces), one accent with a job (primary action, selection, focus, "from the agent"), no pastel icon
+ * tiles (glyphs monochrome), labels in sentence case, titles 600, numbers tabular. Colour values come from the tokens
+ * (ruhe.css); the only hues here are the existing semantic ones (area/tag dots, check-in, critical).
+ * Markup: components/views/TasksView.tsx, components/journal/*, components/life/*, components/graph/GraphView.tsx,
+ * components/note/* (NoteSheet, DossierPanel, AiPanel).
+ */
+@layer components {
+  /* ================= Shared: quiet labels and monochrome glyphs in these views ================= */
+  [data-look="ruhe"] :is(.fs-tasks, .jr, .lf-ov, .lf-detail, .fs-ed) :is(.kx-eyebrow, .jr-lbl, .fs-lbl) {
+    text-transform: none; letter-spacing: 0; font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); color: var(--t3);
+  }
+  [data-look="ruhe"] :is(.fs-tasks, .jr, .lf-ov, .lf-detail, .lf-page, .fs-ed) :is(.kx-h-page, .kx-h-display, .lf-ov-h1, .kx-dr-title-edit) {
+    font-weight: var(--rz-w-semi); letter-spacing: var(--type-h1-tracking, -0.022em);
+  }
+  [data-look="ruhe"] :is(.fs-kb-glyph, .lf-glyph, .fs-ed .fs-glyph, .ag-glyph) {
+    background: transparent; color: var(--t3);
+  }
+  [data-look="ruhe"] .lf-glyph > .kx-pack-tile { display: none; }
+
+  /* ================= Aufgaben (Kanban, Liste, Woche) ================= */
+  [data-look="ruhe"] .fs-tasks { gap: 16px; }
+  [data-look="ruhe"] .fs-newt-in { background: var(--lum-2); box-shadow: none; border-radius: 8px; height: 36px; }
+  [data-look="ruhe"][data-theme="light"] .fs-newt-in { background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair); }
+  [data-look="ruhe"] .fs-newt-in:focus-within { box-shadow: 0 0 0 1px var(--accent-line, var(--accent)); }
+
+  /* Columns: no box, the header carries the structure (glyph, label, grey count). */
+  [data-look="ruhe"] .fs-kb { gap: 12px; }
+  [data-look="ruhe"] .fs-kb--st { gap: 12px; }
+  [data-look="ruhe"] .fs-kb-col { padding: 0; gap: 6px; background: transparent; box-shadow: none; border-radius: 10px; transition: background var(--d2) var(--eo); }
+  [data-look="ruhe"] .fs-kb-col.is-drop { background: var(--accent-soft); box-shadow: none; }
+  [data-look="ruhe"] .fs-kb-h { padding: 4px 4px 6px; gap: 6px; font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .fs-kb-h > .kx-meta { margin-left: 0; color: var(--t4); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .fs-kb-glyph { width: 18px; height: 18px; border-radius: 0; }
+  [data-look="ruhe"] .fs-kb-glyph .kx-ico { width: 14px; height: 14px; }
+  [data-look="ruhe"] .fs-kb-ro { color: var(--t4); }
+
+  /* Cards: one flat surface, hairline in light, lift only while dragged. */
+  [data-look="ruhe"] .fs-kb-card { border-radius: 8px; padding: 10px 12px; background: var(--lum-2); box-shadow: 0 0 0 1px var(--hair); transition: background var(--d1) var(--eo), box-shadow var(--d1) var(--eo), opacity var(--d2) var(--eo); }
+  [data-look="ruhe"][data-theme="light"] .fs-kb-card { background: var(--lum-1); }
+  [data-look="ruhe"] .fs-kb-card:hover { background: var(--lum-3); box-shadow: 0 0 0 1px var(--hair-strong); }
+  [data-look="ruhe"][data-theme="light"] .fs-kb-card:hover { background: var(--lum-1); }
+  [data-look="ruhe"] .fs-kb-card.is-sel { background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent-line, var(--accent)); }
+  [data-look="ruhe"] .fs-kb-card.is-dragging { opacity: 0.35; }
+  [data-look="ruhe"] .fs-kb-card--st.is-ro { background: transparent; box-shadow: 0 0 0 1px var(--hair); }
+  [data-look="ruhe"] .fs-kb-t { font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .fs-kb-t:hover { color: var(--t1); }
+  [data-look="ruhe"] .fs-kb-t.is-done { font-weight: var(--rz-w-regular); color: var(--t4); }
+  [data-look="ruhe"] .fs-kb-src { color: var(--t3); }
+  [data-look="ruhe"] .fs-kb-due:not(.is-late) { color: var(--t3); }
+  [data-look="ruhe"] .fs-kb-empty { box-shadow: none; outline: 1px dashed var(--hair-strong); outline-offset: -1px; border-radius: 8px; color: var(--t4); }
+  /* "Take over" sits on every suggestion: quiet until the card is touched, accent only on hover/focus. */
+  [data-look="ruhe"] .fs-kb-acts .kx-btn.fs-kb-pri { background: var(--hair); color: var(--t1); }
+  [data-look="ruhe"] .fs-kb-card:is(:hover, :focus-within) .kx-btn.fs-kb-pri { background: var(--accent-soft); color: var(--accent-ink); }
+  [data-look="ruhe"] .fs-kb-ib { color: var(--t4); }
+  [data-look="ruhe"] .fs-kb-card:hover .fs-kb-ib { color: var(--t3); }
+  [data-look="ruhe"] .fs-kb-ib:hover { background: var(--hair); color: var(--t1); }
+  [data-look="ruhe"] .fs-kb-chip { background: var(--hair); }
+
+  /* List: groups as headed sections instead of tiles, rows without lines. */
+  [data-look="ruhe"] .fs-tlist { gap: 22px; }
+  [data-look="ruhe"] .fs-tlist-g { padding: 0; background: none; box-shadow: none; }
+  [data-look="ruhe"] .fs-tlist-g > header { padding: 0 4px 4px; }
+  [data-look="ruhe"] .fs-task-line { height: 38px; padding: 0 6px; }
+  [data-look="ruhe"] .fs-task-line:hover { background: var(--lum-2); }
+
+  /* Weekly digest: flat, the agent sparkle is the only accent. */
+  [data-look="ruhe"] .fs-digest { background: var(--lum-2); box-shadow: 0 0 0 1px var(--hair); border-radius: 12px; }
+  [data-look="ruhe"][data-theme="light"] .fs-digest { background: var(--lum-1); }
+  [data-look="ruhe"] .fs-digest-ic { width: 28px; height: 28px; border-radius: 0; background: none; }
+  [data-look="ruhe"] .fs-digest-stats dd { font-weight: var(--rz-w-medium); }
+
+  /* ================= Tagebuch (Tag + Woche) ================= */
+  [data-look="ruhe"] .jr-path { color: var(--t4); }
+  /* Day: no panel, the writing column stands on the page, the side column is set off by a hairline. */
+  [data-look="ruhe"] .jr-main { padding: 0; gap: 36px; background: none; box-shadow: none; border-radius: 0; }
+  [data-look="ruhe"] .jr-main > .jr-side { padding-left: 28px; box-shadow: inset 1px 0 0 var(--hair); }
+  [data-look="ruhe"] .jr-date { font-weight: var(--rz-w-semi); font-size: var(--rz-fs-read); letter-spacing: -0.01em; }
+  [data-look="ruhe"] .jr-ta { font-size: var(--rz-fs-read); line-height: 1.75; }
+  [data-look="ruhe"] .jr-fbtn { box-shadow: none; background: var(--hair); color: var(--t2); border-radius: 7px; }
+  [data-look="ruhe"] .jr-fbtn:hover { background: var(--hair-strong); }
+  [data-look="ruhe"] .jr-btn { border-radius: 7px; }
+  [data-look="ruhe"] .jr-check { padding: 0; background: none; border-radius: 0; }
+  [data-look="ruhe"] .jr-edots button { background: var(--lum-3); box-shadow: none; border-radius: 4px; }
+  [data-look="ruhe"][data-theme="light"] .jr-edots button { background: var(--lum-4); }
+  [data-look="ruhe"] .jr-edots button.is-on { background: var(--accent-checkin); }
+  [data-look="ruhe"] .jr-edots button:hover { box-shadow: 0 0 0 1px var(--t4); }
+  [data-look="ruhe"] .jr-chip { border-radius: 6px; }
+  [data-look="ruhe"] .jr-chip.is-on { background: var(--hair-strong); }
+  [data-look="ruhe"] .jr-foot { border-top-color: var(--hair); }
+  /* Heat map and week dots: the check-in colour stays, the glow goes. */
+  [data-look="ruhe"] .jr-heat i { border-radius: 3px; }
+  [data-look="ruhe"] .jr-heat i:not(.l1, .l2, .l3, .fut) { background: var(--hair); }
+  [data-look="ruhe"] .jr-heat i.l3 { box-shadow: none; }
+  [data-look="ruhe"] .jr-heat i.fut { box-shadow: inset 0 0 0 1px var(--hair); background: transparent; }
+  [data-look="ruhe"] .jr-heat i.today { outline: 1px solid var(--t2); }
+  [data-look="ruhe"] .jr-wdots i.on { box-shadow: none; }
+  [data-look="ruhe"] .jr-wdots i.now { box-shadow: 0 0 0 1px var(--t3); }
+  [data-look="ruhe"] .jr-wdots i.on.now { box-shadow: 0 0 0 1px var(--t2); }
+  [data-look="ruhe"] .jr-streak { color: var(--t3); }
+  [data-look="ruhe"] .jr-dot { background: var(--t4); }
+  [data-look="ruhe"] .jr-pi { padding: 8px 10px; }
+  /* Week: day cards flat, today marked by a quiet ring, Wochenrückblick as an agent card. */
+  [data-look="ruhe"] .jr-wd { border-radius: 10px; background: var(--lum-2); box-shadow: none; transition: background var(--d1) var(--eo); }
+  [data-look="ruhe"][data-theme="light"] .jr-wd { background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair); }
+  [data-look="ruhe"] .jr-wd.is-today { box-shadow: 0 0 0 1px var(--accent-line, var(--accent)); }
+  [data-look="ruhe"] .jr-bar { background: var(--hair-strong); }
+  [data-look="ruhe"] .jr-bar i { background: var(--t3); }
+  [data-look="ruhe"] .jr-ai { border-radius: 12px; background: var(--accent-soft); box-shadow: none; }
+  [data-look="ruhe"] .jr-ai-stats > div { background: var(--lum-1); }
+  [data-look="ruhe"] .jr-sig { background: none; box-shadow: none; padding: 0; border-radius: 0; }
+  [data-look="ruhe"] .jr-sig-h .kx-ico { color: var(--t3); }
+  [data-look="ruhe"] .jr-sig-bar i { background: var(--t3); }
+  [data-look="ruhe"] .kx-tabs.jr-seg { background: var(--lum-2); }
+  [data-look="ruhe"] .jr-seg .kx-tab.is-on { background: var(--lum-4); }
+  [data-look="ruhe"][data-theme="light"] .kx-tabs.jr-seg { background: var(--lum-3); }
+  [data-look="ruhe"][data-theme="light"] .jr-seg .kx-tab.is-on { background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair-strong); }
+
+  /* ================= Life (Übersicht + Bereich) ================= */
+  /* Area cards: flat, no colour cloud; the area colour lives in one 6-px dot before the name. */
+  [data-look="ruhe"] .lf-agrid { gap: 10px; }
+  [data-look="ruhe"] .lf-acard { padding: 14px 16px; border-radius: 12px; background: var(--lum-2); box-shadow: none; transition: background var(--d1) var(--eo); }
+  [data-look="ruhe"][data-theme="light"] .lf-acard { background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair); }
+  [data-look="ruhe"] .lf-acard::before { display: none; }
+  [data-look="ruhe"] .lf-acard:hover { box-shadow: 0 0 0 1px var(--hair-strong); }
+  [data-look="ruhe"] .lf-acard-h .lf-glyph { width: 6px; height: 6px; border-radius: 50%; background: var(--lc, var(--t3)); }
+  [data-look="ruhe"] .lf-acard-h .lf-glyph > .kx-ico { display: none; }
+  [data-look="ruhe"] .lf-acard-name { font-size: var(--rz-fs-lead); font-weight: var(--rz-w-medium); }
+  [data-look="ruhe"] .lf-glyph--sm { width: 20px; height: 20px; background: none; color: var(--t4); }
+  [data-look="ruhe"] .lf-pick { border-radius: 7px; }
+  [data-look="ruhe"] .lf-pick-t { font-weight: var(--rz-w-regular); }
+  /* Area page: hero stays (dimmed by the tokens), the rail panels become headed sections. */
+  [data-look="ruhe"] .lf-page { gap: 40px; }
+  [data-look="ruhe"] .lf-page-rail { gap: 22px; padding-left: 24px; box-shadow: inset 1px 0 0 var(--hair); }
+  [data-look="ruhe"] .lf-page-rail > .lf-panel { padding: 0; background: none; box-shadow: none; border-radius: 0; }
+  [data-look="ruhe"] .lf-panel.lf-page-empty { padding: 18px 20px; border-radius: 12px; background: var(--lum-2); box-shadow: none; }
+  [data-look="ruhe"][data-theme="light"] .lf-panel.lf-page-empty { background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair); }
+  [data-look="ruhe"] .lf-page-row { border-radius: 7px; }
+  [data-look="ruhe"] .lf-page-row:hover:not(:disabled) { background: var(--lum-2); }
+  [data-look="ruhe"] .lf-detail .kx-hero-fade { opacity: 0.9; }
+
+  /* ================= Graph ================= */
+  /* Floating HUDs: one flat glass surface with a hairline, no edge light; controls inside are flat rows. */
+  [data-look="ruhe"] .gr-hud, [data-look="ruhe"] .gr-ser { box-shadow: var(--edge-float); border-radius: 12px; }
+  [data-look="ruhe"] .gr-hud--tools { border-radius: 10px; }
+  [data-look="ruhe"] .gr-hud--legend { border-radius: 8px; box-shadow: none; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-look="ruhe"] .gr-page .e-micro { text-transform: none; letter-spacing: 0; font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); color: var(--t3); }
+  [data-look="ruhe"] .gr-tg { height: 28px; border-radius: 6px; }
+  [data-look="ruhe"] .gr-tg:hover { background: var(--hair); }
+  [data-look="ruhe"] .gr-tg .count { color: var(--t4); }
+  [data-look="ruhe"] .gr-sec { box-shadow: inset 0 1px 0 var(--hair); }
+  [data-look="ruhe"] .gr-domains .e-chip[aria-pressed="true"] { background: var(--hair-strong); box-shadow: none; }
+  [data-look="ruhe"] .gr-search { box-shadow: none; background: var(--hair); }
+  [data-look="ruhe"] .gr-search:focus-within { box-shadow: 0 0 0 1px var(--accent-line, var(--accent)); }
+  [data-look="ruhe"] .gr-ins-title { font-weight: var(--rz-w-medium); font-size: var(--rz-fs-lead); }
+  [data-look="ruhe"] .gr-ins-take { padding: 10px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--t1); }
+  [data-look="ruhe"] .gr-ins-nb { border-top-color: var(--hair); }
+  [data-look="ruhe"] .gr-label { font-weight: var(--rz-w-regular); }
+  [data-look="ruhe"] .gr-label.is-active { background: transparent; font-weight: var(--rz-w-regular); }
+
+  /* ================= Akte / Notiz (drawer and full page) ================= */
+  [data-look="ruhe"] .fs-ed .fs-glyph { width: 20px; height: 20px; }
+  [data-look="ruhe"] .fs-ed .kx-dr-chip { box-shadow: none; background: var(--hair); }
+  [data-look="ruhe"] .fs-ed .kx-dr-chip.is-btn:hover { background: var(--hair-strong); }
+  [data-look="ruhe"] .fs-ed .kx-dr-chip.is-ai { box-shadow: none; background: var(--accent-soft); }
+  [data-look="ruhe"] .fs-ed .kx-propchip { background: var(--hair); }
+  /* Dossier ("Stand der Dinge") is the agent's voice: one soft accent surface, no ring. */
+  [data-look="ruhe"] .fs-dos { gap: 10px; padding: 16px 18px; border-radius: 12px; background: var(--accent-soft); box-shadow: none; }
+  [data-look="ruhe"] .fs-dos-h .fs-lbl { color: var(--accent-ink); }
+  [data-look="ruhe"] .fs-dos-meta { color: var(--t3); }
+  [data-look="ruhe"] .fs-dos-p { font-size: var(--rz-fs-lead); line-height: 1.6; color: var(--t1); }
+  [data-look="ruhe"] .fs-dos-tl { border-top-color: color-mix(in oklch, var(--accent) 14%, transparent); }
+  [data-look="ruhe"] .fs-dos-e:hover { background: color-mix(in oklch, var(--accent) 10%, transparent); }
+  [data-look="ruhe"] .fs-dos .kx-btn--secondary { background: transparent; box-shadow: none; }
+  [data-look="ruhe"] .fs-dos .kx-btn--secondary:hover { background: color-mix(in oklch, var(--accent) 10%, transparent); }
+  /* AI summary: flat card, no gradient wash. */
+  [data-look="ruhe"] .fs-ed .fs-ai { background: var(--lum-2); box-shadow: none; border-radius: 12px; }
+  [data-look="ruhe"][data-theme="light"] .fs-ed .fs-ai { background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair); }
+  [data-look="ruhe"] .fs-ed .fs-ai .fs-pill { background: transparent; }
+  [data-look="ruhe"] .fs-ed .fs-ai .fs-pill:hover { background: var(--hair); }
+  [data-look="ruhe"] .fs-ed .fs-h2 { font-weight: var(--rz-w-medium); letter-spacing: var(--type-h2-tracking, -0.012em); }
+
+  @container kx-view (max-width: 627px) {
+    [data-look="ruhe"] .jr-main > .jr-side { padding-left: 0; padding-top: 20px; box-shadow: inset 0 1px 0 var(--hair); }
+    [data-look="ruhe"] .lf-page-rail { padding-left: 0; box-shadow: none; }
+  }
+}
+
+[data-motion="reduced"][data-look="ruhe"] :is(.fs-kb-col, .fs-kb-card, .jr-wd, .lf-acard) { transition: none; }

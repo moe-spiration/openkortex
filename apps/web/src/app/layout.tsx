@@ -6,6 +6,7 @@ import { LOCALE_COOKIE, t } from "@/i18n";
 import { LocaleBoot } from "@/i18n/LocaleBoot";
 import { enterRequestLocale, localeOfRequest } from "@/i18n/server";
 import { PREPAINT_SCRIPT } from "@/lib/shell/prefs";
+import { PLATFORM_SCRIPT } from "@/lib/shell/platform";
 import "./globals.css";
 
 // Geist is the only text family: one variable file per subset (weights 300-500 used), swap with a size-adjusted
@@ -47,12 +48,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html
       lang={locale}
       data-theme="dark"
+      data-look="ruhe"
       className={`${geist.variable} ${jetbrainsMono.variable}`}
       // The pre-paint script sets data-theme, data-rail and the accent before hydration.
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: PREPAINT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: PLATFORM_SCRIPT }} />
       </head>
       <body>
         <LocaleBoot locale={locale}>{children}</LocaleBoot>

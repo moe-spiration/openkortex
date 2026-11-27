@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @import "@kortex/ui/styles";
+/* Ruhe look (Stream H), only under [data-look="ruhe"]. */
+@import "./ruhe-ext.css";
+/* Ruhe components (src/ui/ruhe/*, rx-*), 2026-11-27. */
+@import "./ruhe-ui.css";
 
 /* Tailwind must scan the shared UI package for utility classes. */
 @source "../../../../packages/ui/src";

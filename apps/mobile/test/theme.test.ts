@@ -2,7 +2,17 @@ import { describe, expect, it } from "vitest";
 import { alpha, contrast, mix, mixOklch, onAccentFor, parseColor, rgbToOklch, solidFor, toCss } from "../src/theme/color";
 import { greetingFor, initialOf } from "../src/lib/greeting";
 import { t } from "../src/i18n";
-import { ACCENTS, accentHex, accentPair, createTheme, isAccentValue, parseHex, RADIUS, TYPE } from "../src/theme/tokens";
+import {
+  ACCENTS,
+  accentHex,
+  accentPair,
+  createTheme,
+  DEFAULT_ACCENT,
+  isAccentValue,
+  parseHex,
+  RADIUS,
+  TYPE,
+} from "../src/theme/tokens";
 
 describe("colour maths", () => {
   it("parses hex and rgba", () => {
@@ -55,22 +65,36 @@ describe("oklch (color-mix in oklch like the web accent layer)", () => {
 
 describe("theme", () => {
   it("ports the Tactile Craft v2 steps and maps the legacy names onto them", () => {
-    const dark = createTheme("dark");
-    expect([dark.lum0, dark.lum1, dark.lum2, dark.lum3, dark.lum4]).toEqual(["#0B0B0E", "#121216", "#18181D", "#1F1F25", "#27272E"]);
+    const dark = createTheme("dark", DEFAULT_ACCENT, "vivid");
+    expect([dark.lum0, dark.lum1, dark.lum2, dark.lum3, dark.lum4]).toEqual([
+      "#0B0B0E",
+      "#121216",
+      "#18181D",
+      "#1F1F25",
+      "#27272E",
+    ]);
     expect(dark.bgMainWindow).toBe(dark.lum1);
     expect(dark.bgSurfaceFlat).toBe(dark.lum2);
     expect(dark.accentAi).toBe("#6366F1");
     expect(dark.tags.ai.fg).toBe(dark.accentInk);
-    const light = createTheme("light");
-    expect([light.lum0, light.lum1, light.lum2, light.lum3, light.lum4]).toEqual(["#E7E5DF", "#F8F7F3", "#FEFDFB", "#F1F0EB", "#E8E6E0"]);
+    const light = createTheme("light", DEFAULT_ACCENT, "vivid");
+    expect([light.lum0, light.lum1, light.lum2, light.lum3, light.lum4]).toEqual([
+      "#E7E5DF",
+      "#F8F7F3",
+      "#FEFDFB",
+      "#F1F0EB",
+      "#E8E6E0",
+    ]);
     expect(light.textMuted).toBe("#66666E");
     expect(light.accentAi).toBe(light.accentInk);
     expect(light.accentCheckin).toBe("#0F766E");
   });
 
   it("builds the edge recipes: light upper edge floats, dark upper edge is recessed", () => {
-    const d = createTheme("dark");
-    expect(d.edgeSurface).toBe("inset 0 1px 0 0 rgba(255, 255, 255, 0.085), 0 0 0 1px rgba(255, 255, 255, 0.06)");
+    const d = createTheme("dark", DEFAULT_ACCENT, "vivid");
+    expect(d.edgeSurface).toBe(
+      "inset 0 1px 0 0 rgba(255, 255, 255, 0.085), 0 0 0 1px rgba(255, 255, 255, 0.06)",
+    );
     expect(d.edgeInset.startsWith("inset 0 1px 0 0 rgba(0, 0, 0, 0.55)")).toBe(true);
     expect(d.edgeFloat).toContain("0 24px 48px -20px");
     expect(d.shadowFloating).toBe(d.edgeFloat);
@@ -78,13 +102,13 @@ describe("theme", () => {
 
   it("derives the accent layer from any swatch or free hex colour", () => {
     expect(accentPair("teal")).toEqual({ accent: "#14B8A6", solid: "#0F766E" });
-    expect(createTheme("dark", "rose").accentAi).toBe("#F43F5E");
-    const g = createTheme("dark", "#10B981");
+    expect(createTheme("dark", "rose", "vivid").accentAi).toBe("#F43F5E");
+    const g = createTheme("dark", "#10B981", "vivid");
     expect(g.accent).toBe("#10B981");
     expect(g.accentSoft).toBe("rgba(16, 185, 129, 0.15)");
     expect(g.accentLine).toBe("rgba(16, 185, 129, 0.42)");
-    expect(createTheme("light", "#F97316").accentSoft).toBe("rgba(249, 115, 22, 0.1)");
-    expect(createTheme("dark", "#123456").accentKey).toBe("#123456");
+    expect(createTheme("light", "#F97316", "vivid").accentSoft).toBe("rgba(249, 115, 22, 0.1)");
+    expect(createTheme("dark", "#123456", "vivid").accentKey).toBe("#123456");
   });
 
   it("knows the web swatches (Lila, Grün, Orange first) and accepts free hex values", () => {
@@ -107,7 +131,7 @@ describe("theme", () => {
   it("keeps readable text on every accent fill", () => {
     for (const { key } of ACCENTS) {
       for (const name of ["dark", "light"] as const) {
-        const t = createTheme(name, key);
+        const t = createTheme(name, key, "vivid");
         expect(contrast(t.onAccent, t.accentFill), `${name} ${key}`).toBeGreaterThanOrEqual(4.5);
       }
     }
@@ -116,11 +140,13 @@ describe("theme", () => {
 
 describe("board 11 (V2-11F/G/I)", () => {
   it("keeps light meta text at 4.5:1 or more on every light surface", () => {
-    const l = createTheme("light");
+    const l = createTheme("light", DEFAULT_ACCENT, "vivid");
     for (const bg of [l.bgMainWindow, l.bgSurfaceFlat, l.bgSurfaceMuted, l.bgAppShell, l.bgHover])
-      for (const fg of [l.textMuted, l.textSecondary]) expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5);
-    const d = createTheme("dark");
-    for (const bg of [d.bgMainWindow, d.bgSurfaceFlat, d.bgSurfaceMuted, d.bgAppShell]) expect(contrast(d.textMuted, bg)).toBeGreaterThanOrEqual(4.5);
+      for (const fg of [l.textMuted, l.textSecondary])
+        expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5);
+    const d = createTheme("dark", DEFAULT_ACCENT, "vivid");
+    for (const bg of [d.bgMainWindow, d.bgSurfaceFlat, d.bgSurfaceMuted, d.bgAppShell])
+      expect(contrast(d.textMuted, bg)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("has three radii and the 32/300 greeting step", () => {

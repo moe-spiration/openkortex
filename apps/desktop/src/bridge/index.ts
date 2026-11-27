@@ -40,3 +40,8 @@ export function bridge(): Bridge {
   instance ??= isTauri() ? createTauriBridge() : createMockBridge();
   return instance;
 }
+
+/** Tests only: install a bridge (for example a mock with its own clock) before the first bridge() call. */
+export function setBridgeForTests(b: Bridge | null): void {
+  instance = b;
+}

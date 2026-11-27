@@ -270,8 +270,6 @@
     .fs-ib-keys { display: none; }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .kx-drawer.fs-ed { animation: none; }
-    .fs-bar > i { transition: none; }
-  }
+  [data-motion="reduced"] .kx-drawer.fs-ed { animation: none; }
+  [data-motion="reduced"] .fs-bar > i { transition: none; }
 }

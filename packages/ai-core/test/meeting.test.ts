@@ -128,15 +128,15 @@ describe("meeting adapter", () => {
       "## Besprochene Themenblöcke",
       "## Getroffene Entscheidungen",
       "## Offene Risiken & Blocker",
-      "## Extrahierte Action Items",
+      "## Aufgaben",
       "> [!toggle]- Transkript",
     ];
     expect(order.map((h) => md.indexOf(h))).toEqual(
       [...order.map((h) => md.indexOf(h))].sort((a, b) => a - b),
     );
     expect(md).toContain("### 2. Schema & Keys [00:01:10]");
-    expect(md).toContain("- [ ] @Max: SQL-Schema finalisieren (Due: 2026-10-24) · [00:01:12]");
-    expect(md).toContain("- [ ] @Gesprächspartner 1: API-Keys einrichten (Due: 2026-10-26)\n");
+    expect(md).toContain("- [ ] SQL-Schema finalisieren · Zuständig: Max · Fällig: 2026-10-24");
+    expect(md).toContain("- [ ] API-Keys einrichten · Zuständig: Gesprächspartner 1 · Fällig: 2026-10-26\n");
     expect(md).toContain("[00:02:30] Gesprächspartner 1: Ich richte die API-Keys bis Sonntag ein.");
 
     expect(out.actionItems).toEqual([

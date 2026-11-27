@@ -1,0 +1,18 @@
+/* Ruhe round 2 (r2-win): grouped chapters of the settings list (SettingsView.tsx, lib/settings/sections.ts). */
+@layer components {
+  .rzs-nav-group { display: flex; flex-direction: column; gap: 1px; }
+  .rzs-nav-group + .rzs-nav-group { margin-top: 14px; }
+  .rzs-nav-glabel {
+    display: block; padding: 0 10px 4px; color: var(--t4); font-size: var(--rz-fs-micro); font-weight: var(--rz-w-regular);
+    line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Narrow: the list is one scrolling row (ruhe.css W8), the groups only keep their order. */
+  @media (max-width: 859.98px) {
+    .rzs-nav-group { display: contents; }
+    .rzs-nav-group + .rzs-nav-group { margin-top: 0; }
+    .rzs-nav-glabel { display: none; }
+    /* The column's 96 px bottom room (space for sign-out) left an empty band under the row. */
+    .rzs-nav { padding: 6px 8px; }
+  }
+}

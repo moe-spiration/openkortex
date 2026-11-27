@@ -4,11 +4,13 @@ import { useEffect, useSyncExternalStore } from "react";
 import { hasActiveJobs, type JobView } from "@/lib/agent-jobs";
 import { isLiveData } from "@/lib/workspace-data";
 import { getAgentJobs } from "@/server/agent/actions";
+import { mockAgentJobs } from "@/lib/mock/agent";
 
 /*
  * The agent's jobs, shared by every place that shows them (agent page, sidebar badge, Orbit-Bar chip, Home).
  * One list, one poll: every 5 seconds while a job is queued or running, once a minute otherwise, and only
- * while someone is looking (a mounted subscriber, a visible tab). The mock mode has no jobs.
+ * while someone is looking (a mounted subscriber, a visible tab). The mock mode shows the fixtures of lib/mock/agent.ts
+ * (changed in memory only).
  */
 
 /** Window events: a job was started elsewhere (detail: its id), a standing order was created elsewhere. */
@@ -36,7 +38,14 @@ function schedule() {
 
 /** Reads the list now (after starting, confirming or dismissing a job elsewhere). */
 export async function refreshAgentJobs(): Promise<void> {
-  if (!isLiveData()) return;
+  if (!isLiveData()) {
+    if (!loaded) {
+      jobs = mockAgentJobs(new Date());
+      loaded = true;
+      emit();
+    }
+    return;
+  }
   if (typeof document !== "undefined" && document.hidden && loaded) return schedule();
   const r = await getAgentJobs();
   if (r.ok) {

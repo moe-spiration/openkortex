@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Animated, Platform, RefreshControl, ScrollView, type NativeScrollEvent, type NativeSyntheticEvent, type StyleProp, type ViewStyle } from "react-native";
 import { useIsFocused } from "expo-router";
 import { useData } from "../state/Data";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
 import { useChrome } from "./Chrome";
 import { HEADER_H } from "./Shell";
 
@@ -13,9 +13,16 @@ import { HEADER_H } from "./Shell";
 /** How close (px) to the bottom `onNearEnd` fires, so the next page is there before the user gets to it. */
 const NEAR_END_PX = 900;
 
-export function ScreenScroll({ children, padTop = 10, gap, contentStyle, scrollY, onNearEnd }: { children: ReactNode; padTop?: number; gap?: number; contentStyle?: StyleProp<ViewStyle>; scrollY?: Animated.Value; onNearEnd?: () => void }) {
-  const { top } = useChrome();
+/**
+ * `flush`: no side padding, for Ruhe screens built from src/ui/ruhe primitives (they carry their own 20 / 16 margins).
+ */
+export function ScreenScroll({ children, padTop: padTopProp, gap, contentStyle, scrollY, onNearEnd, flush }: { children: ReactNode; padTop?: number; gap?: number; contentStyle?: StyleProp<ViewStyle>; scrollY?: Animated.Value; onNearEnd?: () => void; flush?: boolean }) {
+  const { top: safeTop } = useChrome();
   const th = useTheme();
+  // Ruhe has no global header strip: content starts right under the status bar (the page's RuheLocBar adds 6).
+  const ruhe = useRuhe();
+  const top = safeTop + (ruhe ? 0 : HEADER_H);
+  const padTop = padTopProp ?? (flush ? 0 : 10);
   const d = useData();
   // Tab scenes are transparent (the shell paints the background); a scene that is not in front must not
   // shine through the one that is, nor take its touches. Hidden, not unmounted, so scroll positions stay.
@@ -32,8 +39,8 @@ export function ScreenScroll({ children, padTop = 10, gap, contentStyle, scrollY
       pointerEvents={focused ? "auto" : "none"}
       // Starts at the very top so content runs under the transparent header (no solid band behind it).
       style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, zIndex: 1, opacity: focused ? 1 : 0 }}
-      contentContainerStyle={[{ paddingTop: top + HEADER_H + padTop, paddingHorizontal: 18, paddingBottom: 120, gap }, contentStyle]}
-      scrollIndicatorInsets={{ top: top + HEADER_H }}
+      contentContainerStyle={[{ paddingTop: top + padTop, paddingHorizontal: flush ? 0 : 18, paddingBottom: 120, gap }, contentStyle]}
+      scrollIndicatorInsets={{ top }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       {...(scrollY
@@ -41,7 +48,7 @@ export function ScreenScroll({ children, padTop = 10, gap, contentStyle, scrollY
         : nearEnd
           ? { scrollEventThrottle: 100, onScroll: nearEnd }
           : null)}
-      refreshControl={d.auth === "live" ? <RefreshControl progressViewOffset={top + HEADER_H} refreshing={d.loading} onRefresh={d.refresh} tintColor={th.textMuted} colors={[th.textSecondary]} /> : undefined}
+      refreshControl={d.auth === "live" ? <RefreshControl progressViewOffset={top} refreshing={d.loading} onRefresh={d.refresh} tintColor={th.textMuted} colors={[th.textSecondary]} /> : undefined}
     >
       {children}
     </Scroller>

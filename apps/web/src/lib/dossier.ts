@@ -114,6 +114,10 @@ function topOf(lines: readonly string[]): number {
  * first section gets the heading of the user's own notes.
  */
 export function setSection(md: string, key: AgentDossierKey, body: string, locale: "en" | "de"): string {
+  return writeSection(md, key, body, locale);
+}
+
+function writeSection(md: string, key: DossierKey, body: string, locale: "en" | "de"): string {
   const lines = md.split("\n");
   const found = sections(lines);
   const text = body.trim();
@@ -169,4 +173,51 @@ export interface TimelineEntryLike {
 /** The dossier's history: linked meetings and mentions, newest first. */
 export function dossierTimeline<T extends TimelineEntryLike>(meetings: readonly T[], mentions: readonly T[], max = 6): T[] {
   return [...meetings, ...mentions].sort((a, b) => (b.date + (b.time ?? "")).localeCompare(a.date + (a.time ?? ""))).slice(0, max);
+}
+
+/** A line of "Open points" as parseDossier reads it, or null. */
+const pointOf = (line: string): string | null => {
+  const m = /^\s*(?:[-*+]|\d+[.)])\s+(?:\[( |x|X)\]\s+)?(.+)$/.exec(line);
+  return m && !m[1]?.trim() ? m[2]!.trim() : null;
+};
+
+/**
+ * Takes one open point off the list (ticked in the dossier view): only its line goes, the rest of the note stays as
+ * it is. The note is returned unchanged when the point is not there.
+ */
+export function removeOpenPoint(md: string, point: string): string {
+  const lines = md.split("\n");
+  const open = sections(lines).find((s) => s.key === "open");
+  if (!open) return md;
+  const want = point.trim();
+  for (let i = open.start + 1; i < open.end; i++) {
+    if (pointOf(lines[i]!) !== want) continue;
+    lines.splice(i, 1);
+    return lines.join("\n");
+  }
+  return md;
+}
+
+/** Leading title (H1) of a note and the rest. */
+function splitTitle(md: string): { head: string; rest: string } {
+  const m = /^\s*#\s+[^\n]*\n?/.exec(md);
+  return m ? { head: m[0], rest: md.slice(m[0].length) } : { head: "", rest: md };
+}
+
+/**
+ * The user's own notes of a dossier: the section "My notes", or the whole text when the note has no dossier
+ * section yet (`whole`: writing it back replaces the text).
+ */
+export function ownNotesOf(md: string): { text: string; whole: boolean } {
+  const lines = md.split("\n");
+  if (sections(lines).length) return { text: parseDossier(md).own, whole: false };
+  return { text: splitTitle(md).rest.trim(), whole: true };
+}
+
+/** Writes the user's own notes (never touched by the agent): the section "My notes", or the whole text (see ownNotesOf). */
+export function setOwnNotes(md: string, body: string, locale: "en" | "de"): string {
+  if (sections(md.split("\n")).length) return writeSection(md, "own", body, locale);
+  const { head } = splitTitle(md);
+  const text = body.trim();
+  return (head ? `${head.trimEnd()}\n\n` : "") + (text ? `${text}\n` : "");
 }

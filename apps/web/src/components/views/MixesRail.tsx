@@ -2,9 +2,12 @@
 
 import { Layers } from "lucide-react";
 import { useSmartMixes } from "@/lib/data/home";
+import { tagTone } from "@/lib/workspace-data";
+import { useLook } from "@/components/theme/look";
 import { EntryPlaceholder, ownImage } from "./EntryParts";
 import type { ViewEntry } from "./entries";
 import { t, tn } from "@/i18n";
+import { EmptyPic } from "@/components/motion/EmptyPic";
 
 /*
  * Smart Knowledge Mixes of the collections (Feinschliff Live, prototype `.mixes` / `.mtile`): header with the mix
@@ -22,6 +25,7 @@ const inMix = (tag: string, mix: string) => {
 
 export function MixesRail({ entries, active, onPick }: { entries: readonly ViewEntry[]; active?: string | null; onPick: (tag: string) => void }) {
   const mixes = useSmartMixes();
+  const ruhe = useLook() === "ruhe";
   if (mixes === null) {
     return (
       <div aria-busy="true" className="kc-mixes-wrap">
@@ -32,10 +36,18 @@ export function MixesRail({ entries, active, onPick }: { entries: readonly ViewE
   if (mixes.length === 0) {
     return (
       <div className="kc-mixes-wrap">
-        <span className="kc-empty-line">
-          <Layers aria-hidden />
+        <EmptyPic
+          kind="idea"
+          size="sm"
+          classic={
+            <span className="kc-empty-line">
+              <Layers aria-hidden />
+              {t("No mixes yet: a mix emerges as soon as two entries carry the same hashtag.")}
+            </span>
+          }
+        >
           {t("No mixes yet: a mix emerges as soon as two entries carry the same hashtag.")}
-        </span>
+        </EmptyPic>
       </div>
     );
   }
@@ -75,7 +87,10 @@ export function MixesRail({ entries, active, onPick }: { entries: readonly ViewE
               </span>
               <span className="kc-mtile-t">
                 <b>{m.title}</b>
-                <span>{tn(count, "{n} entry", "{n} entries")}</span>
+                <span>
+                  {ruhe && <i className="kc-mtile-dot" aria-hidden style={{ background: `var(--tag-${tagTone(m.tag)}-dot)` }} />}
+                  {tn(count, "{n} entry", "{n} entries")}
+                </span>
               </span>
             </button>
           );

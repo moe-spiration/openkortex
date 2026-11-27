@@ -119,15 +119,14 @@ function InlineText({ c, cites, onCite }: { c: Inline[]; cites: Map<number, Cita
   });
 }
 
-function Answer({ text, citations, question, last }: { text: string; citations: Citation[]; question: string; last: boolean }) {
+/** The answer's Markdown as blocks with clickable [n] citations (no action row). */
+export function AnswerBlocks({ text, citations }: { text: string; citations: Citation[] }) {
   const open = useOpenItem();
   const cites = useMemo(() => new Map(citations.map((c) => [c.n, c])), [citations]);
   const onCite = (c: Citation) => open(c.item_id);
   const blocks = useMemo(() => parseAnswer(text), [text]);
-  const used = useMemo(() => new Set(citedNumbers(text)), [text]);
-  const sources = citations.filter((c) => used.has(c.n));
   return (
-    <div className="kx-orbit-answer-body">
+    <>
       {blocks.map((b, i) => {
         if (b.t === "h")
           return (
@@ -164,6 +163,22 @@ function Answer({ text, citations, question, last }: { text: string; citations: 
           </List>
         );
       })}
+    </>
+  );
+}
+
+/** The sources an answer really cites, in citation order. */
+export function usedCitations(text: string, citations: Citation[]): Citation[] {
+  const used = new Set(citedNumbers(text));
+  return citations.filter((c) => used.has(c.n));
+}
+
+function Answer({ text, citations, question, last }: { text: string; citations: Citation[]; question: string; last: boolean }) {
+  const open = useOpenItem();
+  const sources = usedCitations(text, citations);
+  return (
+    <div className="kx-orbit-answer-body">
+      <AnswerBlocks text={text} citations={citations} />
       {(sources.length > 0 || last) && (
         <AnswerActions
           last={last}
@@ -183,26 +198,26 @@ export function StaticAnswer({ text, sources }: { text: string; sources: readonl
   return <Answer text={text} citations={citations} question="" last={false} />;
 }
 
-function messageText(m: CopilotMessage): string {
+export function messageText(m: CopilotMessage): string {
   return m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
 }
 
 /** The sources of an answer: the agent adds to them while it works, so the latest part counts. */
-function messageCitations(m: CopilotMessage): Citation[] {
+export function messageCitations(m: CopilotMessage): Citation[] {
   let out: Citation[] = [];
   for (const p of m.parts) if (p.type === "data-citations") out = p.data.citations;
   return out;
 }
 
-function messageSteps(m: CopilotMessage): StepData[] {
+export function messageSteps(m: CopilotMessage): StepData[] {
   return m.parts.flatMap((p) => (p.type === "data-step" ? [p.data] : []));
 }
-function messageProposal(m: CopilotMessage): ProposalData | null {
+export function messageProposal(m: CopilotMessage): ProposalData | null {
   let out: ProposalData | null = null;
   for (const p of m.parts) if (p.type === "data-proposal") out = p.data;
   return out;
 }
-function messageDone(m: CopilotMessage): AgentActionResult[] {
+export function messageDone(m: CopilotMessage): AgentActionResult[] {
   let out: AgentActionResult[] = [];
   for (const p of m.parts) if (p.type === "data-done") out = p.data.results;
   return out;
@@ -267,7 +282,7 @@ export function ResultList({ results, onOpen }: { results: readonly Pick<AgentAc
 }
 
 /** Changes the agent proposes (autonomy "Mit Rückfrage"): tick, run, or dismiss. Nothing is saved before. */
-function Proposal({ id, proposal }: { id: string; proposal: ProposalData }) {
+export function Proposal({ id, proposal }: { id: string; proposal: ProposalData }) {
   const chat = useCopilotChat();
   const open = useOpenItem();
   const outcome = chat.outcomes[id];
@@ -350,7 +365,7 @@ function Proposal({ id, proposal }: { id: string; proposal: ProposalData }) {
 }
 
 /** Changes the agent made on its own (autonomy "Selbstständig"), with undo. */
-function Done({ id, results }: { id: string; results: AgentActionResult[] }) {
+export function Done({ id, results }: { id: string; results: AgentActionResult[] }) {
   const chat = useCopilotChat();
   const open = useOpenItem();
   const undone = chat.outcomes[id]?.state === "undone";
@@ -369,7 +384,7 @@ function Done({ id, results }: { id: string; results: AgentActionResult[] }) {
   );
 }
 
-function Pending({ label }: { label: string }) {
+export function Pending({ label }: { label: string }) {
   return (
     <div className="kxh-row kx-help" role="status" style={{ gap: 8, padding: "4px 2px", fontSize: "calc(12px * var(--kx-fs, 1))" }}>
       <span className="kx-spinner" aria-hidden />

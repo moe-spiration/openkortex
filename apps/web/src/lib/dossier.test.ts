@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dossierTimeline, isDossierType, parseDossier, setSection, updateDossier } from "./dossier";
+import { dossierTimeline, isDossierType, ownNotesOf, parseDossier, removeOpenPoint, setOwnNotes, setSection, updateDossier } from "./dossier";
 
 const DOSSIER = `# Jonas Weber
 
@@ -95,5 +95,29 @@ describe("dossierTimeline", () => {
 describe("isDossierType", () => {
   it("covers persons, companies and projects", () => {
     expect(["person", "organization", "project", "note", "concept"].map(isDossierType)).toEqual([true, true, true, false, false]);
+  });
+});
+
+describe("dossier view (Ruhe)", () => {
+  it("takes one open point off and keeps the rest", () => {
+    const next = removeOpenPoint(DOSSIER, "Zeitplan abstimmen");
+    expect(parseDossier(next).open).toEqual(["Staffelpreise nachreichen"]);
+    expect(next).toContain("- [x] Erstgespräch führen");
+    expect(next).toContain("Mag kurze Mails.");
+    expect(removeOpenPoint(DOSSIER, "gibt es nicht")).toBe(DOSSIER);
+    expect(removeOpenPoint("# X\n\nText", "Text")).toBe("# X\n\nText");
+  });
+
+  it("reads and writes the own notes without touching the agent's sections", () => {
+    expect(ownNotesOf(DOSSIER)).toEqual({ text: "Mag kurze Mails.\n\n- und klare Zahlen", whole: false });
+    const next = setOwnNotes(DOSSIER, "Lieber Zahlen als Folien.", "de");
+    expect(parseDossier(next)).toMatchObject({ state: "Jonas prüft das Angebot.", own: "Lieber Zahlen als Folien." });
+  });
+
+  it("treats a note without sections as own notes", () => {
+    const md = "# Priya\n\nKontakt für die Plattform.\n";
+    expect(ownNotesOf(md)).toEqual({ text: "Kontakt für die Plattform.", whole: true });
+    expect(setOwnNotes(md, "Neu.", "de")).toBe("# Priya\n\nNeu.\n");
+    expect(setOwnNotes("ohne Titel", "Neu.", "de")).toBe("Neu.\n");
   });
 });

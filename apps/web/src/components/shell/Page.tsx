@@ -1,68 +1,34 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { t } from "@/i18n";
-import { Ico } from "./icons";
+import { Pictogram, type PictogramKind } from "@/components/motion/Pictogram";
 
 /* Page scaffolding of the workspace views (prototype: padding 26px 32px 170px, kx-h-page, kx-emptystate). */
 
 export function Page({ children, maxWidth = 1160, gap = 22 }: { children: ReactNode; maxWidth?: number; gap?: number }) {
   // Bottom padding keeps the last content clear of the floating footbar (at least --kx-footbar-safe).
-  return <div style={{ padding: "26px 32px max(170px, var(--kx-footbar-safe, 100px))", maxWidth, margin: "0 auto", display: "grid", gap }}>{children}</div>;
-}
-
-export function PageTitle({
-  title,
-  help,
-  eyebrow,
-  crumbs,
-  aside,
-}: {
-  title: ReactNode;
-  help?: ReactNode;
-  eyebrow?: ReactNode;
-  crumbs?: { label: string; href?: string }[];
-  aside?: ReactNode;
-}) {
   return (
-    <div>
-      {crumbs && (
-        <nav className="kx-crumbs" aria-label={t("Path")}>
-          {crumbs.map((c, i) => (
-            <span key={i} style={{ display: "contents" }}>
-              {i > 0 && <Ico name="chev-r" className="kx-sep" />}
-              {c.href ? (
-                <Link href={c.href}>{c.label}</Link>
-              ) : (
-                <span aria-current={i === crumbs.length - 1 ? "page" : undefined} style={{ padding: "0 6px" }}>
-                  {c.label}
-                </span>
-              )}
-            </span>
-          ))}
-        </nav>
-      )}
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap", marginTop: crumbs ? 6 : 0 }}>
-        <div style={{ flex: "1 1 260px", minWidth: 0 }}>
-          {eyebrow && <div className="kx-eyebrow">{eyebrow}</div>}
-          <h1 className="kx-h-page" style={{ margin: eyebrow ? "2px 0 0" : 0 }}>
-            {title}
-          </h1>
-          {help && (
-            <p className="kx-help" style={{ margin: "4px 0 0" }}>
-              {help}
-            </p>
-          )}
-        </div>
-        {aside}
-      </div>
+    <div
+      className="kx-page"
+      style={{
+        padding: "26px 32px max(170px, var(--kx-footbar-safe, 100px))",
+        maxWidth,
+        margin: "0 auto",
+        display: "grid",
+        gap,
+      }}
+    >
+      {children}
     </div>
   );
 }
 
+/** Page head: Ruhe location bar or the classic head (see ./Bars). */
+export { PageTitle } from "./Bars";
+
 /** Prototype empty-state illustration (orbit rings, AI spark, two dots). */
 function EmptyArt() {
   return (
-    <svg viewBox="0 0 160 110" width={160} height={110} aria-hidden fill="none">
+    <svg viewBox="0 0 160 110" width={160} height={110} aria-hidden fill="none" className="kx-art-classic">
       <circle cx="80" cy="56" r="40" stroke="var(--border-subtle)" strokeWidth="1.5" />
       <circle cx="80" cy="56" r="26" stroke="var(--border-subtle)" strokeWidth="1.5" strokeDasharray="3 5" />
       <path d="M80 34l4.2 11 11 4.2-11 4.2-4.2 11-4.2-11-11-4.2 11-4.2z" fill="var(--accent-ai)" opacity="0.9" />
@@ -72,10 +38,12 @@ function EmptyArt() {
   );
 }
 
-export function EmptyState({ title, children, actions }: { title: string; children: ReactNode; actions?: ReactNode }) {
+/** Empty view. `art` picks the animated pictogram the Ruhe look shows instead of the classic illustration. */
+export function EmptyState({ title, children, actions, art = "inbox" }: { title: string; children: ReactNode; actions?: ReactNode; art?: PictogramKind }) {
   return (
     <div className="kx-emptystate kx-in">
       <EmptyArt />
+      <Pictogram kind={art} size="lg" className="kx-art-ruhe" />
       <strong className="kx-h-section">
         {title}
       </strong>

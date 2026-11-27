@@ -67,6 +67,7 @@ const VERT_NODE = /* glsl */ `
 attribute float aSize;
 attribute float aState;
 attribute float aShape;
+attribute vec4 aColor;
 uniform float uScale;
 uniform float uMinPx;
 uniform float uFogNear;
@@ -75,9 +76,11 @@ varying float vState;
 varying float vShape;
 varying float vFog;
 varying float vPx;
+varying vec4 vColor;
 void main() {
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   float depth = max(-mv.z, 1.0);
+  vColor = aColor;
   float boost = aState > 1.5 ? 1.45 : (aState > 0.5 ? 1.15 : 1.0);
   float px = clamp(aSize * boost * uScale / depth, uMinPx, 110.0);
   gl_PointSize = px;
@@ -95,10 +98,12 @@ uniform vec3 uInk;
 uniform vec3 uBg;
 uniform float uDim;
 uniform float uDark;
+uniform float uCluster;
 varying float vState;
 varying float vShape;
 varying float vFog;
 varying float vPx;
+varying vec4 vColor;
 void main() {
   vec2 c = gl_PointCoord * 2.0 - 1.0;
   float sd;
@@ -111,7 +116,7 @@ void main() {
   float aa = 2.4 / vPx;
   float alpha = 1.0 - smoothstep(-aa, 0.0, sd);
   if (alpha < 0.02) discard;
-  vec3 col = uNode;
+  vec3 col = uCluster > 0.5 && vColor.a > 0.5 ? vColor.rgb : uNode;
   if (vState > 2.5) col = uAccent;
   else if (vState > 0.5) col = uInk;
   // Soft volume: a little light from the upper left, a little shade at the rim.
@@ -221,6 +226,11 @@ export class GraphEngine {
   private worker: Worker | null = null;
   private token = 0;
   private colorCtx: CanvasRenderingContext2D;
+  /** Ruhe: nodes take the colour of their tag domain, and each domain cluster carries its name (setClusters). */
+  private clusters = false;
+  private clusterNames: Partial<Record<string, string>> = {};
+  private tones: Record<string, [number, number, number]> = {};
+  private clusterEls = new Map<string, HTMLSpanElement>();
 
   private w = 1;
   private h = 1;
@@ -333,6 +343,7 @@ export class GraphEngine {
         uBg: { value: new Vector3(0.08, 0.08, 0.1) },
         uDim: { value: 0 },
         uDark: { value: 1 },
+        uCluster: { value: 0 },
       },
     });
     this.edgeMat = new ShaderMaterial({
@@ -469,7 +480,75 @@ export class GraphEngine {
     this.updateEdgeAlpha();
     const acc = cssRgb(c, p.accentInk, [0.65, 0.7, 0.99]);
     (this.suggestLine.material as LineDashedMaterial).color.setRGB(acc[0], acc[1], acc[2], SRGBColorSpace);
+    this.tones = Object.fromEntries(Object.entries(p.tone).map(([k, col]) => [k, cssRgb(c, col, [0.6, 0.6, 0.65])]));
+    this.syncColors();
     this.request();
+  }
+
+  /** Ruhe: colours nodes by their tag domain and names the clusters (names: domain → label); off = monochrome. */
+  setClusters(on: boolean, names: Partial<Record<string, string>> = {}): void {
+    this.clusters = on;
+    this.clusterNames = names;
+    this.nodeMat.uniforms.uCluster!.value = on ? 1 : 0;
+    for (const el of this.clusterEls.values()) el.remove();
+    this.clusterEls.clear();
+    if (on)
+      for (const [k, label] of Object.entries(names)) {
+        if (!label) continue;
+        const el = document.createElement("span");
+        el.className = "gr-cluster";
+        el.textContent = label;
+        el.hidden = true;
+        this.overlay.appendChild(el);
+        this.clusterEls.set(k, el);
+      }
+    this.syncColors();
+    this.request();
+  }
+
+  private syncColors() {
+    if (!this.points) return;
+    const attr = this.points.geometry.getAttribute("aColor") as BufferAttribute | undefined;
+    if (!attr) return;
+    const a = attr.array as Float32Array;
+    for (let i = 0; i < this.nodes.length; i++) {
+      const tone = this.nodes[i]!.domain ? this.tones[this.nodes[i]!.domain!] : undefined;
+      a[i * 4] = tone?.[0] ?? 0;
+      a[i * 4 + 1] = tone?.[1] ?? 0;
+      a[i * 4 + 2] = tone?.[2] ?? 0;
+      a[i * 4 + 3] = tone ? 1 : 0;
+    }
+    attr.needsUpdate = true;
+  }
+
+  /** Cluster names above the middle of each domain's visible nodes (2D and 3D). */
+  private drawClusters() {
+    if (!this.clusters || !this.clusterEls.size) return;
+    const acc = new Map<string, { x: number; y: number; top: number; n: number }>();
+    for (let i = 0; i < this.nodes.length; i++) {
+      const d = this.nodes[i]!.domain;
+      if (!d || this.sd[i]! <= 1 || !this.clusterEls.has(d)) continue;
+      const c = acc.get(d) ?? { x: 0, y: 0, top: Infinity, n: 0 };
+      c.x += this.sx[i]!;
+      c.y += this.sy[i]!;
+      c.n++;
+      acc.set(d, c);
+    }
+    for (const [k, el] of this.clusterEls) {
+      const c = acc.get(k);
+      if (!c || c.n < 3) {
+        el.hidden = true;
+        continue;
+      }
+      const cx = c.x / c.n;
+      const cy = c.y / c.n;
+      // Spread of the cluster: the label sits above most of its nodes.
+      let spread = 0;
+      for (let i = 0; i < this.nodes.length; i++) if (this.nodes[i]!.domain === k && this.sd[i]! > 1) spread += Math.abs(this.sy[i]! - cy);
+      const y = cy - Math.max(24, (spread / c.n) * 1.6) - 14;
+      el.hidden = false;
+      el.style.transform = `translate3d(${Math.round(cx)}px,${Math.round(Math.max(8, y))}px,0) translateX(-50%)`;
+    }
   }
 
   setActive(id: string | null): void {
@@ -587,6 +666,7 @@ export class GraphEngine {
     const shape = new Float32Array(n);
     for (let i = 0; i < n; i++) shape[i] = shapeOf(this.nodes[i]!.type) === "square" ? 1 : 0;
     g.setAttribute("aShape", new BufferAttribute(shape, 1));
+    g.setAttribute("aColor", new BufferAttribute(new Float32Array(n * 4), 4));
     this.points = new Points(g, this.nodeMat);
     this.points.frustumCulled = false;
     this.points.renderOrder = 1;
@@ -612,6 +692,7 @@ export class GraphEngine {
     this.scene.add(this.points);
     this.updateEdgeAlpha();
     this.syncEdges();
+    this.syncColors();
   }
 
   private syncEdges() {
@@ -945,6 +1026,7 @@ export class GraphEngine {
     this.project();
     if (this.pointer && !this.dragging) this.setHover(this.pick(this.pointer.x, this.pointer.y));
     this.drawLabels(fogNear, fogFar);
+    this.drawClusters();
 
     const zoom = (this.fitDist / Math.max(1, dist)).toFixed(2);
     if (zoom !== this.zoomShown) {

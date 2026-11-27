@@ -8,6 +8,16 @@ const memory = () => {
 const note = (title: string): QueueJob => ({ kind: "ingest", title, req: { kind: "note", content_md: title, client: { name: "kortex-mobile", version: "0" }, captured_at: "" } });
 
 describe("capture queue", () => {
+  it("put stores a job before sending and remove takes exactly that one out (quick overlay)", async () => {
+    const q = createQueue(memory());
+    await q.add(note("old"));
+    const id = await q.put(note("voice"));
+    expect((await q.list()).map((j) => j.title)).toEqual(["old", "voice"]);
+    await q.remove(id);
+    await q.remove("missing");
+    expect((await q.list()).map((j) => j.title)).toEqual(["old"]);
+  });
+
   it("sends oldest first and keeps the rest when still offline", async () => {
     const q = createQueue(memory());
     await q.add(note("a"));

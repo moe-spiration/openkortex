@@ -2,7 +2,6 @@ import { GraphView } from "@/components/graph/GraphView";
 import { benchGraph, loadGraph, mockGraph } from "@/lib/data/graph";
 import { dataSource } from "@/lib/supabase/config";
 import { getSession } from "@/lib/supabase/server";
-import { loadWorkspace } from "@/lib/supabase/workspace";
 import { DEFAULT_GRAPH_QUERY, type GraphData } from "@/server/graph/types";
 
 export const metadata = { title: "Knowledge Graph" };
@@ -16,7 +15,6 @@ const EMPTY: GraphData = {
 
 /* The graph is built on the server (links, tags, semantic neighbours, layout) and handed to the client view. */
 export default async function GraphPage({ searchParams }: { searchParams: Promise<{ bench?: string }> }) {
-  await loadWorkspace();
   let initial = EMPTY;
   // Mock mode only: `?bench=500` renders a synthetic vault of that size (performance check A-14).
   const bench = Number((await searchParams).bench);

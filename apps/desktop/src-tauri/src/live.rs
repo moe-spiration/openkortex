@@ -157,6 +157,33 @@ pub struct Card {
     /// "fact" | "question" | "action"
     pub kind: String,
     pub text: String,
+    /// Short headline ("Jetzt guter Moment"), when the coach gives one (0.6.8, optional: older web
+    /// apps send none and the HUD names the card by its kind).
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "lenient")]
+    pub title: Option<String>,
+    /// The object file the card draws on ("Akte Jonas"), when the coach names one.
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "lenient")]
+    pub object: Option<CardObject>,
+}
+
+/// A knowledge item a coaching card refers to (a domain object such as a person).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CardObject {
+    pub id: String,
+    pub title: String,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub kind: Option<String>,
+}
+
+/// An optional field that is dropped instead of failing the whole answer when its shape is wrong
+/// (the cards must still show when a newer web app sends something this core does not know).
+fn lenient<'de, D, T>(d: D) -> Result<Option<T>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: serde::de::DeserializeOwned,
+{
+    let v = serde_json::Value::deserialize(d)?;
+    Ok(serde_json::from_value(v).ok())
 }
 
 #[derive(Deserialize)]
@@ -660,6 +687,28 @@ pub async fn finish(app: AppHandle, s: Arc<Session>, api: Api, cfg: DesktopConfi
     emit_live(&app, "ended", &s, None);
 }
 
+/// After "Verwerfen": stop transcription and coaching without a protocol, and delete the session's
+/// meeting item in Kortex (it may still be opening, so wait for it briefly).
+pub async fn discard(app: AppHandle, s: Arc<Session>, api: Option<Api>) {
+    s.ended.store(true, Ordering::SeqCst);
+    s.wake_coach.notify_one();
+    let worker = s.worker.lock().unwrap().take();
+    if let Some(h) = worker {
+        h.abort();
+    }
+    let result: Result<()> = async {
+        let api = api.ok_or_else(|| anyhow!("no account connected"))?;
+        let Some(id) = wait_for_item(&s, Duration::from_secs(15)).await else { return Ok(()) };
+        api.post("/api/meeting/live", &serde_json::json!({ "action": "discard", "item_id": id }), upload::API_TIMEOUT).await?;
+        Ok(())
+    }
+    .await;
+    if let Err(e) = result {
+        log::error!("discarding the live meeting failed: {e:#}");
+    }
+    emit_live(&app, "ended", &s, None);
+}
+
 /// Marks a moment (HUD clip field, coaching card "Als Clip merken").
 pub async fn clip(s: &Session, api: &Api, text: &str) -> Result<serde_json::Value> {
     let id = s.item_id().ok_or_else(|| anyhow!(t("Not connected to Kortex yet, the clip stays in the HUD only")))?;
@@ -785,6 +834,24 @@ mod tests {
         ] });
         assert_eq!(parse_cards(&v).iter().map(|c| c.kind.as_str()).collect::<Vec<_>>(), vec!["fact", "action"]);
         assert!(parse_cards(&serde_json::json!({ "ok": false })).is_empty());
+    }
+
+    #[test]
+    fn coach_cards_may_carry_a_title_and_an_object_and_stay_compatible() {
+        let v = serde_json::json!({ "cards": [
+            { "kind": "question", "text": "Nach dem Budget fragen", "title": "Jetzt guter Moment",
+              "object": { "id": "p1", "title": "Jonas Weber", "type": "person" } },
+            { "kind": "fact", "text": "Ohne Extras" },
+            { "kind": "action", "text": "Kaputtes Objekt", "object": "Jonas", "title": 7 },
+        ] });
+        let cards = parse_cards(&v);
+        assert_eq!(cards.len(), 3);
+        assert_eq!(cards[0].title.as_deref(), Some("Jetzt guter Moment"));
+        assert_eq!(cards[0].object.as_ref().map(|o| (o.id.as_str(), o.title.as_str(), o.kind.as_deref())), Some(("p1", "Jonas Weber", Some("person"))));
+        // A wrong shape drops only the extra field, never the card.
+        assert_eq!((cards[2].title.clone(), cards[2].object.clone()), (None, None));
+        // Without extras the event looks exactly as before (older HUDs read kind and text only).
+        assert_eq!(serde_json::to_value(&cards[1]).unwrap(), serde_json::json!({ "kind": "fact", "text": "Ohne Extras" }));
     }
 
     #[test]
