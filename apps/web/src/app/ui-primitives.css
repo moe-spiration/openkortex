@@ -41,6 +41,17 @@
   .kx-tip { z-index: 90; padding: 5px 8px; border-radius: 6px; background: var(--bg-floating-glass); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: var(--shadow-floating); color: var(--text-primary); font-size: calc(12px * var(--kx-fs, 1)); line-height: 1.35; max-width: 280px; transform-origin: var(--transform-origin); transition: opacity 100ms var(--ease-snappy), transform 100ms var(--ease-snappy); }
   .kx-tip[data-starting-style], .kx-tip[data-ending-style] { opacity: 0; transform: scale(0.97); }
   .kx-tip .kx-kbd { margin-left: 6px; }
+  /* Note body still loading (older notes: the body is fetched when the note opens). */
+  .kx-body-loading { display: grid; gap: 12px; padding: 6px 0 24px; }
+  .kx-body-loading > span { display: block; height: 12px; border-radius: 6px; background: var(--hair, rgba(127, 127, 127, 0.12)); animation: kx-body-pulse 1.1s ease-in-out infinite alternate; }
+  .kx-body-loading > span:nth-child(1) { width: 92%; }
+  .kx-body-loading > span:nth-child(2) { width: 78%; animation-delay: 120ms; }
+  .kx-body-loading > span:nth-child(3) { width: 64%; animation-delay: 240ms; }
+  @keyframes kx-body-pulse { from { opacity: 0.45; } to { opacity: 1; } }
+
+  /* Native title tooltips, drawn by <TitleTips> (components/ui/TitleTips.tsx). */
+  .kx-tip--title { white-space: pre-line; overflow-wrap: anywhere; animation: kx-tip-in 100ms var(--ease-snappy); }
+  @keyframes kx-tip-in { from { opacity: 0; } to { opacity: 1; } }
 
   /* ---------- Bibliothek: lens switch in the sidebar (replaces the view dropdown) ---------- */
   .tc-lens { display: flex; gap: 2px; margin: 0 6px 8px; padding: 2px; border-radius: 8px; background: var(--hair); }
@@ -89,4 +100,40 @@
   .tc-tags { padding-top: 2px; }
   .tc-tags-btn { display: flex; align-items: center; gap: 6px; }
   .tc-tags-btn .kx-count { margin-left: auto; font-size: calc(11px * var(--kx-fs, 1)); color: var(--t3); letter-spacing: 0; text-transform: none; font-weight: 400; }
+}
+
+/*
+ * Ruhe (2026-11-27, web-scr1; gap web-b "Login, Kein Zugang"): no card, one calm column on the page background, flat
+ * 34-px fields with a hairline, the accent only on the submit button (with its key hint) and in the focus ring, the
+ * other ways in as quiet links. Markup: app/(auth)/login/LoginForm.tsx, app/(auth)/kein-zugang/page.tsx.
+ */
+@layer components {
+  :root:not([data-look="ruhe"]) .rz-auth-kbd { display: none; }
+  [data-look="ruhe"] .rz-auth { background: var(--lum-0) !important; }
+  [data-look="ruhe"] .rz-auth-col.kx-card, [data-look="ruhe"] .rz-auth-col {
+    max-width: 340px !important; gap: 18px !important; padding: 0; border-radius: 0; background: transparent; box-shadow: none;
+    animation: rz-rise var(--d3, 260ms) var(--eo, ease-out);
+  }
+  [data-look="ruhe"] .rz-auth-brand { gap: 8px !important; color: var(--t2); }
+  [data-look="ruhe"] .rz-auth-brand .kx-h-card, [data-look="ruhe"] .rz-auth-brand strong { font-size: calc(14px * var(--kx-fs, 1)); font-weight: 500; color: var(--t2); }
+  [data-look="ruhe"] .rz-auth-title { font-size: calc(22px * var(--kx-fs, 1)) !important; font-weight: 600; letter-spacing: -0.022em; color: var(--t1); }
+  [data-look="ruhe"] .rz-auth .kx-label { font-size: calc(12px * var(--kx-fs, 1)); font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--t3); }
+  [data-look="ruhe"] .rz-auth .kx-control { height: 34px; border-radius: 8px; background: var(--lum-2); box-shadow: 0 0 0 1px var(--hair); }
+  [data-look="ruhe"] .rz-auth .kx-control:hover { box-shadow: 0 0 0 1px var(--hair-strong); }
+  [data-look="ruhe"] .rz-auth .kx-control:focus-within { box-shadow: 0 0 0 1px var(--accent-line, var(--accent)); outline: 0; }
+  [data-look="ruhe"] .rz-auth .kx-control input { font-size: calc(13.5px * var(--kx-fs, 1)); }
+  [data-look="ruhe"] .rz-auth .kx-control input:focus-visible { outline: 0; }
+  [data-look="ruhe"] .rz-auth-submit { height: 34px !important; margin-top: 4px; border-radius: 8px !important; justify-content: center; gap: 8px; box-shadow: none !important; font-size: calc(13.5px * var(--kx-fs, 1)) !important; }
+  [data-look="ruhe"] .rz-auth-kbd {
+    display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 5px; background: rgb(255 255 255 / 0.18);
+    font: 400 calc(11px * var(--kx-fs, 1)) / 1 var(--font-mono, ui-monospace, monospace);
+  }
+  [data-look="ruhe"] .rz-auth-alt { display: flex !important; flex-wrap: wrap; gap: 2px 14px !important; margin-top: -2px; }
+  /* The Button utilities sit in a later layer, hence !important. */
+  [data-look="ruhe"] .rz-auth-alt > button { height: auto !important; padding: 2px 0 !important; background: none; box-shadow: none; color: var(--t3) !important; font-size: calc(12.5px * var(--kx-fs, 1)) !important; font-weight: 400; }
+  [data-look="ruhe"] .rz-auth-alt > button:hover { background: none; color: var(--t1) !important; }
+  [data-look="ruhe"] .rz-auth .kx-help { font-size: calc(12.5px * var(--kx-fs, 1)); color: var(--t3); }
+  [data-look="ruhe"] .rz-auth .kx-body { font-size: calc(14px * var(--kx-fs, 1)); line-height: 1.6; color: var(--t2); }
+  [data-look="ruhe"] .rz-auth .kx-mono { font-size: calc(12px * var(--kx-fs, 1)); color: var(--t2); }
+  [data-look="ruhe"] .rz-auth-out { height: 30px; border-radius: 8px; background: var(--lum-2); box-shadow: 0 0 0 1px var(--hair); }
 }

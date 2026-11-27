@@ -211,5 +211,30 @@ export function removeMarks(root: ParentNode, id: string) {
   }
 }
 
-/** Page-level style for the marks (not inside the shadow UI: the marks live in the page's DOM). */
+/** Page-level style for the marks (not inside the shadow UI: the marks live in the page's DOM). Classic look. */
 export const HIGHLIGHT_CSS = `mark.${HIGHLIGHT_CLASS}{background:color-mix(in srgb,#F59E0B 32%,transparent);color:inherit;border-radius:3px;padding:0 1px;cursor:pointer}`;
+
+/** OKLCH hue per highlight colour: sand, indigo, sage, rose. */
+export const HIGHLIGHT_HUES: Record<string, number> = { yellow: 85, indigo: 276, green: 150, pink: 15 };
+
+/**
+ * Ruhe marks: a calm low-chroma fill plus a 1.5 px underline in the colour's hue (`data-kx-color`). On dark pages
+ * (`data-kx-dark` on the mark, decided from the page background) the fill is darker and the line lighter, so the
+ * text keeps its contrast. A focused mark (jump from the side panel) gets a short ring.
+ */
+export const HIGHLIGHT_CSS_RUHE = [
+  `mark.${HIGHLIGHT_CLASS}{--kx-h:85;background:oklch(0.90 0.07 var(--kx-h)/.55);color:inherit;border-radius:2px;padding:0 1px;cursor:pointer;box-shadow:inset 0 -1.5px 0 oklch(0.66 0.13 var(--kx-h));transition:box-shadow .18s cubic-bezier(.16,1,.3,1)}`,
+  `mark.${HIGHLIGHT_CLASS}[data-kx-dark]{background:oklch(0.62 0.09 var(--kx-h)/.30);box-shadow:inset 0 -1.5px 0 oklch(0.76 0.12 var(--kx-h))}`,
+  ...Object.entries(HIGHLIGHT_HUES).map(([c, h]) => `mark.${HIGHLIGHT_CLASS}[data-kx-color="${c}"]{--kx-h:${h}}`),
+  `mark.${HIGHLIGHT_CLASS}[data-kx-focus]{outline:2px solid oklch(0.63 0.155 276/.55);outline-offset:1px}`,
+  `mark.${HIGHLIGHT_CLASS}[data-kx-pending]{opacity:.7}`,
+].join("\n");
+
+/** Colour (and page brightness) of the marks of one highlight. */
+export function styleMarks(root: ParentNode, id: string, color: string | undefined, dark: boolean) {
+  for (const mark of root.querySelectorAll<HTMLElement>(`mark.${HIGHLIGHT_CLASS}[data-kortex-hl="${CSS.escape(id)}"]`)) {
+    mark.dataset.kxColor = color ?? "yellow";
+    if (dark) mark.dataset.kxDark = "";
+    else delete mark.dataset.kxDark;
+  }
+}

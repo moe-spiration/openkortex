@@ -33,10 +33,14 @@ import { ActionItems } from "./ActionItems";
 import { Backlinks, useBacklinkGroups } from "./Backlinks";
 import { noteCrumbs } from "./crumbs";
 import { DossierPanel } from "./DossierPanel";
+import { ObjectDossier } from "./ObjectDossier";
+import { NoteHeadRuhe } from "./NoteHeadRuhe";
+import { NoteLocBar } from "./NoteLocBar";
+import { useLook } from "@/components/theme/look";
 import { DrawerCover } from "./DrawerCover";
 import { NIco, TypeIcon } from "./icons";
 import { MarkdownSource } from "./MarkdownSource";
-import { NoteBody } from "./NoteBody";
+import { BodyLoading, NoteBody } from "./NoteBody";
 import { ObjectTypeMenu } from "./ObjectTypeMenu";
 import { PropertyPills } from "./PropertyPills";
 import { PromptPanel, SessionPanel, TypedProperties } from "./TypedPanels";
@@ -108,6 +112,12 @@ function Sheet({ item: liveItem, mode, width, setWidth }: SheetProps & { item: K
   const [remind, setRemind] = useState(false);
   const [coverOpen, setCoverOpen] = useState(false);
   const ai = useNoteAi(liveItem);
+  // Older notes come without their body (snapshot payload): fetch it now; the editor waits for it.
+  const pending = liveItem.bodyPending === true;
+  const { loadBody } = notes;
+  useEffect(() => {
+    if (pending) void loadBody(liveItem.id);
+  }, [pending, liveItem.id, loadBody]);
 
   // Another note: back to the reading view with the extra properties folded.
   useEffect(() => {
@@ -136,14 +146,48 @@ function Sheet({ item: liveItem, mode, width, setWidth }: SheetProps & { item: K
     [item.title, text, item.tags, knownTags],
   );
   const act = useSheetActions({ item, full, width, setWidth, setSrc, setMore, setAiOpen, setRemind, setCoverOpen, ai, setRev });
+  // Ruhe: a person, company or project opens as its Akte (ObjectDossier), not as a note page with cover and pills.
+  const ruhe = useLook() === "ruhe";
+  const akte = ruhe && isDossierType(item.type);
 
   return (
     <>
-      <SheetToolbar item={item} full={full} half={full ? null : width === DW_HALF} src={src} aiOpen={aiOpen} act={act} />
+      {full && ruhe ? (
+        <NoteLocBar
+          item={item}
+          akte={akte}
+          aiOpen={aiOpen}
+          star={<FavStar item={item} />}
+          menu={
+            <SheetMenu
+              half={null}
+              src={src}
+              hasCover={!!item.cover}
+              currentFolder={item.path.split("/").slice(0, -1).join("/")}
+              onHalf={act.toggleWidth}
+              onSrc={act.toggleSrc}
+              onCover={act.toggleCover}
+              onMove={act.move}
+              onArchive={act.archive}
+              onDelete={act.remove}
+            />
+          }
+          onCopyLink={() => void act.copyLink()}
+          onToggleAi={act.toggleAi}
+          onSide={act.toggleFull}
+          onClose={act.close}
+        />
+      ) : (
+        <SheetToolbar item={item} full={full} half={full ? null : width === DW_HALF} src={src} aiOpen={aiOpen} act={act} />
+      )}
 
       <div className="kx-dr-body kx-scroll fs-ed-scroll fs-gc" data-note-content data-type={item.type}>
-        {src ? (
+        {(src || akte) && pending ? (
+          <BodyLoading />
+        ) : src ? (
           <MarkdownSource item={liveItem} />
+        ) : akte ? (
+          <ObjectDossier item={item} md={text} groups={groups} objects={objects} full={full} onTitle={act.setTitle} />
         ) : (
           <>
             <SheetCover item={item} open={coverOpen} act={act} />
@@ -378,7 +422,11 @@ const SheetToolbar = memo(function SheetToolbar({
           const last = i === crumbs.length - 1;
           return (
             <span key={i}>
-              {i > 0 && "/"}
+              {i > 0 && (
+                <span className="kx-dr-sep" aria-hidden>
+                  /
+                </span>
+              )}
               {last ? (
                 <b aria-current="page">{c.label}</b>
               ) : c.href ? (
@@ -393,7 +441,7 @@ const SheetToolbar = memo(function SheetToolbar({
         })}
       </nav>
       <FavStar item={item} />
-      <button type="button" className="tc-ibtn" aria-pressed={full} aria-label={fullTip} data-tip={fullTip} onClick={act.toggleFull}>
+      <button type="button" className="tc-ibtn" data-dr="full" aria-pressed={full} aria-label={fullTip} data-tip={fullTip} onClick={act.toggleFull}>
         <NIco name={full ? "minimize-2" : "maximize-2"} size={15} />
       </button>
       <button type="button" className="tc-ibtn" aria-label={t("Copy link")} data-tip={t("Copy link")} onClick={() => void act.copyLink()}>
@@ -421,7 +469,7 @@ const SheetToolbar = memo(function SheetToolbar({
         onArchive={act.archive}
         onDelete={act.remove}
       />
-      <button type="button" className="tc-ibtn" aria-label={t("Close")} title={t("Close (Esc)")} onClick={act.close}>
+      <button type="button" className="tc-ibtn" data-dr="close" aria-label={t("Close")} title={t("Close (Esc)")} onClick={act.close}>
         <NIco name="x" size={15} />
       </button>
     </div>
@@ -471,8 +519,13 @@ const SheetHead = memo(function SheetHead({
   const due = isDueOn(item.remindAt, day);
   const watching = !!item.watch?.enabled;
   const moveParts = t("Move to {folder}", { folder: "\u0001" }).split("\u0001");
+  const ruhe = useLook() === "ruhe";
   return (
     <>
+      {ruhe ? (
+        <NoteHeadRuhe item={item} full={full} more={more} remind={remind} tagIdea={tagIdea} people={people} act={act} />
+      ) : (
+        <>
       <div className="fs-ed-type">
         <span className="fs-glyph" aria-hidden>
           <TypeIcon type={item.type} size={14} />
@@ -581,6 +634,8 @@ const SheetHead = memo(function SheetHead({
         <div className="kx-dr-objprops">
           <PropertyPills key={item.type} item={item} type={item.type as DomainObjectType} />
         </div>
+      )}
+        </>
       )}
 
       {(remind || watching) && (

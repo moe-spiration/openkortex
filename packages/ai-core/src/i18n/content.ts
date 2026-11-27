@@ -74,7 +74,6 @@ export const CONTENT_PHRASES = {
   topicsDiscussed: p("Topics discussed", "Besprochene Themenblöcke"),
   decisionsMade: p("Decisions made", "Getroffene Entscheidungen"),
   openRisks: p("Open risks & blockers", "Offene Risiken & Blocker"),
-  extractedActionItems: p("Extracted action items", "Extrahierte Action Items"),
   timeframe: p("Timeframe", "Zeitrahmen"),
   context: p("Context", "Kontext"),
   minutes: p("Minutes", "Protokoll"),

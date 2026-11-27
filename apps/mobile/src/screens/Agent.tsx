@@ -1,17 +1,18 @@
-import { intlLocale, t, tn } from "../i18n";
+import { t, tn } from "../i18n";
 import { useState, type ReactNode } from "react";
 import { Platform, Pressable, TextInput, View } from "react-native";
 import { groupJobs, isStale, looksLikeStandingOrder, type JobView, type StandingOrderView } from "../lib/agentJobs";
-import type { Autonomy } from "../lib/agent";
 import { runAgentOp, useAgentJobs } from "../state/agentJobs";
 import { useApp } from "../state/AppState";
 import { useData } from "../state/Data";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
 import { FONT, RADIUS } from "../theme/tokens";
 import { Icon } from "../ui/Icon";
 import { Btn, Help, Micro, Section, Spinner, T } from "../ui/primitives";
 import { ScreenScroll } from "../ui/Screen";
 import { AgentSwitch } from "../ui/AgentSwitch";
+import { AgentRuhe } from "./ruhe/AgentRuhe";
+import { AUTONOMY_LABEL, scheduleLabel, when } from "./agentShared";
 
 /*
  * The agent's page on the phone (like the web /agent page and the approved preview): give it a job that runs in the
@@ -19,24 +20,14 @@ import { AgentSwitch } from "../ui/AgentSwitch";
  * um 6 …"), which run by themselves. Same server functions as the web (GET/POST /api/mobile/agent).
  */
 
-const AUTONOMY_LABEL: Record<Autonomy, () => string> = {
-  read: () => t("Read only"),
-  ask: () => t("Ask first"),
-  self: () => t("On its own"),
-};
-
-const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString(intlLocale(), { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "");
-
-/** "Täglich um 06:00" / "Sonntags um 18:00". */
-function scheduleLabel(o: Pick<StandingOrderView, "cadence" | "hour" | "weekday">): string {
-  const hour = `${String(o.hour).padStart(2, "0")}:00`;
-  if (o.cadence === "daily" || !o.weekday) return t("Daily at {hour}", { hour });
-  const weekday = new Intl.DateTimeFormat(intlLocale(), { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, o.weekday)));
-  return t("Every {weekday} at {hour}", { weekday, hour });
+/** The agent tab: Ruhe gets its own page (job list, job detail page), Vivid keeps the cards. */
+export function Agent() {
+  return useRuhe() ? <AgentRuhe /> : <AgentVivid />;
 }
 
-export function Agent() {
+function AgentVivid() {
   const th = useTheme();
+  const Job = JobCard;
   const a = useApp();
   const d = useData();
   const live = d.auth === "live";
@@ -114,17 +105,17 @@ export function Agent() {
         <>
           <Group title={t("Waiting for you")} count={g.waiting.length}>
             {g.waiting.map((j) => (
-              <JobCard key={j.id} job={j} now={now} report={report} />
+              <Job key={j.id} job={j} now={now} report={report} />
             ))}
           </Group>
           <Group title={t("Running")} count={g.running.length}>
             {g.running.map((j) => (
-              <JobCard key={j.id} job={j} now={now} report={report} />
+              <Job key={j.id} job={j} now={now} report={report} />
             ))}
           </Group>
           <Group title={t("Done today")} count={doneToday.length}>
             {doneToday.map((j) => (
-              <JobCard key={j.id} job={j} now={now} report={report} />
+              <Job key={j.id} job={j} now={now} report={report} />
             ))}
           </Group>
           {!g.waiting.length && !g.running.length && !doneToday.length && <Help>{t("No jobs yet. Start one above or hand a task to the agent from the task list.")}</Help>}

@@ -5,7 +5,7 @@ import { RADIUS } from "../theme/tokens";
 import { useChrome } from "./Chrome";
 import { Icon, type IconName } from "./Icon";
 import { glass, ring, T } from "./primitives";
-import { HEADER_H } from "./Shell";
+import { useHeaderH } from "./Shell";
 
 /*
  * Bar of the list selection mode (feedback round 2, #4): "n ausgewählt", the bulk actions of the shared model
@@ -23,10 +23,11 @@ export interface BarAction {
 export function SelectionBar({ count, total, actions, onAll, onClose }: { count: number; total: number; actions: BarAction[]; onAll: () => void; onClose: () => void }) {
   const th = useTheme();
   const { top } = useChrome();
+  const headerH = useHeaderH();
   return (
     <View
       accessibilityRole="toolbar"
-      style={[{ position: "absolute", left: 12, right: 12, top: top + HEADER_H + 4, zIndex: 40, borderRadius: RADIUS.card, paddingVertical: 8, gap: 6, boxShadow: th.shadowFloating } as ViewStyle, glass(th), ring(th.borderSubtle)]}
+      style={[{ position: "absolute", left: 12, right: 12, top: top + headerH + 4, zIndex: 40, borderRadius: RADIUS.card, paddingVertical: 8, gap: 6, boxShadow: th.shadowFloating } as ViewStyle, glass(th), ring(th.borderSubtle)]}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 8 }}>
         <Pressable accessibilityRole="button" accessibilityLabel={t("Clear selection")} onPress={onClose} hitSlop={8} style={{ width: 36, height: 36, alignItems: "center", justifyContent: "center" }}>

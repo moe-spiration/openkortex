@@ -14,6 +14,14 @@ import { DEFAULT_SETTINGS, chromeStore, loadSettings, type ExtensionSettings } f
 import { SearchField, SessionsPanel } from "../../ui/SessionsPanel";
 import { ThemeRoot, useDocumentTheme, useResolvedTheme } from "../../ui/ThemeRoot";
 import { useLive } from "../../ui/useLive";
+import { createApiClient } from "../../lib/api";
+import { askKortex } from "../../lib/ask";
+import { findCapture, type CapturedPage } from "../../lib/captured";
+import { ASK_DRAFT_KEY, focusHighlightInTab, pageInfo, sendViaBackground, type AskDraft, type PageInfo } from "../../lib/messages";
+import { loadPageHighlights, type StoredHighlight } from "../../lib/mock-inbox";
+import { isMockMode } from "../../lib/settings";
+import { RuheSidePanel, type ActivePage, type SidePanelDeps } from "../../ui/ruhe/SidePanel";
+import { RuheTabsPanel } from "../../ui/ruhe/TabsPanel";
 
 type View = "sessions" | "prompts";
 
@@ -121,12 +129,102 @@ const VIEWS: { value: View; label: string; icon: ReactNode }[] = [
   { value: "prompts", label: "Prompts", icon: <MessageSquareCode aria-hidden /> },
 ];
 
+const api = createApiClient({ getSettings: () => loadSettings(chromeStore) });
+const DRAFT_MAX_AGE_MS = 5 * 60_000;
+
+async function activePage(): Promise<ActivePage | null> {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id || !tab.url || !/^https?:/.test(tab.url)) return null;
+  return { tabId: tab.id, windowId: tab.windowId, url: tab.url, title: tab.title ?? "", favIconUrl: tab.favIconUrl };
+}
+
+async function takeDraft(): Promise<AskDraft | null> {
+  try {
+    const d = (await chrome.storage.local.get(ASK_DRAFT_KEY))[ASK_DRAFT_KEY] as AskDraft | undefined;
+    if (!d) return null;
+    await chrome.storage.local.remove(ASK_DRAFT_KEY);
+    return Date.now() - d.at < DRAFT_MAX_AGE_MS ? d : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The active tab of this window and what Kortex knows about it, kept current while the user browses. */
+function usePageState() {
+  const [page, setPage] = useState<ActivePage | null>(null);
+  const [info, setInfo] = useState<PageInfo | null>(null);
+  const [captured, setCaptured] = useState<CapturedPage | null>(null);
+  const [highlights, setHighlights] = useState<StoredHighlight[]>([]);
+  useEffect(() => {
+    const refresh = () => void activePage().then((p) => setPage((old) => (old?.url === p?.url && old?.title === p?.title && old?.tabId === p?.tabId ? old : p)));
+    refresh();
+    const onUpdated = (_id: number, change: { url?: string; title?: string; status?: string }) => (change.url || change.title || change.status === "complete") && refresh();
+    chrome.tabs.onActivated.addListener(refresh);
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    chrome.windows.onFocusChanged.addListener(refresh);
+    return () => {
+      chrome.tabs.onActivated.removeListener(refresh);
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+      chrome.windows.onFocusChanged.removeListener(refresh);
+    };
+  }, []);
+  useEffect(() => {
+    if (!page) {
+      setInfo(null);
+      setCaptured(null);
+      setHighlights([]);
+      return;
+    }
+    let alive = true;
+    const load = () => {
+      void findCapture(chromeStore, page.url).then((c) => alive && setCaptured(c));
+      void loadPageHighlights(chromeStore, page.url).then((h) => alive && setHighlights(h));
+    };
+    load();
+    void pageInfo(page.tabId, true).then((i) => alive && setInfo(i));
+    chrome.storage.onChanged.addListener(load);
+    return () => {
+      alive = false;
+      chrome.storage.onChanged.removeListener(load);
+    };
+  }, [page]);
+  return { page, info, captured, highlights };
+}
+
+function RuheApp({ settings }: { settings: ExtensionSettings }) {
+  const theme = useResolvedTheme(settings.theme);
+  const state = usePageState();
+  const { value: prompts } = useLive(loadPrompts, NO_PROMPTS);
+  const promptSync = useLibrarySync("prompt");
+  const deps: SidePanelDeps = {
+    ...state,
+    ask: (body, onUpdate, signal) => askKortex(body, { settings, onUpdate, signal }),
+    search: (q) => api.searchItems(q, 5),
+    send: sendViaBackground,
+    focusHighlight: (id) => state.page && void focusHighlightInTab(state.page.tabId, id),
+    takeDraft,
+    openUrl: (url) => void chrome.tabs.create({ url }),
+    openManager: () => void openManagerViaBackground(),
+    openOptions: () => void chrome.runtime.openOptionsPage(),
+    connected: !isMockMode(settings) && !!settings.token.trim(),
+    prompts,
+    promptSync,
+    tabsView: <RuheTabsPanel baseUrl={settings.baseUrl} theme={theme} />,
+  };
+  return (
+    <ThemeRoot theme={settings.theme} look="ruhe">
+      <RuheSidePanel deps={deps} settings={settings} />
+    </ThemeRoot>
+  );
+}
+
 function App() {
   const [settings, setSettings] = useState<ExtensionSettings>(DEFAULT_SETTINGS);
   const [view, setView] = useState<View>("sessions");
   useEffect(() => void loadSettings(chromeStore).then(setSettings), []);
-  useDocumentTheme(settings.theme);
+  useDocumentTheme(settings.theme, settings.look);
   const theme = useResolvedTheme(settings.theme);
+  if (settings.look === "ruhe") return <RuheApp settings={settings} />;
   // Roving focus like any tablist: arrows switch the view.
   const onKey = (e: KeyboardEvent) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;

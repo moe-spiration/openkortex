@@ -42,7 +42,31 @@ const StaticMarkdown = memo(MarkdownStatic);
 const FOLD_MIN_CHARS = 12_000;
 const TRANSCRIPT_TYPES = new Set(["meeting", "podcast", "video"]);
 
+/** Placeholder lines while the body of an older note loads (usually well under a second). */
+export function BodyLoading() {
+  return (
+    <div className="kx-body-loading" role="status" aria-busy="true" aria-label={t("Loading note…")}>
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+}
+
+/**
+ * Older notes arrive without their body (`bodyPending`, lib/supabase/snapshot.ts): load it first, and never mount the
+ * editor on the empty placeholder (its first change would save "" over the real text).
+ */
 export function NoteBody({ item }: { item: KnowledgeItem }) {
+  const { loadBody } = useNotes();
+  const pending = item.bodyPending === true;
+  useEffect(() => {
+    if (pending) void loadBody(item.id);
+  }, [pending, item.id, loadBody]);
+  return pending ? <BodyLoading /> : <NoteBodyEditor item={item} />;
+}
+
+function NoteBodyEditor({ item }: { item: KnowledgeItem }) {
   const { items, setContent, createSubpage } = useNotes();
   const { openNote, showToast, setCmode, setCopilot, setPrompt } = useShell();
   const router = useRouter();

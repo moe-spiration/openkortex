@@ -1,25 +1,27 @@
-import { msg, t, tn, tx } from "../i18n";
+import { t, tn, tx } from "../i18n";
 import { useLocale } from "../i18n/device";
-import { memo, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { Animated, BackHandler, Pressable, ScrollView, View, type ViewStyle } from "react-native";
-import { useIsFocused, useRouter } from "expo-router";
+import { memo, useEffect, useRef, useState, type RefObject } from "react";
+import { Animated, Platform, Pressable, ScrollView, View, type ViewStyle } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { tick } from "../lib/haptics";
+import { useRouter } from "expo-router";
 import { FILTER_CHIPS, SORTS, tagTone, type Entry } from "../data/mock";
-import { useData } from "../state/Data";
-import { dropChip, groupByRecency, searchEntries } from "../lib/search";
-import { useApp, type EntryScope, type ViewMode } from "../state/AppState";
+import { dropChip } from "../lib/search";
+import type { EntryScope } from "../state/AppState";
 import { alpha } from "../theme/color";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
 import { RADIUS } from "../theme/tokens";
 import { useChrome } from "../ui/Chrome";
 import { Icon } from "../ui/Icon";
 import { Btn, FadeIn, glass, Help, HeroSide, HeroTop, Micro, Photo, Pill, ring, Segmented, T } from "../ui/primitives";
 import { ScreenScroll } from "../ui/Screen";
-import { HEADER_H } from "../ui/Shell";
+import { useHeaderH } from "../ui/Shell";
 import { SelectionBar } from "../ui/SelectionBar";
 import { SwipeRow } from "../ui/SwipeRow";
-import { useSelection } from "../ui/useSelection";
-import { useEntryActions } from "../ui/entryActions";
-import { childFolders, folderTrail, parentFolder } from "../lib/links";
+import type { useEntryActions } from "../ui/entryActions";
+import { folderTrail, parentFolder } from "../lib/links";
+import { LibraryRuhe } from "./ruhe/LibraryRuhe";
+import { CHIP_LABEL, EMPTY, SORT_LABEL, SUGGESTIONS, useLibraryModel, VIEWS } from "./libraryModel";
 
 /*
  * Einträge (Mobile.dc.html "Tab: Einträge"): smart search, filter chips, list / grid / timeline.
@@ -34,41 +36,9 @@ const SCOPES: { key: EntryScope; label: () => string; icon?: "star" | "archive" 
   { key: "archive", label: () => tx("scope", "Archive"), icon: "archive" },
 ];
 
-/* The chip and sort keys come from the data module; their labels are named here so they follow the language. */
-const CHIP_LABEL: Record<string, string> = {
-  all: msg("All"),
-  note: msg("Notes"),
-  meeting: msg("Meetings"),
-  read: msg("Articles and books"),
-  video: msg("Reels and podcasts"),
-  food: msg("Recipes"),
-  ai: msg("AI Memories"),
-  object: msg("Objects"),
-};
-const SORT_LABEL: Record<string, string> = {
-  rel: msg("Relevance"),
-  new: msg("Newest"),
-  old: msg("Oldest"),
-  open: msg("Last opened"),
-  az: msg("A to Z"),
-};
-const SUGGESTIONS = [msg("Meetings with Tom this week"), msg("Low-carb recipes under 30 min"), msg("What have I saved about MCP?")];
-
-const EMPTY: Record<Exclude<EntryScope, "all" | "folders">, [string, string]> = {
-  favorites: [msg("No favorites yet"), msg("Swipe an entry to the right or mark it with the star in the menu. It then shows up here.")],
-  archive: [msg("The archive is empty"), msg("Archived entries end up here. Swipe right to bring one back, left to delete it for good.")],
-};
-
 /** Height of the controls row (filter chips, view and sort); it pins under the header when the list scrolls. */
 const CTRL_H = 52;
-/** Rows rendered per page (see `limit` in Entries). */
-const PAGE = 40;
 
-const VIEWS: { key: ViewMode; aria: string; icon: "list" | "grid" | "time" }[] = [
-  { key: "list", aria: msg("List"), icon: "list" },
-  { key: "grid", aria: msg("Grid"), icon: "grid" },
-  { key: "time", aria: msg("Timeline"), icon: "time" },
-];
 
 type RowHandlers = { press: (id: string) => void; hold: (id: string) => void; swipe: ReturnType<typeof useEntryActions>["swipe"] };
 
@@ -100,105 +70,27 @@ const EntryRow = memo(function EntryRow({ e, selected, h }: { e: Entry; selected
   );
 });
 
+/** The Einträge tab: Ruhe gets its own Bibliothek screen, Vivid keeps this one. */
 export function Entries() {
+  return useRuhe() ? <LibraryRuhe /> : <EntriesVivid />;
+}
+
+function EntriesVivid() {
   const th = useTheme();
   const { top } = useChrome();
   const router = useRouter();
-  const focused = useIsFocused();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [rowY, setRowY] = useState(0);
-  const pinTop = top + HEADER_H;
+  const headerH = useHeaderH();
+  const pinTop = top + headerH;
   const span = Math.max(1, rowY - pinTop);
   const pin = scrollY.interpolate({ inputRange: [0, span], outputRange: [rowY, pinTop], extrapolate: "clamp" });
   const bar = scrollY.interpolate({ inputRange: [Math.max(0, span - 12), span], outputRange: [0, 1], extrapolate: "clamp" });
-  const a = useApp();
-  const { entries, archived, loadArchive } = useData();
-  const act = useEntryActions();
-  const d = useData();
-  // Folder browser: the open folder ("" = vault root), all folder paths and the open folder's entries.
-  const [folder, setFolder] = useState("");
-  const [paths, setPaths] = useState<string[] | null>(null);
-  const [inFolder, setInFolder] = useState<Entry[]>([]);
-  const [folderBusy, setFolderBusy] = useState(false);
-  const browse = a.scope === "folders";
-  const loader = useRef({ loadFolders: d.loadFolders, loadFolder: d.loadFolder, say: a.say });
-  loader.current = { loadFolders: d.loadFolders, loadFolder: d.loadFolder, say: a.say };
-  useEffect(() => {
-    if (!browse || paths) return;
-    void loader.current.loadFolders().then((r) => ("error" in r ? loader.current.say(t("Folders not loaded: {error}", { error: r.error })) : setPaths(r.paths)));
-  }, [browse, paths]);
-  useEffect(() => {
-    if (!browse || !folder) return setInFolder([]);
-    let live = true;
-    setFolderBusy(true);
-    void loader.current.loadFolder(folder).then((r) => {
-      if (!live) return;
-      setFolderBusy(false);
-      if ("error" in r) loader.current.say(t("Folder not loaded: {error}", { error: r.error }));
-      else setInFolder(r.entries);
-    });
-    return () => {
-      live = false;
-    };
-  }, [browse, folder]);
-  // Entries filed or removed elsewhere while the folder is open: keep the list in step with the loaded data.
-  const inFolderLive = useMemo(
-    () =>
-      inFolder
-        .map((e) => {
-          const cur = entries.find((x) => x.id === e.id);
-          return cur ? { ...cur, folder: cur.folder ?? e.folder } : e;
-        })
-        .filter((e) => e.folder === folder),
-    [inFolder, entries, folder],
-  );
-  const subfolders = useMemo(() => (browse && paths ? childFolders(paths, folder) : []), [browse, paths, folder]);
-  const source = useMemo(
-    // A search at the vault root of the folder view searches the whole vault.
-    () => (a.scope === "archive" ? archived : a.scope === "favorites" ? entries.filter((e) => e.fav) : browse && (folder || !a.q.trim()) ? inFolderLive : entries),
-    [a.scope, archived, entries, browse, folder, a.q, inFolderLive],
-  );
-  const { list, state, answer } = useMemo(() => searchEntries(source, a.q, a.chip, a.sort), [source, a.q, a.chip, a.sort]);
-  // The archive is not part of the normal item load: fetch it whenever the Archiv view opens.
-  const reload = useRef({ loadArchive, say: a.say });
-  reload.current = { loadArchive, say: a.say };
-  useEffect(() => {
-    if (a.scope === "archive") void reload.current.loadArchive().then((err) => err && reload.current.say(t("Archive not loaded: {error}", { error: err })));
-  }, [a.scope]);
-  const hasQuery = !!a.q.trim();
+  const m = useLibraryModel({ ruhe: false });
+  const { a, act, focused, folder, setFolder, paths, folderBusy, inFolderLive, subfolders, browse, source, list, state, answer, hasQuery, firstLoad, shown, more, sel, press, hold } = m;
   const curView = VIEWS.find((v) => v.key === a.view) ?? VIEWS[0]!;
-  // Render the list in pages: hundreds of rows at once (each with a photo and its own swipe gesture)
-  // made scrolling and swiping in this tab stutter. The next page comes in shortly before the end.
-  const [limit, setLimit] = useState(PAGE);
-  useEffect(() => setLimit(PAGE), [a.scope, a.q, a.chip, a.sort, a.view, folder]);
-  const shown = useMemo(() => list.slice(0, limit), [list, limit]);
-  const more = () => setLimit((l) => (l < list.length ? l + PAGE : l));
-  const groups = useMemo(() => groupByRecency(shown), [shown]);
+  const groups = m.groups;
   const sortLabel = t(SORT_LABEL[a.sort] ?? "");
-
-  // Selection mode (feedback #4): a long-press starts it, taps add / remove rows, Back ends it.
-  const sel = useSelection(useMemo(() => list.map((e) => e.id), [list]));
-  // Android Back inside a folder goes up one level (selection mode handles Back itself).
-  useEffect(() => {
-    if (!browse || !folder || sel.active || !focused) return;
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      setFolder(parentFolder(folder));
-      return true;
-    });
-    return () => sub.remove();
-  }, [browse, folder, sel.active, focused]);
-  useEffect(() => {
-    if (!sel.active) return;
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      sel.clear();
-      return true;
-    });
-    return () => sub.remove();
-  }, [sel.active, sel.clear]);
-  const press = (id: string) => (sel.active ? sel.toggle(id) : a.openEntry(id));
-  const hold = (id: string) => (sel.active ? sel.toggle(id) : sel.start(id));
-  // Rows are memoised: they get one stable handler object and re-render only when their entry or their
-  // selection changes, not on every render of the screen (search typing, selection, data refresh).
   const rowH = useRef<RowHandlers>(null!);
   rowH.current = { press, hold, swipe: act.swipe };
   const chosenRing = (id: string) => (sel.has(id) ? ring(th.accentAi, 2) : null);
@@ -311,6 +203,8 @@ export function Entries() {
       )}
 
 
+      {firstLoad && <ListSkeleton />}
+
       {a.view === "list" && (
         <View>
           {shown.map((e) => (
@@ -373,7 +267,7 @@ export function Entries() {
         </View>
       )}
 
-      {list.length === 0 && (a.scope === "all" || hasQuery) && (
+      {list.length === 0 && !firstLoad && (a.scope === "all" || hasQuery) && (
         <View style={{ alignItems: "center", gap: 8, paddingVertical: 28 }}>
           <Help>{t("No hits in your vault.")}</Help>
           <Btn
@@ -400,7 +294,15 @@ export function Entries() {
             const label = t(CHIP_LABEL[k] ?? k);
             const on = a.chip === k;
             return (
-              <Pressable key={k} accessibilityState={{ selected: on }} onPress={() => a.setChip(k)} style={{ minHeight: 36, justifyContent: "center", paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: on ? th.bgSurfaceMuted : "transparent" }}>
+              <Pressable
+                key={k}
+                accessibilityState={{ selected: on }}
+                onPress={() => {
+                  if (!on) tick();
+                  a.setChip(k);
+                }}
+                style={({ pressed }) => ({ minHeight: 36, justifyContent: "center", paddingHorizontal: 12, borderRadius: RADIUS.pill, backgroundColor: on ? th.bgSurfaceMuted : pressed ? alpha(th.textPrimary, 0.06) : "transparent" })}
+              >
                 <T size={13} lh={18} ls={0} weight={on ? 500 : 400} color={on ? th.textPrimary : th.textSecondary}>
                   {label}
                 </T>
@@ -408,6 +310,8 @@ export function Entries() {
             );
           })}
         </ScrollView>
+        {/* Soft edge where the chip row runs under the buttons: reads as "scrolls on", not as cut-off text. */}
+        <LinearGradient pointerEvents="none" start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} colors={[alpha(th.bgMainWindow, 0), th.bgMainWindow]} style={{ position: "absolute", right: 112, top: 8, bottom: 8, width: 28 }} />
         <Btn iconOnly variant="ghost" icon={curView.icon} accessibilityLabel={t("View: {view}, switch", { view: t(curView.aria) })} onPress={() => a.setView(VIEWS[(VIEWS.indexOf(curView) + 1) % VIEWS.length]!.key)} />
         <Btn iconOnly variant="ghost" icon="sort" accessibilityLabel={t("Sort: {order}", { order: sortLabel })} onPress={() => a.setSortOpen(!a.sortOpen)} />
       </View>
@@ -446,5 +350,36 @@ export function Entries() {
     </Animated.View>
     {sel.active && <SelectionBar count={sel.count} total={sel.total} actions={act.bar(sel.ids, sel.clear)} onAll={sel.all} onClose={sel.clear} />}
     </>
+  );
+}
+
+/** Placeholder rows while the first live load runs (same geometry as EntryRow, so nothing jumps when data arrives). */
+function ListSkeleton() {
+  const th = useTheme();
+  const pulse = useRef(new Animated.Value(0.55)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: Platform.OS !== "web" }),
+        Animated.timing(pulse, { toValue: 0.55, duration: 700, useNativeDriver: Platform.OS !== "web" }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+  const bar = (w: `${number}%`, h: number) => <View style={{ width: w, height: h, borderRadius: 4, backgroundColor: th.bgSurfaceMuted }} />;
+  return (
+    <Animated.View accessibilityLabel={t("Loading entries")} style={{ opacity: pulse }}>
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}>
+          <View style={{ width: 60, height: 60, borderRadius: RADIUS.lg, backgroundColor: th.bgSurfaceMuted }} />
+          <View style={{ flex: 1, gap: 8 }}>
+            {bar(i % 2 ? "62%" : "78%", 12)}
+            {bar("44%", 10)}
+            {bar("24%", 10)}
+          </View>
+        </View>
+      ))}
+    </Animated.View>
   );
 }

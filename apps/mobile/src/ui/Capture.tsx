@@ -2,24 +2,30 @@ import { msg, t, tx } from "../i18n";
 import { useCallback, useEffect, useRef, useState, type ComponentRef, type RefObject } from "react";
 import { ScratchpadSheet } from "./ScratchpadSheet";
 import { Animated, Easing, Image, Platform, Pressable, TextInput, View, type ViewStyle } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import { usePathname, useRouter } from "expo-router";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import RAnimated, { makeMutable, runOnJS, useAnimatedReaction, useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import RAnimated, { FadeIn, makeMutable, runOnJS, useAnimatedReaction, useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { LevelHalo, LevelWave } from "../capture/LevelWave";
 import { pttMayStart } from "../capture/ptt";
 import { PTT_DISCARD, PTT_NO_RECTS, PTT_NONE, PTT_SAVE, pttDropTarget } from "../capture/pttDrop";
 import { IMG, NOTE_TAGS } from "../data/mock";
-import { buzz } from "../lib/haptics";
+import { buzz, tick } from "../lib/haptics";
+import { lensOf } from "../lib/library";
 import { routeOf } from "../lib/answers";
 import { PHOTO_MODES, useApp, type CaptureKind } from "../state/AppState";
+import { useData } from "../state/Data";
 import { alpha, mix } from "../theme/color";
-import { useTheme } from "../theme/ThemeProvider";
-import { FONT, RADIUS } from "../theme/tokens";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
+import { FONT, RADIUS, RUHE_TYPE } from "../theme/tokens";
 import { useChrome } from "./Chrome";
+import { useGesturePlay } from "./ruhe/gestures";
 import { Icon, type IconName } from "./Icon";
 import { Btn, glass, Photo, ring, SlideUp, T, Wave, Help } from "./primitives";
-import { TABBAR } from "./Shell";
+import { RUHE_BAR, TABBAR, useBarBottom } from "./Shell";
+import { RGlass, RIconButton, RSheet, RSheetChip, RText } from "./ruhe";
 import { SwipeSheet } from "./SwipeSheet";
 import { useKeyboardInset } from "./useKeyboard";
 
@@ -47,6 +53,24 @@ const pttTgt = makeMutable<number>(PTT_NONE);
 const pttActive = makeMutable<number>(0);
 const pttRects = makeMutable<number[]>(PTT_NO_RECTS);
 
+/** Pages of the Heute family: the accent capture button (tap = sheet, hold = push-to-talk). */
+const ACCENT_PAGES = ["/", "/journal", "/life", "/tasks", "/inbox"];
+
+/**
+ * Context button of the Ruhe look (section 9 table): accent sparkles on a detail page (ask about it), accent mic on Heute and its pages, a neutral glass plus on the
+ * Einträge list (new note), a glass mic on Agent (speak to it); none on the other library lenses, search, the ask
+ * composer (it has its own mic) and settings, and none while the capture sheet is open (it has its own send button).
+ */
+export function fabVariant(path: string, a: { cap: CaptureKind | null; searchOpen: boolean; scope: string; chip: string; view: string; sheet: unknown }): "accent" | "plus" | "agent" | "ask" | null {
+  if (a.cap === "note") return null;
+  // A detail page (entry, dossier, life area) is open: ask about it.
+  if (a.sheet) return "ask";
+  if (ACCENT_PAGES.includes(path)) return "accent";
+  if (path === "/agent") return "agent";
+  if (path === "/entries") return !a.searchOpen && lensOf(a.scope, a.chip) === "types" && a.view !== "grid" ? "plus" : null;
+  return null;
+}
+
 /**
  * The 60px orb with a radial gradient; red while recording, flat while the fan is open.
  * Tap = fan (voice / note / photo / link). Hold = push-to-talk: recording starts and the voice card shows;
@@ -55,8 +79,16 @@ const pttRects = makeMutable<number[]>(PTT_NO_RECTS);
  */
 export function Orb({ rootRef }: { rootRef: RefObject<ComponentRef<typeof View> | null> }) {
   const th = useTheme();
+  const ruhe = useRuhe();
+  const ruheRef = useRef(ruhe);
+  ruheRef.current = ruhe;
+  const [orbPlay, fireOrb] = useGesturePlay();
   const { width, height } = useChrome();
   const app = useApp();
+  const path = usePathname();
+  const router = useRouter();
+  const data = useData();
+  const barBottom = useBarBottom();
   const origin = useRef({ x: 0, y: 0 });
   const live = useRef(app);
   live.current = app;
@@ -107,6 +139,13 @@ export function Orb({ rootRef }: { rootRef: RefObject<ComponentRef<typeof View> 
   };
   const onTap = () => {
     const a = live.current;
+    fireOrb();
+    // Ruhe: a tap opens the glass capture sheet right away (no fan); holding still records.
+    if (ruheRef.current && a.cap !== "voice") {
+      if (a.cap === "note") a.closeCap();
+      else a.openCap("note");
+      return;
+    }
     if (a.fan) {
       a.setFan(false);
       a.setHot(null);
@@ -176,6 +215,87 @@ export function Orb({ rootRef }: { rootRef: RefObject<ComponentRef<typeof View> 
 
   const rec = app.cap === "voice";
   const open = app.fan;
+  if (ruhe) {
+    // Ruhe context button (android-richtlinien section 9): what it is follows the page.
+    const variant = rec ? "accent" : fabVariant(path, app);
+    if (!variant) return null;
+    const S = RUHE_BAR.fab;
+    const pos: ViewStyle = { position: "absolute", right: RUHE_BAR.side, bottom: barBottom, width: S, height: S, zIndex: 17 };
+    if (variant === "plus" || variant === "agent") {
+      const agent = variant === "agent";
+      return (
+        <RAnimated.View key={variant} entering={FadeIn.duration(180)} style={pos}>
+          <RGlass variant="knob" radius={S / 2} style={{ width: S, height: S }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={agent ? t("Speak to the agent") : t("New note")}
+              onPress={() => {
+                tick();
+                fireOrb();
+                if (agent) {
+                  router.navigate("/ask");
+                  if (!app.askRec) app.toggleAskRec();
+                } else router.push("/editor");
+              }}
+              style={({ pressed }) => ({ width: S, height: S, borderRadius: S / 2, alignItems: "center", justifyContent: "center", transform: [{ scale: pressed ? 0.97 : 1 }] })}
+            >
+              <Icon name={agent ? "mic" : "plus"} size={22} strokeWidth={1.5} play={orbPlay} color={th.t1} />
+            </Pressable>
+          </RGlass>
+        </RAnimated.View>
+      );
+    }
+    if (variant === "ask") {
+      const sh = app.sheet;
+      const title = sh ? (sh.kind === "entry" ? data.entryById(sh.id)?.title : data.areas.find((x) => x.key === sh.id)?.name) : undefined;
+      return (
+        <RAnimated.View key="ask" entering={FadeIn.duration(180)} style={pos}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("Ask about it")}
+            onPress={() => {
+              if (!sh) return;
+              tick();
+              fireOrb();
+              app.closeSheet();
+              router.navigate("/ask");
+              app.ask(t("Summarize {title} for me", { title: title ?? "" }), sh.kind === "entry" && data.auth === "live" ? sh.id : undefined);
+            }}
+            style={({ pressed }) => ({ width: S, height: S, borderRadius: S / 2, alignItems: "center", justifyContent: "center", backgroundColor: th.accentFill, boxShadow: "0 12px 40px -12px rgba(0, 0, 0, 0.6)", transform: [{ scale: pressed ? 0.97 : 1 }] }) as ViewStyle}
+          >
+            <Icon name="sparkles" size={22} strokeWidth={1.5} play={orbPlay} color={th.onAccent} />
+          </Pressable>
+        </RAnimated.View>
+      );
+    }
+    // Accent: tap opens the glass capture sheet, hold is push-to-talk. Recording: crit fill, stop, level ring.
+    return (
+      <RAnimated.View key="accent" entering={FadeIn.duration(180)} ref={rootRef} style={pos}>
+        <GestureDetector gesture={gesture}>
+          <RAnimated.View
+            accessibilityRole="button"
+            accessibilityLabel={rec ? t("Save voice memo") : t("Capture: tap to write, hold to speak")}
+            style={[
+              {
+                width: S,
+                height: S,
+                borderRadius: S / 2,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: rec ? th.crit : th.accentFill,
+                boxShadow: `0 12px 40px -12px ${rec ? alpha(th.crit, 0.7) : "rgba(0, 0, 0, 0.6)"}`,
+                ...(Platform.OS === "web" ? { touchAction: "none", userSelect: "none", cursor: "pointer" } : null),
+              } as ViewStyle,
+              orbScale,
+            ]}
+          >
+            {rec && app.voiceRecorder && <LevelHalo recorder={app.voiceRecorder} size={S} color={th.crit} />}
+            <Icon name={rec ? "stop" : "mic"} size={22} strokeWidth={1.5} play={orbPlay} color={rec ? "#FFFFFF" : th.onAccent} />
+          </RAnimated.View>
+        </GestureDetector>
+      </RAnimated.View>
+    );
+  }
   const icon: IconName = open ? "x" : rec ? "stop" : "mic";
   const c1 = rec ? "#F87171" : mix(th.accentAi, 55, "#FFFFFF");
   const c2 = rec ? th.statusUrgent : th.accentAiSolid;
@@ -263,6 +383,7 @@ function FanItem({ f, i, hot }: { f: (typeof FAN)[number]; i: number; hot: boole
 
 export function CaptureOverlays() {
   const th = useTheme();
+  const ruhe = useRuhe();
   const { top, height } = useChrome();
   const a = useApp();
   return (
@@ -283,7 +404,8 @@ export function CaptureOverlays() {
         </>
       )}
 
-      {a.cap === "voice" && (
+      {a.cap === "voice" && ruhe && <RuheVoiceCard />}
+      {a.cap === "voice" && !ruhe && (
         <SlideUp style={{ position: "absolute", left: 14, right: 14, bottom: 98, zIndex: 12 }}>
           <View style={[{ padding: 14, borderRadius: RADIUS["2xl"], gap: 10, boxShadow: th.shadowFloating } as ViewStyle, glass(th)]}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -303,11 +425,38 @@ export function CaptureOverlays() {
         </SlideUp>
       )}
 
-      {a.cap === "note" && <QuickNote />}
+      {a.cap === "note" && (ruhe ? <RuheQuickNote /> : <QuickNote />)}
       {a.cap === "scratchpad" && <ScratchpadSheet />}
 
       {a.cap === "photo" && (a.live ? <LivePhoto /> : <PhotoCapture top={top} height={height} />)}
     </>
+  );
+}
+
+/**
+ * Ruhe voice card: a glass sheet (radius 36, 8 from the edges) above the tab bar while the button records; the live
+ * dot and clock, the level wave, and the two push-to-talk drop targets.
+ */
+function RuheVoiceCard() {
+  const th = useTheme();
+  const a = useApp();
+  const bottom = useBarBottom() + RUHE_BAR.height + 12;
+  return (
+    <SlideUp style={{ position: "absolute", left: 8, right: 8, bottom, zIndex: 12 }}>
+      <RGlass variant="sheet" radius={36} style={{ paddingTop: 16, paddingHorizontal: 18, paddingBottom: 18, gap: 12 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <LiveDot />
+          <RText step="rowTitle" style={{ flex: 1 }}>
+            {t("Voice memo")}
+          </RText>
+          <RText step="meta" tnum color={th.t2}>
+            {a.voiceClock}
+          </RText>
+        </View>
+        <View style={{ alignItems: "center" }}>{a.voiceRecorder ? <LevelWave recorder={a.voiceRecorder} n={44} h={34} /> : <Wave n={44} h={34} />}</View>
+        <VoiceActions onDiscard={a.discardVoice} onSave={a.saveVoice} live={a.live} />
+      </RGlass>
+    </SlideUp>
   );
 }
 
@@ -464,6 +613,85 @@ function QuickNote() {
         </Btn>
       </SwipeSheet>
     </>
+  );
+}
+
+/**
+ * Ruhe capture (mockup "Erfassen · Glas-Sheet"): a floating glass sheet over the screen, the target line on top
+ * (Inbox · auto filing), the thought in large type, quiet chips (link from the clipboard, photo, ask the agent),
+ * then "hold to speak" and the round send button. Swipe down or tap outside to close.
+ */
+function RuheQuickNote() {
+  const th = useTheme();
+  const a = useApp();
+  const [sendPlay, fireSend] = useGesturePlay();
+  const router = useRouter();
+  const text = a.noteText.trim();
+  const pasteLink = () =>
+    void Clipboard.getStringAsync()
+      .then((clip) => {
+        const url = clip.trim().match(/https?:\/\/\S+/)?.[0];
+        if (!url) return a.say(t("No link on the clipboard"));
+        a.setNoteText(a.noteText.trim() ? `${a.noteText.trim()} ${url}` : url);
+      })
+      .catch(() => undefined);
+  const askAgent = () => {
+    if (!text) return a.say(t("Write down a thought first"));
+    a.setNoteText("");
+    a.closeCap();
+    a.ask(text);
+    router.navigate("/ask");
+  };
+  const empty = !text;
+  return (
+    <RSheet onClose={a.closeCap} z={15} label={t("Quick note")} target={{ icon: "inbox", text: !a.live && text ? `Inbox · ${routeOf(a.noteText)}` : t("Inbox · auto filing") }}>
+      {/* The scratchpad moved into the "…" of the target line (section 10: only link, photo, ask as chips). */}
+      <View style={{ position: "absolute", right: 8, top: 22 }}>
+        <RIconButton icon="more" label={t("More")} onPress={() => a.openMenu({ title: t("Quick note"), items: [{ label: t("Scratchpad"), icon: "note", run: () => a.openCap("scratchpad") }] })} />
+      </View>
+      <TextInput
+        accessibilityLabel={t("Thought")}
+        multiline
+        autoFocus
+        placeholder={t("What is on your mind?")}
+        placeholderTextColor={th.t4}
+        selectionColor={th.accent}
+        cursorColor={th.accent}
+        value={a.noteText}
+        onChangeText={a.setNoteText}
+        style={[{ minHeight: 84, maxHeight: 220, padding: 0, fontFamily: FONT.sans400, fontSize: RUHE_TYPE.input.size, lineHeight: RUHE_TYPE.input.lh, letterSpacing: RUHE_TYPE.input.ls * RUHE_TYPE.input.size, color: th.t1, textAlignVertical: "top" }, Platform.OS === "web" ? ({ outlineStyle: "none", caretColor: th.accent } as never) : null]}
+      />
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8, marginBottom: 18 }}>
+        <RSheetChip icon="link" label={t("Link")} onPress={pasteLink} />
+        <RSheetChip icon="camera" label={t("Photo")} onPress={() => a.openCap("photo")} />
+        <RSheetChip icon="sparkles" label={t("Ask")} onPress={askAgent} accent />
+      </View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("Speak instead")}
+          onPress={() => a.openCap("voice")}
+          style={({ pressed }) => ({ flex: 1, height: 52, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 18, borderRadius: 26, backgroundColor: pressed ? th.lum4 : th.lum3 })}
+        >
+          <Icon name="audioLines" size={18} color={th.t2} />
+          <RText step="buttonSm" weight={400} color={th.t2}>
+            {t("Tap to speak")}
+          </RText>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("Put in Inbox")}
+          accessibilityState={{ disabled: empty }}
+          onPress={() => {
+            if (!empty) fireSend();
+            a.saveNote();
+          }}
+          style={({ pressed }) => ({ width: 52, height: 52, borderRadius: 26, alignItems: "center", justifyContent: "center", backgroundColor: empty ? th.lum3 : th.accentFill, transform: [{ scale: pressed ? 0.97 : 1 }] })}
+        >
+          <Icon name="arrowUp" size={20} strokeWidth={1.6} play={sendPlay} color={empty ? th.t3 : th.onAccent} />
+        </Pressable>
+      </View>
+    </RSheet>
   );
 }
 

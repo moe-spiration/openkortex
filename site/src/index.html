@@ -27,22 +27,22 @@
 <header class="top">
   <a class="brand" href="{{home}}" aria-label="OpenKortex">{{mark}}<span>OpenKortex</span></a>
   <nav aria-label="{{nav.label}}">
-    <a href="#scenes">{{nav.how}}</a>
+    <a href="#flow">{{nav.how}}</a>
+    <a href="#system">{{nav.apps}}</a>
     <a href="#files">{{nav.files}}</a>
-    <a href="#apps">{{nav.apps}}</a>
     <a href="#selfhost">{{nav.selfhost}}</a>
     <a href="#faq">{{nav.faq}}</a>
-    <a class="gh" href="{{codeUrl}}" aria-label="{{nav.star}}">{{icon:star}}<span>GitHub</span><b data-stars hidden></b></a>
+    <a class="gh" href="{{codeUrl}}" aria-label="{{nav.star}}">{{icon:star}}<span>GitHub</span></a>
     {{themeToggle}}
     <a class="lang" href="{{otherHref}}" hreflang="{{otherLang}}" data-lang="{{otherLang}}">{{otherLabel}}</a>
   </nav>
 </header>
 
 <main id="main">
-  <!-- Hero: the one orchestrated moment. Captures travel from every app into the brain and come back as Markdown. -->
+  <!-- Hero: the one orchestrated moment. Every app sends captures to the server, which files Markdown and answers agents. -->
   <section class="hero">
     <div class="hero-copy">
-      <a class="pill" href="{{codeUrl}}">{{icon:star}}<span>{{hero.pill}}</span>{{icon:arrow-right}}</a>
+      <a class="pill" href="{{codeUrl}}">{{icon:star}}<span>{{hero.pill}}</span>{{icon:chevron-right}}</a>
       <h1>{{hero.title}}</h1>
       <p class="lead">{{hero.lead}}</p>
       <div class="cta">
@@ -50,44 +50,41 @@
         <a class="btn" href="{{codeUrl}}">{{icon:code}}{{hero.github}}</a>
       </div>
       <p class="fine">{{hero.note}}</p>
-      <ul class="badges" aria-label="{{hero.badges}}">
-        <li>{{icon:scale}}AGPL-3.0</li><li>{{icon:server}}{{hero.b1}}</li><li>{{icon:file-text}}Markdown</li><li>{{icon:bot}}MCP</li><li>{{icon:languages}}EN · DE</li>
-      </ul>
     </div>
 
     <figure class="orbit" aria-label="{{orbit.label}}">
       <svg viewBox="0 0 560 560" role="img" aria-labelledby="orbit-desc">
         <desc id="orbit-desc">{{orbit.label}}</desc>
         <defs>
-          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="var(--indigo)" stop-opacity=".55" />
-            <stop offset="60%" stop-color="var(--indigo)" stop-opacity=".08" />
-            <stop offset="100%" stop-color="var(--indigo)" stop-opacity="0" />
-          </radialGradient>
-          <!-- Paths the captures travel on: each app to the center, the center out to the folder and the agents. -->
-          <path id="p-clip" d="M280 280 L82 168" />
-          <path id="p-android" d="M280 280 L118 430" />
-          <path id="p-windows" d="M280 280 L280 50" />
-          <path id="p-web" d="M280 280 L478 168" />
+          <!-- Paths the captures travel on: each app into the center, the center out to the folder and the agents. -->
+          <path id="p-clip" d="M82 168 L280 280" />
+          <path id="p-android" d="M118 430 L280 280" />
+          <path id="p-windows" d="M280 50 L280 280" />
+          <path id="p-web" d="M478 168 L280 280" />
           <path id="p-md" d="M280 280 L442 430" />
           <path id="p-mcp" d="M280 280 L280 514" />
         </defs>
-        <circle class="o-glow" cx="280" cy="280" r="200" fill="url(#glow)" />
-        <circle class="o-ring r1" cx="280" cy="280" r="130" />
+        <circle class="o-ring r1" cx="280" cy="280" r="128" />
         <circle class="o-ring r2" cx="280" cy="280" r="232" />
         <g class="o-spokes">
-          <use href="#p-clip" /><use href="#p-android" /><use href="#p-windows" /><use href="#p-web" /><use href="#p-md" /><use href="#p-mcp" />
+          <use href="#p-clip" /><use href="#p-android" /><use href="#p-windows" /><use href="#p-web" /><use href="#p-md" class="out" /><use href="#p-mcp" class="out" />
         </g>
-        <!-- outbound: sorted Markdown to the folder, answers to the agents -->
+        <!-- inbound: a dot from each app; outbound: a small file to the folder and to the agents -->
+        <g class="o-pulses in">
+          <circle r="3"><animateMotion dur="1.6s" begin="2.0s;i1.end+3.2s" id="i1" fill="freeze" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".45 0 .3 1"><mpath href="#p-clip" /></animateMotion></circle>
+          <circle r="3"><animateMotion dur="1.6s" begin="3.1s;i2.end+3.6s" id="i2" fill="freeze" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".45 0 .3 1"><mpath href="#p-windows" /></animateMotion></circle>
+          <circle r="3"><animateMotion dur="1.6s" begin="2.6s;i3.end+4.1s" id="i3" fill="freeze" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".45 0 .3 1"><mpath href="#p-web" /></animateMotion></circle>
+          <circle r="3"><animateMotion dur="1.6s" begin="3.8s;i4.end+3.4s" id="i4" fill="freeze" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".45 0 .3 1"><mpath href="#p-android" /></animateMotion></circle>
+        </g>
         <g class="o-pulses out">
-          <rect x="-5" y="-6" width="10" height="12" rx="2"><animateMotion dur="2.4s" begin="4.2s;out1.end+1.6s" id="out1" calcMode="linear" fill="freeze"><mpath href="#p-md" /></animateMotion></rect>
-          <rect x="-5" y="-6" width="10" height="12" rx="2"><animateMotion dur="2.4s" begin="5.4s;out2.end+2.2s" id="out2" calcMode="linear" fill="freeze"><mpath href="#p-mcp" /></animateMotion></rect>
+          <rect x="-4" y="-5" width="8" height="10" rx="1.5"><animateMotion dur="1.8s" begin="4.4s;o1.end+2.6s" id="o1" fill="freeze" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".45 0 .3 1"><mpath href="#p-md" /></animateMotion></rect>
+          <rect x="-4" y="-5" width="8" height="10" rx="1.5"><animateMotion dur="1.8s" begin="5.6s;o2.end+3.0s" id="o2" fill="freeze" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".45 0 .3 1"><mpath href="#p-mcp" /></animateMotion></rect>
         </g>
         <g class="o-core">
-          <circle cx="280" cy="280" r="58" class="o-core-bg" />
+          <rect x="236" y="236" width="88" height="88" rx="24" class="o-core-bg" />
           <g transform="translate(244 244) scale(1.125)">
             <path d="M30 14a18 18 0 0 0 0 36z" fill="#fff" />
-            <path class="o-arc" d="M36 16.6a15.6 15.6 0 0 1 0 30.8" stroke="var(--arc)" stroke-width="5" stroke-linecap="round" fill="none" />
+            <path class="o-arc" d="M36 16.6a15.6 15.6 0 0 1 0 30.8" stroke="#c7d2fe" stroke-width="5" stroke-linecap="round" fill="none" />
           </g>
         </g>
       </svg>
@@ -114,27 +111,96 @@
         <li data-x="478" data-y="168">{{icon:square-play}}<span>{{kind.video}}</span></li>
         <li data-x="118" data-y="430">{{icon:lightbulb}}<span>{{kind.thought}}</span></li>
         <li data-x="82" data-y="168">{{icon:terminal}}<span>{{kind.prompt}}</span></li>
-        <li data-x="478" data-y="168">{{icon:mic-signal}}<span>{{kind.podcast}}</span></li>
+        <li data-x="478" data-y="168">{{icon:mic-vocal}}<span>{{kind.podcast}}</span></li>
         <li data-x="82" data-y="168">{{icon:message-square}}<span>{{kind.chat}}</span></li>
       </ul>
     </figure>
   </section>
 
-  <section class="principles" aria-label="{{principles.label}}">
-    <p><strong>{{p1.title}}</strong> {{p1.text}}</p>
-    <p><strong>{{p2.title}}</strong> {{p2.text}}</p>
-    <p><strong>{{p3.title}}</strong> {{p3.text}}</p>
+  <!-- Real screens from the live demo, each in a window; the front one cross-fades to the next, the next two wait behind it.
+       Every screen exists in dark and light; CSS shows the one that matches the page. -->
+  <section class="tour" data-deck aria-label="{{gallery.title}}">
+    <div class="deck">
+      <a href="/home" class="card is-on"><span class="bar"><i></i><i></i><i></i><b>{{g.today}}</b></span><img class="sd" src="/img/home.jpg" width="1440" height="900" alt="{{g.todayAlt}}"><img class="sl" src="/img/home-light.jpg" width="1440" height="900" alt="{{g.todayAlt}}" loading="lazy"></a>
+      <a href="/spaces/all" class="card"><span class="bar"><i></i><i></i><i></i><b>{{g.library}}</b></span><img class="sd" src="/img/library.jpg" width="1440" height="900" alt="{{g.libraryAlt}}" loading="lazy"><img class="sl" src="/img/library-light.jpg" width="1440" height="900" alt="{{g.libraryAlt}}" loading="lazy"></a>
+      <a href="/journal/week" class="card"><span class="bar"><i></i><i></i><i></i><b>{{g.journal}}</b></span><img class="sd" src="/img/journal.jpg" width="1440" height="900" alt="{{g.journalAlt}}" loading="lazy"><img class="sl" src="/img/journal-light.jpg" width="1440" height="900" alt="{{g.journalAlt}}" loading="lazy"></a>
+      <a href="/graph" class="card"><span class="bar"><i></i><i></i><i></i><b>{{g.graph}}</b></span><img class="sd" src="/img/graph.jpg" width="1440" height="900" alt="{{g.graphAlt}}" loading="lazy"><img class="sl" src="/img/graph-light.jpg" width="1440" height="900" alt="{{g.graphAlt}}" loading="lazy"></a>
+      <a href="/agent" class="card"><span class="bar"><i></i><i></i><i></i><b>{{g.agent}}</b></span><img class="sd" src="/img/agent.jpg" width="1440" height="900" alt="{{g.agentAlt}}" loading="lazy"><img class="sl" src="/img/agent-light.jpg" width="1440" height="900" alt="{{g.agentAlt}}" loading="lazy"></a>
+      <a href="/tasks" class="card"><span class="bar"><i></i><i></i><i></i><b>{{g.tasks}}</b></span><img class="sd" src="/img/tasks.jpg" width="1440" height="900" alt="{{g.tasksAlt}}" loading="lazy"><img class="sl" src="/img/tasks-light.jpg" width="1440" height="900" alt="{{g.tasksAlt}}" loading="lazy"></a>
+      <a href="/home" class="card"><span class="bar"><i></i><i></i><i></i><b>{{g.palette}}</b></span><img class="sd" src="/img/palette.jpg" width="1440" height="900" alt="{{g.paletteAlt}}" loading="lazy"><img class="sl" src="/img/palette-light.jpg" width="1440" height="900" alt="{{g.paletteAlt}}" loading="lazy"></a>
+    </div>
+    <div class="deck-foot">
+      <div class="deck-tabs" role="tablist" aria-label="{{gallery.title}}">
+        <button role="tab" aria-selected="true" data-i="0">{{icon:sun}}<span>{{g.today}}</span></button>
+        <button role="tab" aria-selected="false" data-i="1">{{icon:library}}<span>{{g.library}}</span></button>
+        <button role="tab" aria-selected="false" data-i="2">{{icon:notebook-pen}}<span>{{g.journal}}</span></button>
+        <button role="tab" aria-selected="false" data-i="3">{{icon:waypoints}}<span>{{g.graph}}</span></button>
+        <button role="tab" aria-selected="false" data-i="4">{{icon:sparkles}}<span>{{g.agent}}</span></button>
+        <button role="tab" aria-selected="false" data-i="5">{{icon:square-check}}<span>{{g.tasks}}</span></button>
+        <button role="tab" aria-selected="false" data-i="6">{{icon:command}}<span>{{g.palette}}</span></button>
+      </div>
+      <p class="deck-caption" aria-live="polite">{{g.todayCap}}</p>
+    </div>
+    <template data-captions>{{g.todayCap}}|{{g.libraryCap}}|{{g.journalCap}}|{{g.graphCap}}|{{g.agentCap}}|{{g.tasksCap}}|{{g.paletteCap}}</template>
   </section>
 
-  <!-- Who it is for: two rows drifting in opposite directions (paused on hover and for reduced motion). -->
-  <section class="uses" aria-label="{{use.title}}">
-    <p class="uses-title">{{use.title}}</p>
-    <div class="marquee"><ul><li>{{icon:graduation-cap}}<b>{{use.u1}}</b><span>{{use.u1t}}</span></li><li>{{icon:rocket}}<b>{{use.u2}}</b><span>{{use.u2t}}</span></li><li>{{icon:briefcase}}<b>{{use.u3}}</b><span>{{use.u3t}}</span></li><li>{{icon:pen-line}}<b>{{use.u4}}</b><span>{{use.u4t}}</span></li><li>{{icon:code}}<b>{{use.u5}}</b><span>{{use.u5t}}</span></li><li>{{icon:chef-hat}}<b>{{use.u6}}</b><span>{{use.u6t}}</span></li><li>{{icon:users}}<b>{{use.u7}}</b><span>{{use.u7t}}</span></li><li>{{icon:heart-pulse}}<b>{{use.u8}}</b><span>{{use.u8t}}</span></li></ul></div>
+  <!-- Three principles, each with a large line pictogram in the style of the app's empty views. -->
+  <section class="principles" aria-label="{{principles.label}}">
+    <div class="pr" data-reveal>
+      <svg viewBox="0 0 150 120" class="pic pic--sync" aria-hidden="true">
+        <rect class="ln" x="22" y="42" width="26" height="34" rx="3" />
+        <rect class="ln" x="102" y="42" width="26" height="34" rx="3" />
+        <path class="ln f" d="M28 52h14M28 59h10M28 66h12M108 52h14M108 59h10M108 66h12" />
+        <g class="arr">
+          <path class="ln f" d="M75 42a18 18 0 0 1 16 10M75 78a18 18 0 0 1-16-10" />
+          <path class="ln f" d="M91 46v6h-6M59 74v-6h6" />
+        </g>
+        <circle class="acf pk" r="3" />
+        <circle class="acf pk pk--b" r="3" />
+      </svg>
+      <h3>{{p1.title}}</h3>
+      <p>{{p1.text}}</p>
+    </div>
+    <div class="pr" data-reveal>
+      <svg viewBox="0 0 150 120" class="pic pic--server" aria-hidden="true">
+        <rect class="ln bg" x="38" y="30" width="74" height="24" rx="5" />
+        <rect class="ln bg" x="38" y="62" width="74" height="24" rx="5" />
+        <path class="ln f" d="M48 42h22M48 74h16" />
+        <circle class="dot led" cx="100" cy="42" r="2.6" />
+        <circle class="dot led led--b" cx="100" cy="74" r="2.6" />
+        <path class="ln f" d="M75 86v12" />
+        <g class="key">
+          <circle class="ac" cx="75" cy="104" r="6" />
+          <path class="ac" d="M81 104h16M91 104v5M96 104v4" />
+        </g>
+      </svg>
+      <h3>{{p2.title}}</h3>
+      <p>{{p2.text}}</p>
+    </div>
+    <div class="pr" data-reveal>
+      <svg viewBox="0 0 150 120" class="pic pic--agent" aria-hidden="true">
+        <circle class="ln f" cx="75" cy="60" r="40" stroke-dasharray="2 6" />
+        <g class="orb">
+          <circle class="dot" cx="115" cy="60" r="4" />
+          <circle class="dot" cx="35" cy="60" r="3" />
+          <path class="ln f wire" d="M115 60 L 88 60" />
+        </g>
+        <g class="orb2">
+          <circle class="dot" cx="75" cy="22" r="3.5" />
+          <path class="ln f wire" d="M75 22 L 75 46" />
+        </g>
+        <g class="spk">
+          <path class="ac" d="M75 46c1.6 7 5 10.4 12 12-7 1.6-10.4 5-12 12-1.6-7-5-10.4-12-12 7-1.6 10.4-5 12-12z" />
+        </g>
+      </svg>
+      <h3>{{p3.title}}</h3>
+      <p>{{p3.text}}</p>
+    </div>
   </section>
 
   <!-- A real sequence, so the steps are numbered. The stage shows a small live-built piece of the app per step. -->
   <section id="flow" class="flow">
-    <div class="section-head">
+    <div class="section-head" data-reveal>
       <h2>{{flow.title}}</h2>
       <p>{{flow.lead}}</p>
     </div>
@@ -163,11 +229,13 @@
         <div class="pane" role="tabpanel" id="stage-2" aria-labelledby="step-2" hidden>
           <div class="ui entry">
             <div class="ui-head">{{icon:square-play}}<b>{{ui.c1}}</b></div>
-            <p class="label">{{icon:sparkles}}{{ui.summary}}</p>
-            <p class="line" style="--i:0">{{ui.sum1}}</p>
-            <p class="line" style="--i:1">{{ui.sum2}}</p>
+            <div class="brief">
+              <p class="label">{{icon:sparkles}}{{ui.summary}}</p>
+              <p class="line" style="--i:0">{{ui.sum1}}</p>
+              <p class="line" style="--i:1">{{ui.sum2}}</p>
+            </div>
             <div class="chips">
-              <span style="--i:0">#local-first</span><span style="--i:1">#sync</span><span style="--i:2">#talks</span>
+              <span style="--i:0">local-first</span><span style="--i:1">sync</span><span style="--i:2">talks</span>
             </div>
             <p class="task" style="--i:3">{{icon:square-check}}{{ui.task}}</p>
             <p class="path" style="--i:4">{{icon:folder}}30_Clippings / Talks</p>
@@ -183,8 +251,8 @@
                 <line x1="90" y1="60" x2="100" y2="205" style="--i:4" /><line x1="340" y1="70" x2="330" y2="200" style="--i:5" />
               </g>
               <g class="nodes">
-                <circle cx="210" cy="130" r="14" class="hub" /><circle cx="90" cy="60" r="8" /><circle cx="340" cy="70" r="8" />
-                <circle cx="100" cy="205" r="8" class="obj" /><circle cx="330" cy="200" r="8" class="obj" />
+                <circle cx="210" cy="130" r="9" class="hub" /><circle cx="90" cy="60" r="5" /><circle cx="340" cy="70" r="5" />
+                <circle cx="100" cy="205" r="5" class="obj" /><circle cx="330" cy="200" r="5" class="obj" />
               </g>
             </svg>
             <span class="g-label hub" style="left:50%;top:50%">{{ui.g0}}</span>
@@ -215,7 +283,7 @@
   <!-- Three abstract scenes built in HTML: how capturing in the browser and on the phone works, and how agents read and write.
        site.js replays each one while it is on screen; without script or with reduced motion they show their final state. -->
   <section id="scenes" class="scenes">
-    <div class="section-head">
+    <div class="section-head" data-reveal>
       <h2>{{sc.title}}</h2>
       <p>{{sc.lead}}</p>
     </div>
@@ -251,7 +319,7 @@
           <div class="ui-head a-rise" style="--t:4.4">{{icon:globe}}<b>{{ui.c4}}</b></div>
           <p class="label a-fade" style="--t:4.9">{{icon:sparkles}}{{ui.summary}}</p>
           <p class="line a-wipe" style="--t:5.1">{{sc1.sum}}</p>
-          <div class="chips"><span class="a-pop" style="--t:5.8">#retro</span><span class="a-pop" style="--t:5.95">#team</span></div>
+          <div class="chips"><span class="a-pop" style="--t:5.8">retro</span><span class="a-pop" style="--t:5.95">team</span></div>
           <p class="quote a-wipe" style="--t:7.6">{{sc1.quote}}</p>
           <p class="path a-fade" style="--t:8.2">{{icon:folder}}30_Clippings / Team</p>
         </div>
@@ -330,9 +398,70 @@
     </article>
   </section>
 
+  <!-- The whole system: every way in and out, each shown in the frame it lives in. -->
+  <section id="system" class="system">
+    <div class="section-head" data-reveal>
+      <h2>{{apps.title}}</h2>
+      <p>{{apps.lead}}</p>
+    </div>
+    <ul class="sys">
+      <li class="s-web" data-reveal>
+        <div class="frame browser" aria-hidden="true">
+          <span class="fbar"><i></i><i></i><i></i><span class="url">{{icon:lock}}brain.example.org/spaces/all</span></span>
+          <img class="sd" src="/img/library.jpg" width="1440" height="900" alt="" loading="lazy"><img class="sl" src="/img/library-light.jpg" width="1440" height="900" alt="" loading="lazy">
+        </div>
+        <div class="sys-copy"><h3>{{icon:app-window}}{{apps.web}}</h3><p>{{apps.webText}}</p><small>{{sys.webMeta}}</small></div>
+      </li>
+      <li class="s-win" data-reveal>
+        {{shot:windows}}
+        <div class="sys-copy"><h3>{{icon:monitor}}{{apps.windows}}</h3><p>{{apps.windowsText}}</p><small>{{sys.windowsMeta}}</small></div>
+      </li>
+      <li class="s-phone" data-reveal>
+        {{shot:android}}
+        <div class="sys-copy"><h3>{{icon:smartphone}}{{apps.mobile}}</h3><p>{{apps.mobileText}}</p><small>{{sys.mobileMeta}}</small></div>
+      </li>
+      <li class="s-ext" data-reveal>
+        {{shot:clipper}}
+        <div class="sys-copy"><h3>{{icon:scissors}}{{apps.extension}}</h3><p>{{apps.extensionText}}</p><small>{{sys.extMeta}}</small></div>
+      </li>
+      <li class="s-mcp" data-reveal>
+        <div class="frame term-mini" aria-hidden="true">
+          <p class="tl"><span class="p">{{icon:bot}}</span>{{sys.mcpAsk}}</p>
+          <p class="tc"><code>brain_search</code><span>{{sys.mcpHits}}</span></p>
+          <p class="tc"><code>brain_get_item</code><span>Atlas.md</span></p>
+          <p class="tc w"><code>brain_save_item</code><span>{{sys.mcpSaved}}</span></p>
+          <p class="tools">brain_search  brain_get_item  brain_save_item  brain_organize  brain_manage_tasks  brain_log_agent_memory</p>
+        </div>
+        <div class="sys-copy"><h3>{{icon:bot}}{{apps.mcp}}</h3><p>{{apps.mcpText}}</p><small>{{sys.mcpMeta}}</small></div>
+      </li>
+      <li class="s-md" data-reveal>
+        <div class="frame tree" aria-hidden="true">
+          <p class="d">{{icon:folder-open}}vault</p>
+          <p class="d i1">{{icon:folder}}00_Inbox</p>
+          <p class="d i1">{{icon:folder}}10_Notes</p>
+          <p class="d i1">{{icon:folder}}20_Meetings</p>
+          <p class="d i1 open">{{icon:folder-open}}30_Clippings</p>
+          <p class="f i2 on">{{icon:file-text}}local-first-software.md</p>
+          <p class="f i2">{{icon:file-text}}how-we-run-retros.md</p>
+          <p class="d i1">{{icon:folder}}70_Objects</p>
+        </div>
+        <div class="sys-copy"><h3>{{icon:folder-open}}{{apps.md}}</h3><p>{{apps.mdText}}</p><small>{{sys.mdMeta}}</small></div>
+      </li>
+    </ul>
+    <div class="get" data-reveal>
+      <div><h3>{{get.title}}</h3><p>{{get.lead}}</p></div>
+      <div class="cta">
+        <a class="btn" href="{{releasesUrl}}">{{icon:monitor}}{{get.windows}}</a>
+        <a class="btn" href="{{releasesUrl}}">{{icon:smartphone}}{{get.android}}</a>
+        <a class="btn" href="{{releasesUrl}}">{{icon:puzzle}}{{get.extension}}</a>
+        <a class="btn primary" href="#selfhost">{{icon:server}}{{get.server}}</a>
+      </div>
+    </div>
+  </section>
+
   <!-- What people ask their agents, once OpenKortex is connected. -->
   <section class="asks" aria-label="{{ask.title}}">
-    <div class="section-head center">
+    <div class="section-head center" data-reveal>
       <h2>{{ask.title}}</h2>
       <p>{{ask.lead}}</p>
     </div>
@@ -342,7 +471,7 @@
 
   <!-- No lock-in: the vault is plain files; OpenKortex is one of several things that can open them. -->
   <section id="files" class="own">
-    <div class="own-copy">
+    <div class="own-copy" data-reveal>
       <h2>{{own.title}}</h2>
       <p class="lead">{{own.lead}}</p>
       <ul class="facts">
@@ -352,7 +481,7 @@
         <li>{{icon:power-off}}<div><h3>{{own.f4}}</h3><p>{{own.f4t}}</p></div></li>
       </ul>
     </div>
-    <figure class="own-vis" aria-label="{{own.figure}}">
+    <figure class="own-vis" aria-label="{{own.figure}}" data-reveal>
       <p class="crumb">{{icon:folder-open}}~/vault/30_Clippings/Talks/<b>local-first-software.md</b></p>
       <pre class="md"><code><span class="c">---</span>
 <span class="k">title:</span> "{{ui.c1}}"
@@ -366,7 +495,7 @@
 {{ui.sum2}}
 
 <span class="h">## {{own.links}}</span>
-<span class="w">[[CRDTs]]</span> · <span class="w">[[Atlas]]</span> · <span class="w">[[Ines Park]]</span></code></pre>
+<span class="w">[[CRDTs]]</span>  <span class="w">[[Atlas]]</span>  <span class="w">[[Ines Park]]</span></code></pre>
       <p class="opens">{{own.opens}}</p>
       <ul class="openers">
         <li style="--i:0">{{mark}}<span>OpenKortex</span></li>
@@ -378,56 +507,14 @@
     </figure>
   </section>
 
-  <!-- Real screens from the live demo, stacked; the front one cross-fades to the next. -->
-  <section class="gallery" data-deck>
-    <div class="section-head">
-      <h2>{{gallery.title}}</h2>
-      <p>{{gallery.lead}}</p>
-    </div>
-    <div class="deck-tabs" role="tablist" aria-label="{{gallery.title}}">
-      <button role="tab" aria-selected="true" data-i="0">{{icon:sun}}{{g.today}}</button>
-      <button role="tab" aria-selected="false" data-i="1">{{icon:book-open}}{{g.journal}}</button>
-      <button role="tab" aria-selected="false" data-i="2">{{icon:waypoints}}{{g.graph}}</button>
-      <button role="tab" aria-selected="false" data-i="3">{{icon:sparkles}}{{g.agent}}</button>
-      <button role="tab" aria-selected="false" data-i="4">{{icon:square-kanban}}{{g.tasks}}</button>
-    </div>
-    <div class="deck">
-      <a href="/home" class="card is-on"><img src="/img/home.jpg" width="1440" height="900" alt="{{g.todayAlt}}"></a>
-      <a href="/journal/week" class="card"><img src="/img/journal.jpg" width="1440" height="900" alt="{{g.journalAlt}}" loading="lazy"></a>
-      <a href="/graph" class="card"><img src="/img/graph.jpg" width="1440" height="900" alt="{{g.graphAlt}}" loading="lazy"></a>
-      <a href="/agent" class="card"><img src="/img/agent.jpg" width="1440" height="900" alt="{{g.agentAlt}}" loading="lazy"></a>
-      <a href="/tasks" class="card"><img src="/img/tasks.jpg" width="1440" height="900" alt="{{g.tasksAlt}}" loading="lazy"></a>
-    </div>
-    <p class="deck-caption" aria-live="polite">{{g.todayCap}}</p>
-    <template data-captions>{{g.todayCap}}|{{g.journalCap}}|{{g.graphCap}}|{{g.agentCap}}|{{g.tasksCap}}</template>
-  </section>
-
-  <section id="apps" class="apps">
-    <div class="section-head">
-      <h2>{{apps.title}}</h2>
-      <p>{{apps.lead}}</p>
-    </div>
-    <ul class="app-list">
-      <li>{{icon:app-window}}<div><h3>{{apps.web}}</h3><p>{{apps.webText}}</p></div></li>
-      <li>{{icon:monitor}}<div><h3>{{apps.windows}}</h3><p>{{apps.windowsText}}</p></div></li>
-      <li>{{icon:smartphone}}<div><h3>{{apps.mobile}}</h3><p>{{apps.mobileText}}</p></div></li>
-      <li>{{icon:scissors}}<div><h3>{{apps.extension}}</h3><p>{{apps.extensionText}}</p></div></li>
-      <li>{{icon:bot}}<div><h3>{{apps.mcp}}</h3><p>{{apps.mcpText}}</p></div></li>
-      <li>{{icon:folder-open}}<div><h3>{{apps.md}}</h3><p>{{apps.mdText}}</p></div></li>
-    </ul>
-    <div class="get">
-      <div><h3>{{get.title}}</h3><p>{{get.lead}}</p></div>
-      <div class="cta">
-        <a class="btn" href="{{releasesUrl}}">{{icon:monitor}}{{get.windows}}</a>
-        <a class="btn" href="{{releasesUrl}}">{{icon:smartphone}}{{get.android}}</a>
-        <a class="btn" href="{{releasesUrl}}">{{icon:puzzle}}{{get.extension}}</a>
-        <a class="btn primary" href="#selfhost">{{icon:server}}{{get.server}}</a>
-      </div>
-    </div>
+  <!-- Who it is for: one row drifting slowly (paused on hover and for reduced motion). -->
+  <section class="uses" aria-label="{{use.title}}">
+    <p class="uses-title">{{use.title}}</p>
+    <div class="marquee"><ul><li>{{icon:graduation-cap}}<b>{{use.u1}}</b><span>{{use.u1t}}</span></li><li>{{icon:rocket}}<b>{{use.u2}}</b><span>{{use.u2t}}</span></li><li>{{icon:briefcase}}<b>{{use.u3}}</b><span>{{use.u3t}}</span></li><li>{{icon:pen-line}}<b>{{use.u4}}</b><span>{{use.u4t}}</span></li><li>{{icon:code}}<b>{{use.u5}}</b><span>{{use.u5t}}</span></li><li>{{icon:chef-hat}}<b>{{use.u6}}</b><span>{{use.u6t}}</span></li><li>{{icon:users}}<b>{{use.u7}}</b><span>{{use.u7t}}</span></li><li>{{icon:heart-pulse}}<b>{{use.u8}}</b><span>{{use.u8t}}</span></li></ul></div>
   </section>
 
   <section id="selfhost" class="selfhost">
-    <div>
+    <div data-reveal>
       <h2>{{selfhost.title}}</h2>
       <p>{{selfhost.lead}}</p>
       <ul class="needs">
@@ -437,7 +524,7 @@
       </ul>
       <p><a class="more" href="{{guideUrl}}">{{selfhost.guide}}</a></p>
     </div>
-    <pre class="term" aria-label="{{selfhost.codeLabel}}"><code><span class="p">$</span> git clone {{repoUrl}}.git
+    <pre class="term" aria-label="{{selfhost.codeLabel}}" data-reveal><code><span class="p">$</span> git clone {{repoUrl}}.git
 <span class="p">$</span> cd {{repoName}}
 <span class="p">$</span> node selfhost/init.mjs --url http://localhost:8000 \
     --email you@example.com
@@ -446,7 +533,7 @@
   </section>
 
   <section id="faq" class="faq">
-    <div class="section-head">
+    <div class="section-head" data-reveal>
       <h2>{{faq.title}}</h2>
       <p>{{faq.lead}}</p>
     </div>
@@ -454,7 +541,16 @@
   </section>
 
   <section id="community" class="closing">
-    {{markLarge}}
+    <svg viewBox="0 0 150 120" class="pic pic--idea" aria-hidden="true" data-reveal>
+      <circle class="halo acf" cx="75" cy="52" r="20" />
+      <path class="ln ry" d="M75 18v-8" />
+      <path class="ln ry" d="M100 28l6-6" />
+      <path class="ln ry" d="M50 28l-6-6" />
+      <path class="ln ry" d="M110 52h8" />
+      <path class="ln ry" d="M40 52h-8" />
+      <path class="ln" d="M64 74c0-8-10-12-10-24a21 21 0 0 1 42 0c0 12-10 16-10 24z" />
+      <path class="ac" d="M66 82h18M69 90h12" />
+    </svg>
     <h2>{{open.title}}</h2>
     <p>{{open.text}}</p>
     <ul class="join">
@@ -472,7 +568,7 @@
 </main>
 
 <footer>
-  <p>{{footer.text}}</p>
+  <p>{{mark}}{{footer.text}}</p>
   <p class="links"><a href="{{codeUrl}}">GitHub</a><a href="{{releasesUrl}}">{{footer.releases}}</a><a href="{{licenseUrl}}">AGPL-3.0</a><a href="/home">{{footer.demo}}</a>{{imprintLink}}<a href="{{otherHref}}" hreflang="{{otherLang}}" data-lang="{{otherLang}}">{{otherLabel}}</a></p>
 </footer>
 <script src="/site/site.js" defer></script>

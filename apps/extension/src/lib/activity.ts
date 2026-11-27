@@ -9,7 +9,8 @@ const MAX = 20;
 export interface ActivityEntry {
   /** ISO time the server accepted the capture. */
   at: string;
-  kind: IngestRequest["kind"];
+  /** `file` = an uploaded file (the popup's screenshot). */
+  kind: IngestRequest["kind"] | "file";
   /** Page or chat title; for highlights the page title. */
   title: string;
   item_id: string;

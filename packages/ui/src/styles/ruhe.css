@@ -1,0 +1,758 @@
+/*
+ * Ruhe (calm iteration, 2026-11-26; artifact "Kortex Ruhe-Iteration", approved 2026-11-26). Behind the device switch
+ * <html data-look="ruhe"> (Settings > Erscheinungsbild > Look); "classic" stays Tactile Craft unchanged.
+ *
+ * Only values change, the token names stay (packages/ui/src/styles/tokens.css): a warm grey OKLCH ladder from one base
+ * hue, softer hairlines, no edge light (spec/inset gone, flat as decided 2026-11-06), a dimmer sidebar (--ts) and
+ * the motion tokens. Other Ruhe stylesheets (library, orbit, motion) live in ruhe-*.css next to this file.
+ */
+
+/* Theme from three values (Settings > Erscheinungsbild): base hue, tint (chroma factor of the greys) and contrast; the
+   accent is the shell accent. applyAppearance / the pre-paint script set --ruhe-h and --ruhe-c inline on <html>. */
+:root { --ruhe-h: 75; --ruhe-c: 1; }
+
+/* ---------- Tokens: dark ---------- */
+[data-look="ruhe"], [data-look="ruhe"][data-theme="dark"], [data-look="ruhe"] [data-theme="dark"], [data-look="ruhe"] .dark {
+  --lum-0: oklch(0.158 calc(0.003 * var(--ruhe-c, 1)) var(--ruhe-h)); --lum-1: oklch(0.188 calc(0.003 * var(--ruhe-c, 1)) var(--ruhe-h)); --lum-2: oklch(0.218 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --lum-3: oklch(0.248 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h)); --lum-4: oklch(0.30 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --glass: oklch(0.21 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.72); --glass-strong: oklch(0.20 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.88);
+  --t1: oklch(0.95 calc(0.003 * var(--ruhe-c, 1)) var(--ruhe-h)); --t2: oklch(0.80 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h)); --t3: oklch(0.64 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h)); --t4: oklch(0.49 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --ts: oklch(0.74 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --hair: rgb(255 255 255 / 0.055); --hair-strong: rgb(255 255 255 / 0.09);
+  --spec-top: transparent; --inset-top: transparent; --spec-bottom: rgb(0 0 0 / 0.3);
+  --drop: 0 1px 2px rgb(0 0 0 / 0.35), 0 20px 44px -22px rgb(0 0 0 / 0.7);
+  --glow-a: 10%; --glow-b: 14%; --glow-c: 24%;
+}
+
+/* ---------- Tokens: light ---------- */
+[data-look="ruhe"][data-theme="light"], [data-look="ruhe"] [data-theme="light"], [data-look="ruhe"] .light {
+  --lum-0: oklch(0.958 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h)); --lum-1: oklch(0.993 calc(0.0015 * var(--ruhe-c, 1)) var(--ruhe-h)); --lum-2: oklch(0.968 calc(0.003 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --lum-3: oklch(0.946 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h)); --lum-4: oklch(0.91 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --glass: oklch(0.99 calc(0.002 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.72); --glass-strong: oklch(0.99 calc(0.002 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.88);
+  --t1: oklch(0.23 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h)); --t2: oklch(0.41 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h)); --t3: oklch(0.53 calc(0.006 * var(--ruhe-c, 1)) var(--ruhe-h)); --t4: oklch(0.70 calc(0.006 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --ts: oklch(0.46 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --hair: oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.07); --hair-strong: oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.12);
+  --spec-top: transparent; --inset-top: transparent; --spec-bottom: oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.06);
+  --drop: 0 1px 2px oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.05), 0 16px 36px -20px oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.25);
+  --glow-a: 7%; --glow-b: 10%; --glow-c: 16%;
+}
+
+/* ---------- Derived recipes: flat edges, motion ---------- */
+[data-look="ruhe"], [data-look="ruhe"] [data-theme], [data-look="ruhe"] .dark, [data-look="ruhe"] .light {
+  --edge-surface: 0 0 0 1px var(--hair);
+  --edge-surface-hover: 0 0 0 1px var(--hair-strong);
+  --edge-raised: 0 0 0 1px var(--hair-strong);
+  --edge-inset: 0 0 0 1px var(--hair);
+  --edge-canvas: 0 0 0 1px var(--hair);
+  --edge-float: 0 0 0 1px var(--hair-strong), var(--drop);
+  --shadow-btn-primary: none;
+  --shadow-pressed: 0 0 0 1px var(--hair-strong);
+  --bg-hover: var(--lum-3);
+  /* Motion: 120 hover/press, 180 small surfaces, 260 panels and views, 420 large pictograms. */
+  --d1: 120ms; --d2: 180ms; --d3: 260ms; --d4: 420ms;
+  --eo: cubic-bezier(0.16, 1, 0.3, 1); --eio: cubic-bezier(0.65, 0, 0.35, 1); --spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --type-h1: var(--rz-w-semi) var(--rz-fs-doc)/1.15 var(--font-sans); --type-h1-tracking: -0.02em;
+  --type-h2: var(--rz-w-medium) var(--rz-fs-read)/1.5 var(--font-sans); --type-h2-tracking: -0.01em;
+}
+
+/* ---------- Type scale and icon stroke (r2-type, 2026-11-27) ----------
+   One scale for every Ruhe surface (web, Windows main window, desktop windows, clipper): no literal font sizes or
+   weights in ruhe*.css, only these tokens. Measured against the mockup (mock.src.html: body 13/400, sidebar 13,
+   tabs 12.5, groups 11.5/500, titles 600, icons 1.6) and set a step finer on owner feedback (2026-11-27: sidebar,
+   titlebar and tab bar too heavy and too large, icons too thick): chrome 12.5 and 12, weights 400/450/500 and 550 for
+   titles instead of 500/600, stroke 1.4. Meta text never goes below 11.5 px; 10.5/11 are only key caps, monograms and
+   mono paths. Every size scales with the device font factor --kx-fs.
+   | token            | px   | role                                                                  |
+   | --rz-fs-kbd      | 10.5 | key caps, monogram letters, superscript citations (glyphs, not text)  |
+   | --rz-fs-code     | 11   | mono paths and ids                                                    |
+   | --rz-fs-micro    | 11.5 | counts, group labels, key hints, chips: the floor for meta text      |
+   | --rz-fs-meta     | 12   | meta, right column of a row, labels, titlebar tabs, search            |
+   | --rz-fs-ui       | 12.5 | chrome: sidebar rows, location bar, view tabs, buttons, settings nav  |
+   | --rz-fs-body     | 13   | list rows, body text, controls                                        |
+   | --rz-fs-lead     | 14   | lead paragraph, section titles, answers                               |
+   | --rz-fs-read     | 15   | reading text, panel titles                                            |
+   | --rz-fs-big      | 16   | card titles, flashcards                                               |
+   | --rz-fs-h1       | 21   | view and settings titles                                              |
+   | --rz-fs-doc      | 23   | note and dossier titles                                               |
+   | --rz-fs-display  | 28   | greeting, day and area titles                                         |
+   Weights: --rz-w-regular 400 (text), --rz-w-book 450 (active row, labels, buttons, current crumb), --rz-w-medium 500
+   (small headings, selected values, emphasis), --rz-w-semi 550 (titles >= 15 px, strong in answers). No 600/700.
+   Icons: --rz-icon-stroke 1.4 for every line icon (Ico/.kx-ico and any svg.lucide at the default or an old explicit
+   stroke), --rz-icon-stroke-l 1.25 for 20 px and larger, --rz-icon-stroke-bold 2.5 only for check marks on a fill. */
+[data-look="ruhe"] {
+  --rz-fs-kbd: calc(10.5px * var(--kx-fs, 1)); --rz-fs-code: calc(11px * var(--kx-fs, 1)); --rz-fs-micro: calc(11.5px * var(--kx-fs, 1));
+  --rz-fs-meta: calc(12px * var(--kx-fs, 1)); --rz-fs-ui: calc(12.5px * var(--kx-fs, 1)); --rz-fs-body: calc(13px * var(--kx-fs, 1));
+  --rz-fs-lead: calc(14px * var(--kx-fs, 1)); --rz-fs-read: calc(15px * var(--kx-fs, 1)); --rz-fs-big: calc(16px * var(--kx-fs, 1));
+  --rz-fs-h1: calc(21px * var(--kx-fs, 1)); --rz-fs-doc: calc(23px * var(--kx-fs, 1)); --rz-fs-display: calc(28px * var(--kx-fs, 1));
+  --rz-w-regular: 400; --rz-w-book: 450; --rz-w-medium: 500; --rz-w-semi: 550;
+  --rz-icon-stroke: 1.4; --rz-icon-stroke-l: 1.25; --rz-icon-stroke-bold: 2.5;
+  --icon-stroke: var(--rz-icon-stroke); --icon-stroke-thin: var(--rz-icon-stroke-l);
+}
+
+@layer components {
+  /* ---------- Sidebar: recedes, flat active row, grey counts ---------- */
+  [data-look="ruhe"] .kx-sidebar .kx-row { color: var(--ts); }
+  [data-look="ruhe"] .kx-sidebar .kx-row .kx-ico { color: var(--t4); }
+  [data-look="ruhe"] .kx-sidebar .kx-row:hover { background: var(--lum-2); color: var(--t1); }
+  [data-look="ruhe"] .kx-sidebar .kx-row.is-active { background: var(--lum-2); color: var(--t1); font-weight: var(--rz-w-regular); }
+  [data-look="ruhe"] .kx-sidebar .kx-row.is-active::before { display: none; }
+  [data-look="ruhe"] .kx-sidebar .kx-row.is-active .kx-ico { color: var(--t2); }
+  [data-look="ruhe"] .kx-sidebar-badge, [data-look="ruhe"] .kx-sidebar .kx-row .kx-count { color: var(--t4); }
+  [data-look="ruhe"] .kx-sidebar-badge.is-accent { color: var(--t3); background: none; }
+  [data-look="ruhe"][data-theme="light"] .kx-sidebar .kx-row.is-active { background: var(--lum-4); }
+
+  /* Bibliothek lenses. Classic keeps its labelled segment (icons and pill hidden). Variant A (Ruhe): three icons inside
+     the group header row, a pill slides under the chosen one. Sidebar.tsx renders one markup for both. */
+  :root:not([data-look="ruhe"]) .tc-lens .tc-lens-pill, :root:not([data-look="ruhe"]) .tc-lens .tc-lens-ico { display: none; }
+  [data-look="ruhe"] .tc-lib-head { display: flex; align-items: center; padding-right: 2px; }
+  [data-look="ruhe"] .tc-lib-row { flex: 1 1 auto; min-width: 0; padding: 6px 8px; }
+  [data-look="ruhe"] .tc-lib-row .kx-count { display: none; }
+  [data-look="ruhe"] .tc-lib-t { color: var(--t4); font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .tc-lens { position: relative; margin: 0; padding: 0; gap: 0; flex: none; background: none; }
+  [data-look="ruhe"] .tc-lens button { position: relative; z-index: 1; flex: none; width: 24px; height: 22px; padding: 0; color: var(--t4); background: transparent; transition: color var(--d2) var(--eo); }
+  [data-look="ruhe"] .tc-lens button > span { display: none; }
+  [data-look="ruhe"] .tc-lens button .kx-ico { width: 13px; height: 13px; }
+  [data-look="ruhe"] .tc-lens button:hover { color: var(--t2); }
+  [data-look="ruhe"] .tc-lens button[data-pressed] { background: transparent; color: var(--t1); font-weight: var(--rz-w-regular); }
+  [data-look="ruhe"] .tc-lens-pill { position: absolute; left: 0; top: 0; width: 24px; height: 22px; border-radius: 6px; background: var(--lum-3); transform: translateX(calc(var(--lens-i, 0) * 24px)); transition: transform var(--d2) var(--eo); }
+  [data-look="ruhe"][data-theme="light"] .tc-lens-pill { background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair-strong), 0 1px 2px var(--spec-bottom); }
+  [data-look="ruhe"] .tc-lib > .kx-row, [data-look="ruhe"] .tc-lib > .kx-tree { animation: ruhe-lens-in var(--d2) var(--eo); }
+  @keyframes ruhe-lens-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Tabs: compact, flat ---------- */
+  [data-look="ruhe"] .kx-doctab { height: 28px; border-radius: 7px; padding: 0 6px 0 9px; color: var(--t3); }
+  [data-look="ruhe"] .kx-doctab:hover { background: var(--lum-2); color: var(--t2); }
+  [data-look="ruhe"] .kx-doctab[aria-selected="true"] { background: var(--lum-2); color: var(--t1); box-shadow: none; }
+
+  /* ---------- Headers: location bar (breadcrumb), titles 600 ---------- */
+  [data-look="ruhe"] .kx-crumbs { color: var(--t3); }
+  [data-look="ruhe"] .kx-crumbs [aria-current="page"] { color: var(--t1); font-weight: var(--rz-w-regular); }
+  [data-look="ruhe"] .kx-crumbs .kx-sep { opacity: 0.45; }
+  [data-look="ruhe"] .kx-h-page { letter-spacing: var(--type-h1-tracking); }
+}
+
+[data-look="ruhe"][data-motion="reduced"] .tc-lens-pill { transition: none; }
+[data-look="ruhe"][data-motion="reduced"] .tc-lib > .kx-row, [data-look="ruhe"][data-motion="reduced"] .tc-lib > .kx-tree { animation: none; }
+
+/* ---------- Pass 2 (2026-11-26, Ruhe as the standard): shell gaps against screens 01, 03, 23 ---------- */
+@layer components {
+  /* Sidebar: one flowing column (Life follows the library), tools pinned at the bottom as a plain list. */
+  [data-look="ruhe"] .kx-sidebar {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    padding: 4px 8px 8px 10px;
+  }
+  [data-look="ruhe"] .kx-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  [data-look="ruhe"] .kx-sidebar-nav {
+    flex: none;
+    overflow: visible;
+  }
+  [data-look="ruhe"] .tc-sb-dock {
+    flex: 1 0 auto;
+    margin-top: 0;
+  }
+  [data-look="ruhe"] .tc-sb-life,
+  [data-look="ruhe"] .tc-sb-tools-wrap,
+  [data-look="ruhe"] .tc-lib {
+    border-top: 0;
+  }
+  [data-look="ruhe"] .tc-sb-life {
+    margin-top: 14px;
+    padding-top: 0;
+  }
+  [data-look="ruhe"] .tc-sb-life-list {
+    max-height: none;
+    overflow: visible;
+  }
+  [data-look="ruhe"] .tc-sb-tools-wrap {
+    margin-top: auto;
+    padding-top: 14px;
+  }
+  [data-look="ruhe"] .kx-sidebar .tc-sb-tools-h {
+    display: none;
+  }
+  [data-look="ruhe"] .tc-sb-tools {
+    grid-template-columns: 1fr;
+    gap: 1px;
+  }
+  [data-look="ruhe"] .kx-sidebar .tc-sb-tools .kx-row {
+    padding: 0 10px;
+    font-size: inherit;
+    gap: 10px;
+  }
+  /* Group labels in sentence case, quiet; actions only on hover. */
+  [data-look="ruhe"] .kx-sidebar-group {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--rz-fs-micro);
+    color: var(--t4);
+  }
+  [data-look="ruhe"] .tc-sb-head-acts {
+    opacity: 0;
+    transition: opacity var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .tc-sb-sec:hover .tc-sb-head-acts,
+  [data-look="ruhe"] .tc-sb-head-acts:focus-within {
+    opacity: 1;
+  }
+  [data-look="ruhe"] .tc-sb-sec {
+    margin-top: 14px;
+  }
+  /* Life areas: a coloured dot instead of a tinted icon tile. */
+  [data-look="ruhe"] .tc-lifeg {
+    width: 16px;
+    height: 16px;
+    margin-left: 0;
+    background: none;
+  }
+  [data-look="ruhe"] .tc-lifeg .kx-ico {
+    display: none;
+  }
+  [data-look="ruhe"] .tc-lifeg::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--lc);
+    opacity: 0.9;
+  }
+  /* Footer: avatar, name, state dot; secondary buttons appear on hover. */
+  [data-look="ruhe"] .kx-sidebar-foot {
+    position: sticky;
+    bottom: -8px;
+    z-index: 1;
+    margin-top: 8px;
+    padding: 8px 4px 8px 4px;
+    border-top: 0;
+    background: var(--lum-0);
+  }
+  [data-look="ruhe"] .kx-sidebar-foot .tc-sb-state .kx-truncate {
+    display: none;
+  }
+  [data-look="ruhe"] .kx-sidebar-foot .kx-sidebar-foot-btn {
+    opacity: 0;
+    transition: opacity var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .kx-sidebar-foot:hover .kx-sidebar-foot-btn,
+  [data-look="ruhe"] .kx-sidebar-foot .kx-sidebar-foot-btn:focus-visible,
+  [data-look="ruhe"] .kx-sidebar-foot .kx-sidebar-foot-btn.is-on {
+    opacity: 1;
+  }
+
+  /* Titlebar: "New" is a quiet compose control, not a filled accent button. */
+  [data-look="ruhe"] .tc-newbtn,
+  [data-look="ruhe"] .tc-newbtn:hover {
+    background: transparent;
+    box-shadow: none;
+  }
+  [data-look="ruhe"] .tc-newbtn > button {
+    color: var(--t2);
+  }
+  [data-look="ruhe"] .tc-newbtn > button:hover {
+    background: var(--lum-3);
+    color: var(--t1);
+  }
+  [data-look="ruhe"] .tc-newbtn .tc-nb-main .kx-ico {
+    color: var(--t2);
+  }
+  [data-look="ruhe"] .tc-newbtn .tc-nb-more {
+    border-left: 0;
+  }
+
+  /* Page header as the location bar (one header system, screen 03): PageTitle renders a sticky 48 px bar across the pane. */
+  /* The view host is the size container, so the bar can span the whole pane from inside a centred page. */
+  [data-look="ruhe"] [data-view-host] {
+    container-type: inline-size;
+  }
+  [data-look="ruhe"] .kx-page,
+  [data-look="ruhe"] :has(> .kx-pagetitle:first-child) {
+    padding-top: 0 !important;
+  }
+  [data-look="ruhe"] .kx-pagetitle {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    margin-inline: calc((100% - 100cqi) / 2);
+    padding: 0 16px 0 28px;
+    background: color-mix(in oklch, var(--lum-1) 94%, transparent);
+    box-shadow: 0 1px 0 var(--hair);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  [data-look="ruhe"] .kx-pagetitle > .kx-crumbs {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--rz-fs-ui);
+  }
+  [data-look="ruhe"] .kx-pagetitle > .kx-crumbs [aria-current="page"] {
+    padding: 0 !important;
+  }
+  [data-look="ruhe"] .kx-pagetitle-row {
+    flex: 1 1 auto;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    min-width: 0;
+  }
+  [data-look="ruhe"] .kx-pagetitle-text {
+    flex: 1 1 auto !important;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  [data-look="ruhe"] .kx-pagetitle .kx-eyebrow,
+  [data-look="ruhe"] .kx-pagetitle .kx-pagetitle-help {
+    display: none;
+  }
+  [data-look="ruhe"] .kx-pagetitle .kx-h-page {
+    margin: 0 !important;
+    font: var(--rz-w-regular) var(--rz-fs-ui) / 1.3 var(--font-sans);
+    letter-spacing: 0;
+    color: var(--t1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  [data-look="ruhe"] .kx-pagetitle.has-crumbs .kx-h-page {
+    display: none;
+  }
+  :root:not([data-look="ruhe"]) .kx-pagetitle-ico {
+    display: none;
+  }
+  :root:not([data-look="ruhe"]) .kx-pagetitle-meta {
+    display: none;
+  }
+  /* Settings: the head sits outside the page's own size container; Vivid keeps it centred above the grid. */
+  :root:not([data-look="ruhe"]) .kx-settings-head {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 32px 0;
+  }
+  :root:not([data-look="ruhe"]) .kx-settings-head + .kx-settings-page {
+    padding-top: 22px;
+  }
+  [data-look="ruhe"] .kx-settings-head + .kx-settings-page {
+    padding-top: 24px;
+  }
+  [data-look="ruhe"] .kx-pagetitle-meta {
+    font-size: var(--rz-fs-ui);
+    color: var(--t4);
+    white-space: nowrap;
+  }
+  [data-look="ruhe"] .kx-pagetitle-ico {
+    display: inline-flex;
+    color: var(--t3);
+  }
+  [data-look="ruhe"] .kx-pagetitle-ico .kx-ico {
+    width: 15px;
+    height: 15px;
+  }
+  [data-look="ruhe"] .kx-pagetitle .kx-tabs {
+    background: transparent;
+    box-shadow: none;
+  }
+  /* Collections (CollectionHead): crumbs, then the counters in grey, controls on the right; the big title goes. */
+  [data-look="ruhe"] .kc-head.kx-pagetitle {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  [data-look="ruhe"] .kc-head.kx-pagetitle .kc-head-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+  [data-look="ruhe"] .kc-head.kx-pagetitle .kc-h1 {
+    display: none;
+  }
+  [data-look="ruhe"] .kc-head.kx-pagetitle .kc-crumb {
+    margin: 0;
+    font-size: var(--rz-fs-ui);
+    white-space: nowrap;
+  }
+  [data-look="ruhe"] .kc-head.kx-pagetitle .kc-stats {
+    margin: 0;
+    font-size: var(--rz-fs-ui);
+    color: var(--t4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  [data-look="ruhe"] .kc-head.kx-pagetitle .kc-stats b {
+    color: var(--t3);
+    font-weight: var(--rz-w-book);
+  }
+}
+
+@layer components {
+  /* Pass 2: Life overview and Insights use the same location bar. */
+  [data-look="ruhe"] .lf-ov-head.kx-pagetitle {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  [data-look="ruhe"] .lf-ov-head .lf-crumb {
+    font-size: var(--rz-fs-ui);
+    color: var(--t3);
+    white-space: nowrap;
+  }
+  [data-look="ruhe"] .lf-ov-head .lf-crumb b {
+    color: var(--t1);
+    font-weight: var(--rz-w-regular);
+  }
+  [data-look="ruhe"] .kx-insights-head {
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+  }
+  [data-look="ruhe"] .kx-insights-head .kx-pagetitle-meta {
+    margin: 0 !important;
+  }
+  [data-look="ruhe"] .kx-pack-head:has(> .kx-insights-head:first-child) {
+    padding-top: 0 !important;
+  }
+}
+
+@layer components {
+  /* Pass 3: micro labels in sentence case (no uppercase tracking), quieter journal prompts. */
+  [data-look="ruhe"] :is(.kx-eyebrow, .kx-menu-label, .fs-lbl, .jr-lbl, .kx-ai-sum-lbl, .kc-tbl th, .kc-htrow.is-head, .e-micro, .kx-orbit-micro, .kc-wd-dow, .kc-month-dow, .hm-ds-kind),
+  [data-look="ruhe"] .kx-palette [cmdk-group-heading] {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--rz-fs-meta);
+  }
+  [data-look="ruhe"] .jr-prompts .jr-fbtn { border-color: transparent; background: transparent; box-shadow: none; color: var(--t3); }
+  [data-look="ruhe"] .jr-prompts .jr-fbtn:hover { background: var(--hair); color: var(--t1); }
+}
+
+@layer components {
+  /* Pass 4: content panels (Insights recommendations and charts) without a raised surface, only a hairline. */
+  [data-look="ruhe"] { --kx-panel-bg: transparent; --kx-panel-edge: inset 0 0 0 1px var(--hair); }
+}
+
+/* ======================================================================================================================
+ * Radikal (2026-11-27, web-shell). W1: shell metrics and type of the mockup (titlebar 40, sidebar 232, canvas 12,
+ * Geist with ss01/cv11 and -0.005em). W3: the header system (LocationBar, ViewBar, KbdHints; apps/web
+ * components/shell/Bars.tsx) that every Ruhe view fills; the hosts sit above the scroll area of the panel.
+ * ==================================================================================================================== */
+:root[data-look="ruhe"] {
+  --layout-titlebar: 40px;
+  --radius-canvas: 12px;
+}
+
+@layer components {
+  /* ---------- W1: type ---------- */
+  [data-look="ruhe"] body,
+  [data-look="ruhe"] .kx-app-shell {
+    letter-spacing: -0.005em;
+    font-feature-settings: "ss01", "cv11";
+  }
+  [data-look="ruhe"] :is(button, input, select, textarea, a.kxb, div.kx-doctab) {
+    letter-spacing: inherit;
+  }
+
+  /* ---------- W1: titlebar 40 px, flat 18 px mark with "K", 13/550 name, search 240 x 26 r7 ---------- */
+  [data-look="ruhe"] .tc-titlebar { gap: 6px; padding-left: 12px; }
+  [data-look="ruhe"] .tc-tb-left { gap: 2px; width: calc(var(--sbw) - 12px); padding-left: 0; }
+  [data-look="ruhe"] .tc-brand { gap: 8px; }
+  [data-look="ruhe"] .tc-brand .kx-appmark {
+    position: relative; width: 18px; height: 18px; border-radius: 5px; box-shadow: none;
+    background: var(--accent-ai-solid); display: inline-grid; place-items: center;
+  }
+  [data-look="ruhe"] .tc-brand .kx-appmark::after {
+    content: "K"; color: var(--on-accent-ai, #fff); font: 700 10.5px/1 var(--font-sans); letter-spacing: 0;
+  }
+  [data-look="ruhe"] .tc-brand-title { font-size: var(--rz-fs-ui); font-weight: var(--rz-w-medium); letter-spacing: -0.005em; }
+  [data-look="ruhe"] .tc-titlebar .tc-ibtn { width: 26px; height: 26px; border-radius: 7px; }
+  [data-look="ruhe"] .tc-titlebar .tc-ibtn .kx-ico { width: 15px; height: 15px; }
+  [data-look="ruhe"] .tc-tab { height: 26px; padding: 0 9px; gap: 6px; border-radius: 7px; color: var(--t3); font-size: var(--rz-fs-meta); font-weight: var(--rz-w-regular); }
+  [data-look="ruhe"] .tc-tab:hover { background: var(--lum-2); color: var(--t2); }
+  [data-look="ruhe"] .tc-tab[aria-selected="true"] { background: var(--lum-2); color: var(--t1); box-shadow: none; }
+  [data-look="ruhe"] .tc-tab--home { padding: 0 7px; }
+  [data-look="ruhe"] .tc-titlebar .tc-search {
+    min-width: 240px; height: 26px; gap: 7px; padding: 0 6px 0 9px; border-radius: 7px;
+    background: var(--lum-1); color: var(--t4); font-size: var(--rz-fs-meta); box-shadow: inset 0 0 0 1px var(--hair);
+  }
+  [data-look="ruhe"] .tc-titlebar .tc-search:hover { color: var(--t2); }
+  [data-look="ruhe"] .tc-titlebar .tc-search .kx-ico { width: 13px; height: 13px; }
+  [data-look="ruhe"] .tc-titlebar .tc-search .kx-kbd { height: 17px; padding: 0 5px; border-radius: 4px; background: var(--lum-3); color: var(--t3); font-family: var(--font-sans); font-size: var(--rz-fs-kbd); font-weight: var(--rz-w-book); box-shadow: none; }
+  @media (max-width: 859.98px) { [data-look="ruhe"] .tc-titlebar .tc-search { min-width: 0; } }
+
+  /* ---------- W1: sidebar rows 28 px r7, group labels 11.5/500 ---------- */
+  [data-look="ruhe"] .kx-sidebar .kx-row { min-height: 28px; border-radius: 7px; gap: 9px; font-size: var(--rz-fs-ui); font-weight: var(--rz-w-regular); }
+  [data-look="ruhe"] .kx-sidebar .kx-row .kx-ico { width: 15px; height: 15px; }
+  [data-look="ruhe"] .kx-sidebar-group { font-size: var(--rz-fs-micro); font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .kx-sidebar .kx-row .kx-count, [data-look="ruhe"] .kx-sidebar-badge { font-size: var(--rz-fs-micro); font-weight: var(--rz-w-regular); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .kx-sidebar .tc-sb-link { font-size: var(--rz-fs-micro); font-weight: var(--rz-w-regular); }
+
+  /* ---------- W3: header hosts (empty hosts take no space) ---------- */
+  .rz-headslot { flex: none; position: relative; z-index: 6; display: flex; flex-direction: column; min-width: 0; }
+  .rz-headslot-loc:empty, .rz-headslot-view:empty { display: none; }
+
+  /* Location bar: 44 px, crumbs 13 t3 (current t1/500), quiet actions on the right. */
+  .rz-locbar {
+    display: flex; align-items: center; gap: 8px; height: 44px; min-width: 0; padding: 0 12px 0 18px;
+    font-size: var(--rz-fs-ui); color: var(--t3); background: var(--lum-1);
+  }
+  /* Inline fallback (server render, first client render): the same bar at the top of the view, across the pane. */
+  .rz-locbar.is-inline, .rz-viewbar.is-inline { position: sticky; z-index: 5; margin-inline: calc((100% - 100cqi) / 2); }
+  .rz-locbar.is-inline { top: 0; }
+  .rz-viewbar.is-inline { top: 44px; }
+  .rz-locbar-path { display: flex; align-items: center; gap: 7px; min-width: 0; overflow: hidden; white-space: nowrap; }
+  .rz-locbar-crumb { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+  .rz-locbar-crumb:last-child { flex: 0 1 auto; overflow: hidden; }
+  .rz-locbar-sep { color: var(--t4); }
+  .rz-locbar-cur, .rz-locbar-link, .rz-locbar-step { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+  .rz-locbar-cur { color: var(--t1); font-weight: var(--rz-w-regular); }
+  .rz-locbar-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .rz-locbar-link { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-decoration: none; cursor: pointer; transition: color var(--d1, 120ms) var(--eo, ease); }
+  .rz-locbar-link:hover { color: var(--t1); }
+  .rz-locbar-path svg { flex: none; width: 14px; height: 14px; }
+  .rz-locbar-meta { flex: none; color: var(--t4); font-size: var(--rz-fs-meta); white-space: nowrap; }
+  .rz-locbar-sp, .rz-viewbar-sp { flex: 1 1 auto; min-width: 8px; }
+  .rz-locbar-acts, .rz-viewbar-right { display: flex; align-items: center; gap: 2px; flex: none; }
+
+  /* View bar: 40 px, hairline above and below, 26 px tabs r7 (on: l2), grey counts. */
+  .rz-viewbar {
+    display: flex; align-items: center; gap: 4px; height: 40px; min-width: 0; padding: 0 12px 0 14px;
+    border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); background: var(--lum-1);
+  }
+  .rz-headslot-loc:empty + .rz-headslot-view .rz-viewbar { border-top: 0; }
+  .rz-viewbar-tabs { display: flex; align-items: center; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .rz-viewbar-tabs::-webkit-scrollbar { display: none; }
+  .rz-vt {
+    display: inline-flex; align-items: center; gap: 6px; flex: none; height: 26px; padding: 0 9px; border: 0; border-radius: 7px;
+    background: transparent; color: var(--t3); font: inherit; font-size: var(--rz-fs-ui); white-space: nowrap; cursor: pointer;
+    transition: background var(--d1, 120ms) var(--eo, ease), color var(--d1, 120ms) var(--eo, ease);
+  }
+  .rz-vt:hover { color: var(--t1); }
+  .rz-vt[aria-selected="true"] { background: var(--lum-2); color: var(--t1); }
+  [data-theme="light"] .rz-vt[aria-selected="true"] { background: var(--lum-3); }
+  .rz-vt svg { width: 13px; height: 13px; }
+  .rz-vt-c { color: var(--t4); font-size: var(--rz-fs-micro); font-variant-numeric: tabular-nums; }
+
+  /* Buttons of the bars: 28 px text button (12.5/500, t2) and 28 px icon button (t3). */
+  .rz-bbtn {
+    position: relative; display: inline-flex; align-items: center; gap: 6px; flex: none; height: 28px; padding: 0 10px; border: 0; border-radius: 7px;
+    background: transparent; color: var(--t2); font: inherit; font-size: var(--rz-fs-ui); font-weight: var(--rz-w-book); white-space: nowrap; cursor: pointer;
+    transition: background var(--d1, 120ms) var(--eo, ease), color var(--d1, 120ms) var(--eo, ease);
+  }
+  .rz-bbtn svg { flex: none; width: 14px; height: 14px; }
+  .rz-bbtn:hover { background: var(--lum-2); color: var(--t1); }
+  .rz-bbtn:disabled { opacity: 0.45; cursor: default; background: transparent; }
+  .rz-bbtn--soft { background: var(--lum-2); color: var(--t1); }
+  .rz-bbtn--soft:hover { background: var(--lum-3); }
+  .rz-bbtn--primary { background: var(--accent-ai-solid); color: var(--on-accent-ai, #fff); }
+  .rz-bbtn--primary:hover { background: color-mix(in oklch, var(--accent-ai-solid) 88%, white); color: var(--on-accent-ai, #fff); }
+  .rz-bbtn--primary .rz-kbdcap { background: rgb(255 255 255 / 0.18); color: inherit; }
+  .rz-bbtn--line { box-shadow: inset 0 0 0 1px var(--hair-strong); color: var(--t1); }
+  .rz-bbtn.is-active::after { content: ""; position: absolute; top: 5px; right: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  .rz-bbtn[data-popup-open], .rz-bib[data-popup-open] { background: var(--lum-2); color: var(--t1); }
+  .rz-bib {
+    display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 7px;
+    background: transparent; color: var(--t3); cursor: pointer; transition: background var(--d1, 120ms) var(--eo, ease), color var(--d1, 120ms) var(--eo, ease);
+  }
+  .rz-bib svg { width: 15px; height: 15px; }
+  .rz-bib:hover { background: var(--lum-2); color: var(--t1); }
+
+  /* Key caps and the quiet key row. */
+  .rz-kbdcap {
+    display: inline-block; min-width: 17px; padding: 1px 5px; border-radius: 4px; background: var(--lum-3); color: var(--t3);
+    font: var(--rz-w-regular) var(--rz-fs-kbd) / 15px var(--font-mono, ui-monospace, monospace); text-align: center; letter-spacing: 0;
+  }
+  .rz-keys { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 2px 0; color: var(--t4); font-size: var(--rz-fs-micro); }
+  .rz-keys-i { display: inline-flex; align-items: center; gap: 5px; }
+
+  /* A page under a portalled head gets its own top air back (the old in-scroll head set it to 0). */
+  [data-look="ruhe"] .kx-page:not(:has(> :is(.kx-pagetitle, .rz-locbar):first-child)) { padding-top: 22px !important; }
+}
+
+@layer components {
+  /* ---------- W2: sidebar as in the mockup: one scrolling list (main, favourites, library, Life), the tools and the
+     profile line fixed at the bottom; the footer keeps only the gear. ---------- */
+  [data-look="ruhe"] .kx-sidebar { overflow: hidden; padding: 6px 8px 8px 8px; }
+  [data-look="ruhe"] .kx-sidebar-nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  [data-look="ruhe"] .tc-sb-dock { flex: none; margin-top: 0; }
+  [data-look="ruhe"] .tc-sb-tools-wrap { margin-top: 0; padding-top: 8px; }
+  [data-look="ruhe"] .kx-sidebar-nav .tc-sb-life { position: relative; margin-top: 12px; padding-bottom: 6px; }
+  [data-look="ruhe"] .tc-life-acts { position: absolute; top: 2px; right: 2px; display: inline-flex; }
+  [data-look="ruhe"] .tc-life-acts .tc-sb-link { display: inline-grid; place-items: center; width: 22px; height: 22px; padding: 0; }
+  [data-look="ruhe"] .tc-life-acts .kx-ico { width: 13px; height: 13px; }
+  [data-look="ruhe"] .tc-sb-life:hover .tc-sb-head-acts { opacity: 1; }
+  [data-look="ruhe"] .kx-sidebar-foot {
+    position: static; margin-top: 2px; padding: 8px 2px 0 8px; gap: 9px; background: none;
+  }
+  [data-look="ruhe"] .kx-sidebar-avatar { width: 22px; height: 22px; font-size: var(--rz-fs-kbd); font-weight: var(--rz-w-medium); color: var(--t2); box-shadow: none; }
+  [data-look="ruhe"] .tc-sb-who { display: flex; align-items: center; gap: 8px; }
+  [data-look="ruhe"] .tc-sb-who .tc-sb-name { font-size: var(--rz-fs-ui); font-weight: var(--rz-w-regular); color: var(--t2); }
+  [data-look="ruhe"] .kx-sidebar-foot .kx-sidebar-foot-btn.tc-sb-gear, [data-look="ruhe"] .kx-sidebar-foot .tc-sb-gear { opacity: 1; width: 24px; height: 24px; color: var(--t3); }
+  [data-look="ruhe"] .kx-sidebar-foot .tc-sb-gear .kx-ico { width: 14px; height: 14px; }
+  /* Vault lens in the sans face like every other row. */
+  [data-look="ruhe"] .tc-lib .kx-tree .kx-mono { font-family: var(--font-sans); font-size: var(--rz-fs-ui) !important; }
+  [data-look="ruhe"] .kx-sidebar .kx-row.is-tree { font-size: var(--rz-fs-ui); font-weight: var(--rz-w-regular); }
+}
+
+/* ---------- W8: contrast steps and reduced motion (Settings > Erscheinungsbild) ---------- */
+[data-look="ruhe"][data-contrast="high"], [data-look="ruhe"][data-contrast="high"] [data-theme="dark"] {
+  --t2: oklch(0.86 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h)); --t3: oklch(0.73 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --t4: oklch(0.60 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h)); --ts: oklch(0.83 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --hair: rgb(255 255 255 / 0.08); --hair-strong: rgb(255 255 255 / 0.13);
+}
+[data-look="ruhe"][data-contrast="high"][data-theme="light"], [data-look="ruhe"][data-contrast="high"] [data-theme="light"] {
+  --t2: oklch(0.33 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h)); --t3: oklch(0.45 calc(0.006 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --t4: oklch(0.60 calc(0.006 * var(--ruhe-c, 1)) var(--ruhe-h)); --ts: oklch(0.37 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --hair: oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.11); --hair-strong: oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.17);
+}
+[data-look="ruhe"][data-contrast="soft"], [data-look="ruhe"][data-contrast="soft"] [data-theme="dark"] {
+  --t2: oklch(0.76 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h)); --t3: oklch(0.59 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --t4: oklch(0.45 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h)); --ts: oklch(0.69 calc(0.004 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --hair: rgb(255 255 255 / 0.045); --hair-strong: rgb(255 255 255 / 0.075);
+}
+[data-look="ruhe"][data-contrast="soft"][data-theme="light"], [data-look="ruhe"][data-contrast="soft"] [data-theme="light"] {
+  --t2: oklch(0.46 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h)); --t3: oklch(0.59 calc(0.006 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --t4: oklch(0.75 calc(0.006 * var(--ruhe-c, 1)) var(--ruhe-h)); --ts: oklch(0.51 calc(0.005 * var(--ruhe-c, 1)) var(--ruhe-h));
+  --hair: oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.055); --hair-strong: oklch(0.25 calc(0.01 * var(--ruhe-c, 1)) var(--ruhe-h) / 0.095);
+}
+/* Bewegung "Reduziert": the same motion, shorter and without the spring overshoot ("Aus" is data-motion="reduced"). */
+[data-look="ruhe"][data-calm="on"], [data-look="ruhe"][data-calm="on"] [data-theme] {
+  --d2: 140ms; --d3: 180ms; --d4: 240ms; --spring: var(--eo);
+}
+[data-heroes="off"] .kx-main-window:has(.rzh-page)::before { display: none; }
+
+@layer components {
+  /* ---------- W8: settings frame (mockup "einstellungen"): 220 px list with a hairline, flat rows ---------- */
+  .rzs-frame { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100%; border-top: 1px solid var(--hair); }
+  .rzs-nav { display: flex; flex-direction: column; gap: 1px; padding: 10px 8px 96px; border-right: 1px solid var(--hair); }
+  .rzs-nav-row {
+    display: flex; align-items: center; gap: 9px; height: 30px; padding: 0 10px; border-radius: 7px; color: var(--ts);
+    font-size: var(--rz-fs-ui); text-decoration: none; white-space: nowrap; transition: background var(--d1, 120ms) var(--eo, ease);
+  }
+  .rzs-nav-row > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .rzs-nav-row .kx-ico { width: 15px; height: 15px; color: var(--t4); flex: none; }
+  .rzs-nav-row:hover { background: var(--lum-2); color: var(--t1); }
+  .rzs-nav-row.is-on { background: var(--lum-2); color: var(--t1); }
+  .rzs-nav-row.is-on .kx-ico { color: var(--t2); }
+  .rzs-nav-sp { flex: 1 1 auto; min-height: 16px; }
+  .rzs-ver { padding: 8px 10px 0; color: var(--t4); font-size: var(--rz-fs-micro); }
+  .rzs-sc { min-width: 0; padding: 26px 48px max(120px, var(--kx-footbar-safe, 100px)); max-width: 980px; }
+  .rzs-h1 { margin: 0; font-size: var(--rz-fs-h1); line-height: 1.2; font-weight: var(--rz-w-semi); letter-spacing: -0.022em; color: var(--t1); }
+  .rzs-help { margin: 4px 0 18px; color: var(--t3); font-size: var(--rz-fs-body); }
+  .rzs-sc.kx-settings-body { display: block; }
+  .rzs-h1 + .rzs-look, .rzs-h1 + * { margin-top: 18px; }
+  .rzs-sc > .rzs-h1 + .rzs-help { margin: 6px 0 22px; }
+  .rzs-sc > * + :not(.rzs-help) { margin-top: 18px; }
+  /* Other sections keep their rows; in the Ruhe frame their cards lose the raised surface. */
+  [data-look="ruhe"] .rzs-sc .tc-set, [data-look="ruhe"] .rzs-sc > div[style*="border-radius"] { background: transparent; box-shadow: none; }
+
+  .rzs-grp { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; padding: 18px 0; border-top: 1px solid var(--hair); }
+  .rzs-k { color: var(--t1); font-size: var(--rz-fs-body); font-weight: var(--rz-w-regular); }
+  .rzs-k small { display: block; margin-top: 2px; color: var(--t3); font-size: var(--rz-fs-meta); font-weight: var(--rz-w-regular); line-height: 1.45; }
+  .rzs-v { min-width: 0; display: grid; gap: 4px; justify-items: start; }
+  .rzs-presets { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .rzs-preset {
+    width: 96px; padding: 0; overflow: hidden; border: 0; border-radius: 10px; background: transparent; color: var(--t2); font: inherit;
+    font-size: var(--rz-fs-meta); text-align: left; cursor: pointer; box-shadow: 0 0 0 1px var(--hair-strong);
+    transition: box-shadow var(--d1, 120ms) var(--eo, ease);
+  }
+  .rzs-preset:hover { box-shadow: 0 0 0 1px var(--t4); }
+  .rzs-preset.is-on { box-shadow: 0 0 0 2px var(--accent); color: var(--t1); }
+  .rzs-sw { display: flex; height: 44px; }
+  .rzs-sw i { flex: 1; }
+  .rzs-nm { display: block; padding: 6px 8px; }
+  .rzs-slider { display: grid; grid-template-columns: 90px minmax(0, 1fr) 54px; gap: 14px; align-items: center; width: 100%; max-width: 560px; height: 34px; color: var(--t2); font-size: var(--rz-fs-ui); }
+  .rzs-out { color: var(--t3); font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--rz-fs-meta); }
+  .rzs-slider input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; margin: 0; border-radius: 5px; background: var(--track); cursor: pointer; }
+  .rzs-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15), 0 2px 6px rgb(0 0 0 / 0.3); }
+  .rzs-slider input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15), 0 2px 6px rgb(0 0 0 / 0.3); }
+  .rzs-slider input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  .rzs-minis { display: flex; flex-wrap: wrap; gap: 12px; }
+  .rzs-mini { display: grid; grid-template-columns: 62px 1fr; width: 230px; height: 140px; overflow: hidden; border-radius: 10px; box-shadow: 0 0 0 1px var(--hair-strong); background: var(--lum-0); }
+  .rzs-mini-s { display: flex; flex-direction: column; gap: 5px; padding: 8px 6px; background: var(--lum-0); }
+  .rzs-mini-s i { display: block; height: 6px; border-radius: 3px; background: var(--t4); opacity: 0.6; }
+  .rzs-mini-s i.is-on { background: var(--t2); opacity: 1; }
+  .rzs-mini-m { display: flex; flex-direction: column; gap: 6px; margin: 5px 5px 5px 0; padding: 10px; border-radius: 6px; background: var(--lum-1); }
+  .rzs-mini-m i { display: block; height: 6px; border-radius: 3px; background: var(--t3); opacity: 0.5; }
+  .rzs-mini-m b { display: block; width: 60%; height: 10px; border-radius: 3px; background: var(--t1); }
+  .rzs-mini-m u { display: block; width: 46px; height: 16px; margin-top: auto; border-radius: 5px; background: var(--accent); }
+  .rzs-seg { display: inline-flex; flex-wrap: wrap; padding: 3px; border-radius: 9px; background: var(--lum-2); }
+  [data-theme="light"] .rzs-seg { background: var(--lum-3); }
+  .rzs-seg button {
+    height: 28px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; color: var(--t3); font: inherit;
+    font-size: var(--rz-fs-ui); cursor: pointer; transition: background var(--d1, 120ms) var(--eo, ease), color var(--d1, 120ms) var(--eo, ease);
+  }
+  .rzs-seg button:hover { color: var(--t1); }
+  .rzs-seg button.is-on { background: var(--lum-1); color: var(--t1); box-shadow: 0 1px 2px rgb(0 0 0 / 0.15); }
+  .rzs-switch { display: inline-flex; align-items: center; gap: 10px; color: var(--t2); font-size: var(--rz-fs-body); cursor: pointer; }
+
+  @media (max-width: 859.98px) {
+    .rzs-frame { grid-template-columns: minmax(0, 1fr); }
+    .rzs-nav { position: static; flex-direction: row; min-height: 0; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--hair); scrollbar-width: none; }
+    .rzs-nav-sp, .rzs-ver { display: none; }
+    .rzs-sc { padding: 20px 16px 120px; }
+    .rzs-grp { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  }
+}
+
+/* ======================================================================================================================
+ * r2-type (2026-11-27): the type scale and the icon stroke applied to what no ruhe*.css rule sizes itself.
+ * ==================================================================================================================== */
+/* Classic type tokens in the Ruhe look: the same roles on the Ruhe scale (no 600, meta not below 11.5). */
+[data-look="ruhe"] {
+  --type-display: var(--rz-w-semi) var(--rz-fs-display)/1.15 var(--font-sans); --type-display-tracking: -0.026em;
+  --type-h3: var(--rz-w-book) var(--rz-fs-body)/1.4 var(--font-sans);
+  --type-read: var(--rz-w-regular) var(--rz-fs-lead)/1.65 var(--font-sans);
+  --type-body: var(--rz-w-regular) var(--rz-fs-body)/1.4 var(--font-sans);
+  --type-meta: var(--rz-w-regular) var(--rz-fs-meta)/1.5 var(--font-sans);
+  --type-micro: var(--rz-w-book) var(--rz-fs-micro)/1.4 var(--font-sans);
+}
+/* Windows (Chromium/WebView2 with DirectWrite) draws Geist visibly heavier than the mockup's grayscale rendering, and
+   -webkit-font-smoothing does nothing there. Geist is a variable font (wght 100-900), so the weights step down by 20
+   on Windows only: text 380, labels 430, small headings 480, titles 530. data-os comes from lib/shell/platform.ts
+   (web, Windows main window), apps/desktop theme.ts (small windows) and the extension's ThemeRoot. */
+[data-look="ruhe"][data-os="windows"], [data-os="windows"] [data-look="ruhe"] {
+  --rz-w-regular: 380; --rz-w-book: 430; --rz-w-medium: 480; --rz-w-semi: 530;
+}
+[data-look="ruhe"][data-os="windows"] body, [data-os="windows"] [data-look="ruhe"] { font-weight: var(--rz-w-regular); }
+
+@layer components {
+  /* Every line icon on the one stroke. Ico (.kx-ico) reads --icon-stroke (set to the token above). Lucide icons
+     imported directly (about 50 files, Lucide default 2 or an old explicit 1.75/1.6/1.5) carry the stroke as an SVG
+     attribute; any CSS beats a presentation attribute, and :where() keeps this at zero specificity, so a component
+     rule that sets its own stroke (check marks on a fill: 2.5-3, rings, charts) still wins. */
+  :where([data-look="ruhe"] svg.lucide:not(.kx-ico):is([stroke-width="2"], [stroke-width="1.75"], [stroke-width="1.6"], [stroke-width="1.5"])) {
+    stroke-width: var(--rz-icon-stroke);
+  }
+  :where([data-look="ruhe"] svg.lucide:not(.kx-ico):is([width="20"], [width="22"], [width="28"], [width="32"], [width="36"], [width="40"], [width="48"]):is([stroke-width="2"], [stroke-width="1.75"], [stroke-width="1.6"], [stroke-width="1.5"])) {
+    stroke-width: var(--rz-icon-stroke-l);
+  }
+  [data-look="ruhe"] :is(.kx-ico--lg, .kx-ico--l) { stroke-width: var(--rz-icon-stroke-l); }
+
+  /* Sidebar: rows 12.5/400, the active row only by background and colour; Favoriten and Life rows the same. */
+  [data-look="ruhe"] .kx-sidebar :is(.kx-row, .kx-row.is-active, .kx-row.is-tree) .kx-truncate { font-weight: var(--rz-w-regular); }
+
+  /* Titlebar tabs: 12/400 in every state; the close glyph thin. */
+  [data-look="ruhe"] .tc-tab :is(.kx-truncate, span) { font-weight: var(--rz-w-regular); }
+
+  /* Classic controls that Ruhe screens still use (settings sections, note sheet, insights): labels at 450, not 500. */
+  [data-look="ruhe"] :is(.kx-btn, .kx-badge, .kx-status, .kx-callout-head, .kx-label, .kx-datechip, .kx-kbd, .kx-pill, .kx-filterchip, .kx-tab, .kx-seg button) {
+    font-weight: var(--rz-w-book);
+  }
+
+  /* Note editor: reading text 14/1.65 like the mockup, headings 500 (h1 550). */
+  [data-look="ruhe"] .kx-editor .bn-editor { font-size: var(--rz-fs-lead); line-height: 1.65; font-weight: var(--rz-w-regular); }
+  [data-look="ruhe"] .kx-editor .bn-block-outer { line-height: 1.65; }
+  [data-look="ruhe"] .kx-editor .bn-block-content[data-content-type="heading"] :is(h2, h3) { font-weight: var(--rz-w-medium); }
+  [data-look="ruhe"] .kx-editor .bn-block-content[data-content-type="heading"] h1 { font-size: var(--rz-fs-h1); font-weight: var(--rz-w-semi); }
+  [data-look="ruhe"] .kx-editor .bn-block-content[data-content-type="heading"] h2 { font-size: var(--rz-fs-read); }
+  [data-look="ruhe"] .kx-editor .bn-block-content[data-content-type="heading"] h3 { font-size: var(--rz-fs-body); }
+  [data-look="ruhe"] .kx-editor .bn-editor :is(strong, b) { font-weight: var(--rz-w-semi); }
+}

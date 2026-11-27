@@ -476,16 +476,17 @@ async fn run_inner(app: &AppHandle, opts: Options) -> Result<Report> {
     let lines = hud["lines"].as_u64().unwrap_or(0);
     let cards = hud["cards"].as_u64().unwrap_or(0);
     let meters = hud["meters"].as_u64().unwrap_or(0);
+    // The meeting bar (0.6.8) shows one wave for both channels; the levels step above checks each channel.
     rep.step(
         t("HUD shows levels, transcript and prompts"),
-        probed && hud["phase"] == "live" && meters >= 2 && lines >= 1 && cards >= 1,
+        probed && hud["phase"] == "live" && meters >= 1 && lines >= 1 && cards >= 1,
         if probed { format!("phase {}, {meters} level meters, {lines} transcript lines, {cards} prompts, microphone {} dBFS", hud["phase"], hud["mic_db"]) } else { "the HUD did not answer".into() },
     );
 
     // 5b. The HUD's own buttons, pressed in the HUD window (the real click → set_hud_mode path).
     // `action` names the button independent of the language (`data-hud-action` in the HUD and pill);
     // `label` is its aria-label in the current language, for the report.
-    for (label, want) in [(t("Minimize to pill"), "pill"), (t("Expand HUD"), "hud"), (t("Hide HUD"), "off")] {
+    for (label, want) in [(t("Collapse to the bar"), "pill"), (t("Show transcript and coaching"), "hud"), (t("Hide HUD"), "off")] {
         let _ = app.emit("selftest:click", serde_json::json!({ "label": label, "action": want }));
         let ok = until(Duration::from_secs(3), || hud_mode(app) == want).await;
         rep.step(&tf("HUD button “{label}”", &[("label", &label)]), ok, format!("HUD mode: {} (expected {want})", hud_mode(app)));

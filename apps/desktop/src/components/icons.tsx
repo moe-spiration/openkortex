@@ -45,6 +45,8 @@ const D = {
   // Lucide "bell" (reminders).
   bell: g("d-bell", [p("M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"), p("M10.3 21a1.94 1.94 0 0 0 3.4 0")]),
   stop: g("d-stop", [r("6", "6", "12", "12", "2")]),
+  trash: g("d-trash", [p("M4 7h16"), p("M10 11v6"), p("M14 11v6"), p("M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"), p("M9 7V4h6v3")]),
+  resize: g("d-resize", [p("M20 12l-8 8"), p("M20 17l-3 3")]),
   rec: g("d-rec", [c("12", "12", "6", "a")]),
   file: g("d-file", [
     p("M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"),

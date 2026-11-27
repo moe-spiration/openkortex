@@ -59,6 +59,7 @@ export async function startHighlighter(ctx: ContentScriptContext, settings: Exte
   await mountReact(ctx, {
     name: "kortex-highlighter",
     theme: settings.theme,
+    look: settings.look,
     position: "overlay",
     node: <HighlighterView ui={ui} onHighlight={() => void saveSelection()} onRemove={(id) => void removeHighlight(id)} />,
   });

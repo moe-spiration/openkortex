@@ -42,6 +42,21 @@ export function snapshotLimit(raw = process.env.KORTEX_SNAPSHOT_LIMIT): number {
 }
 const COUNT_LIMIT = 10_000;
 
+/**
+ * Items whose Markdown body is part of the snapshot: the most recently updated ones. Every other body is loaded when
+ * its note opens (`loadItemBody`), so the snapshot (sent with every full load and every `router.refresh()`) stays a
+ * fraction of the vault's text. Links and TL;DR are still computed from the full body on the server.
+ */
+export const HOT_BODIES = 200;
+/** Types whose body the shell reads outside the note sheet (journal mind dump, sessions, dossiers): always sent. */
+const ALWAYS_BODY = new Set(["daily_note", "session", "person", "project", "organization", "concept", "tool", "asset", "goal"]);
+
+/** The item with its body dropped (bodyPending) unless it is hot or of a type the shell reads elsewhere. */
+export function withLazyBody(item: KnowledgeItem, hot: ReadonlySet<string>): KnowledgeItem {
+  if (hot.has(item.id) || !item.contentMd || ALWAYS_BODY.has(item.dbType ?? item.type)) return item;
+  return { ...item, contentMd: "", bodyPending: true };
+}
+
 export const ITEM_COLUMNS =
   "id,user_id,type,title,slug,summary,content_md,source_url,file_storage_path,file_mime_type,file_size_bytes,reading_state,cover_image_url,icon,is_favorite,remind_at,folder_path,is_manual_placement,tags,related_item_ids,metadata,status,created_at,updated_at" as const;
 
@@ -135,7 +150,9 @@ export async function loadSnapshot(
   };
   // Newest first by creation for the lists; recency (updated_at) for "recently opened".
   const byCreated = [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
-  const items = byCreated.map((r) => toKnowledgeItem(r, ctx));
+  // Bodies travel only for the items that are likely opened next; the rest load when opened (bodyPending).
+  const hot = new Set(rows.slice(0, HOT_BODIES).map((r) => r.id));
+  const items = byCreated.map((r) => withLazyBody(toKnowledgeItem(r, ctx), hot));
   const notes: KnowledgeItem[] = [];
   const objects: KnowledgeItem[] = [];
   for (const i of items) (i.type in OBJECT_TYPE_SET ? objects : notes).push(i);
@@ -206,26 +223,36 @@ export async function loadSnapshot(
   };
 }
 
-/** The newest `limit` items, PAGE rows per request (stable order: updated_at desc, id). */
+/**
+ * The newest `limit` items, PAGE rows per request (stable order: updated_at desc, id). The pages are requested in
+ * parallel (one round trip instead of three for the default limit); pages after the first short one are ignored.
+ */
 async function loadItemPages(
   client: KortexClient,
   uid: string,
   limit: number,
 ): Promise<{ data: ItemRow[] | null; error: { message: string } | null }> {
+  const ranges: [number, number][] = [];
+  for (let from = 0; from < limit; from += PAGE) ranges.push([from, Math.min(from + PAGE, limit) - 1]);
+  const pages = await Promise.all(
+    ranges.map(([from, to]) =>
+      client
+        .from("knowledge_items")
+        .select(ITEM_COLUMNS)
+        .eq("user_id", uid)
+        .neq("status", "archived")
+        .order("updated_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to),
+    ),
+  );
   const rows: ItemRow[] = [];
-  for (let from = 0; from < limit; from += PAGE) {
-    const to = Math.min(from + PAGE, limit) - 1;
-    const { data, error } = await client
-      .from("knowledge_items")
-      .select(ITEM_COLUMNS)
-      .eq("user_id", uid)
-      .neq("status", "archived")
-      .order("updated_at", { ascending: false })
-      .order("id", { ascending: true })
-      .range(from, to);
+  for (let i = 0; i < pages.length; i++) {
+    const { data, error } = pages[i]!;
     if (error) return { data: null, error };
     const page = (data ?? []) as unknown as ItemRow[];
     rows.push(...page);
+    const [from, to] = ranges[i]!;
     if (page.length < to - from + 1) break;
   }
   return { data: rows, error: null };

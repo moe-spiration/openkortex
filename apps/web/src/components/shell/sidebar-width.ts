@@ -1,11 +1,11 @@
 /*
- * Sidebar width (feedback round 2 #5): 200-360 px, default 236 px (Tactile Craft, `--layout-sidebar`), stored per
+ * Sidebar width (feedback round 2 #5): 200-360 px, default 232 px (Ruhe mockup; Tactile Craft had 236, `--layout-sidebar`), stored per
  * device in localStorage like the group states (Q6). Pure helpers, unit-tested.
  */
 
 export const SIDEBAR_MIN = 200;
 export const SIDEBAR_MAX = 360;
-export const SIDEBAR_DEFAULT = 236;
+export const SIDEBAR_DEFAULT = 232;
 /** Arrow key step; with Shift the step is four times larger. */
 export const SIDEBAR_STEP = 10;
 

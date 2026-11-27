@@ -132,6 +132,13 @@ describe("agent jobs", () => {
     expect(jobs(bad.db)[0]!.error).toBeTruthy();
   });
 
+  it("a run that says nothing and changes nothing ends in error, not in an empty done card", async () => {
+    const s = make(agentModel([], "").model);
+    const j = await createJob(s.ctx, { prompt: "Ist etwas offen?", autonomy: "read" });
+    await runJob(s.deps, s.auth, j.id);
+    expect(jobs(s.db)[0]!.status).toBe("error");
+  });
+
   it("a dismissed job leaves the list and is not overwritten by a late run", async () => {
     const { model } = agentModel([]);
     const { deps, db, auth, ctx } = make(model);

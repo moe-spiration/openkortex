@@ -10,8 +10,10 @@ import { remindOptions } from "../lib/remind";
 import { buzz } from "../lib/haptics";
 import { useData } from "../state/Data";
 import { useApp } from "../state/AppState";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
+import { EmptyState, KindLine, RButton, RCard, RText } from "./ruhe";
 import { RADIUS } from "../theme/tokens";
+import { isPackCover } from "../theme/cover";
 import { Icon, type IconName } from "./Icon";
 import { Btn, Help, Micro, Photo, Section, T } from "./primitives";
 
@@ -29,11 +31,12 @@ const localDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() +
 
 export function DailyStack() {
   const th = useTheme();
+  const ruhe = useRuhe();
   const a = useApp();
   const d = useData();
   const today = localDay();
   const cards = useMemo(
-    () => buildStack({ entries: d.entries, tasks: d.tasks, home: d.home, today, now: new Date(), locale: intlLocale(), titleOf: (id) => d.entryById(id)?.title }),
+    () => buildStack({ entries: d.entries, tasks: d.tasks, home: d.home, today, now: new Date(), locale: intlLocale(), titleOf: (id) => d.entryById(id)?.title, imgOf: (id) => d.entryById(id)?.img }),
     [d.entries, d.tasks, d.home, d.entryById, today],
   );
   const [done, setDone] = useState<Record<string, StackOutcome>>({});
@@ -134,6 +137,53 @@ export function DailyStack() {
 
   if (!cards.length) return null;
   const left = open.length;
+
+  if (ruhe) {
+    // Ruhe (mockup Heute): the current card as the one card of the page; a swipe still decides.
+    if (!cur)
+      return (
+        <EmptyState icon="checkCircle" pic="stack" size="md" title={t("Stack done for today")} action={{ label: t("Show again"), onPress: () => save({}) }} />
+      );
+    const c = stackCopy(cur.kind);
+    const agentish = cur.kind === "filed" || cur.kind === "redis";
+    const showAnswer = cur.kind === "flash" && !flipped;
+    const meta = cur.kind === "flash" ? (flipped ? (cur.answer ?? "") : t("Tap to see the answer")) : [cur.sub, ...cur.chips].filter(Boolean).join(" · ");
+    return (
+      <Animated.View {...pan.panHandlers} style={{ transform: [{ translateX: x }] }}>
+        <RCard
+          // Mockup: an own cover sits on top at full card width (150 high); the type tile fallback stays out.
+          image={cur.img && !isPackCover(cur.img) ? <Photo source={cur.img} /> : undefined}
+          onPress={() => (cur.kind === "flash" ? setFlipped(true) : cur.open ? a.openEntry(cur.open) : undefined)}
+          kind={
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <KindLine icon={agentish ? "sparkles" : KIND_ICON[cur.kind]} color={agentish ? th.accentInk : th.t3} text={`${c.kind} · ${t("{n} of {total}", { n: cards.length - left + 1, total: cards.length })}`} />
+              </View>
+              {open.length >= 2 && (
+                <Pressable accessibilityRole="button" hitSlop={10} onPress={() => void presort()}>
+                  <RText step="kind" color={th.accentInk}>
+                    {sorting ? t("Sorting …") : t("Presort")}
+                  </RText>
+                </Pressable>
+              )}
+            </View>
+          }
+          title={cur.title}
+          meta={meta || undefined}
+          actions={
+            showAnswer ? (
+              <RButton variant="primary" size="sm" grow label={t("Show answer")} onPress={() => setFlipped(true)} />
+            ) : (
+              <>
+                <RButton variant="primary" size="sm" grow label={c.pri} onPress={() => act.current("done")} />
+                <RButton variant="secondary" size="sm" grow label={c.sec} onPress={() => act.current("aside")} />
+              </>
+            )
+          }
+        />
+      </Animated.View>
+    );
+  }
 
   return (
     <View style={{ gap: 10 }}>

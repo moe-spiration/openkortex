@@ -351,7 +351,7 @@
   .gr-mode { display: inline-grid; grid-template-columns: 1fr 1fr; margin: 0 2px; }
   .gr-mode > button { min-width: 30px; justify-content: center; }
   .gr-fail { position: absolute; inset: 40% 16px auto; margin: 0 auto; max-width: 420px; text-align: center; }
-  @media (prefers-reduced-motion: reduce) { .gr-label { transition: none; } }
+  [data-motion="reduced"] .gr-label { transition: none; }
 
   /* ================= Journal und Wochen-Review: Ebene-1-Kanten ================= */
   .e-surface { background: var(--lum-2); box-shadow: var(--edge-surface); }
@@ -387,8 +387,6 @@
   @media (min-width: 860px) {
     .gr-hud-toggle { display: none; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .hm-energy > button, .lf-card, .e-btn { transition: none; }
-    .hm-energy > button:hover { transform: none; }
-  }
+  [data-motion="reduced"] :is(.hm-energy > button, .lf-card, .e-btn) { transition: none; }
+  [data-motion="reduced"] .hm-energy > button:hover { transform: none; }
 }

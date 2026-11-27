@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Popover } from "@base-ui/react/popover";
 import dynamic from "next/dynamic";
 import { t } from "@/i18n";
+import { useLook } from "@/components/theme/look";
+import { LocationBar } from "@/components/shell/Bars";
 
 const loadFilterList = () => import("./FilterList");
 const preloadFilterList = () => void loadFilterList().catch(() => {});
@@ -14,6 +16,8 @@ const FilterList = dynamic(loadFilterList, { ssr: false, loading: () => <div cla
 /*
  * Compact page head of the collections (dummy `.ph`): breadcrumb, title 24/500, statistic line with counters, and
  * the controls on the right. Plus the filter popover with inline search (dummy hashtag menu).
+ * Ruhe: the head is the shell's LocationBar (icon, crumbs, `aside` as actions); title, counters and help line go,
+ * the view bar carries the counts.
  */
 
 export interface Crumb {
@@ -42,8 +46,12 @@ export function CollectionHead({
   help?: ReactNode;
   aside?: ReactNode;
 }) {
+  const look = useLook();
+  if (look === "ruhe") {
+    return <LocationBar icon={icon as ReactElement | undefined} crumbs={crumbs} actions={aside} />;
+  }
   return (
-    <div className="kc-head">
+    <div className="kc-head kx-pagetitle has-crumbs">
       <div className="kc-head-main">
         <nav className="kc-crumb" aria-label={t("Path")}>
           {icon}

@@ -30,8 +30,10 @@ export type WinState = "open" | "min";
  * Phase after `meeting:state` (audit D-09): a recording stopped elsewhere (tray, hotkey, auto-stop)
  * waits for a result only when one follows (`uploading`), else it is done right away.
  */
-export function phaseAfterState(p: Phase, recording: boolean, uploading?: boolean): Phase {
+export function phaseAfterState(p: Phase, recording: boolean, uploading?: boolean, discarded?: boolean): Phase {
   if (recording) return "live";
+  // Thrown away: nothing follows, the HUD is ready for the next recording.
+  if (discarded) return "idle";
   if (p !== "live" && p !== "gen") return p;
   if (uploading === false) return "done";
   return p === "live" ? "gen" : p;
@@ -109,6 +111,8 @@ export interface DesktopActions {
   openItem: (itemId: string | null) => void;
   retryUpload: () => void;
   endCall: () => void;
+  /** Throws the running recording away (after the HUD's confirmation): no file, no minutes. */
+  discardRecording: () => void;
   restart: () => void;
   toggleRecording: () => void;
   /** Pill stop during a web recording: the web app stops and saves it. */
@@ -305,12 +309,12 @@ export function DesktopProvider({
       b.listen("settings:stealth", ({ enabled }) => setStealthRaw(enabled)),
       b.listen("account:changed", ({ connected: c }) => setConnected(c)),
       // Recording started / stopped from another window (tray, hotkey) in the native app.
-      b.listen("meeting:state", ({ recording, elapsed, uploading }) => {
-        if (recording) {
+      b.listen("meeting:state", ({ recording, elapsed, uploading, discarded }) => {
+        if (recording || discarded) {
           dispatch({ type: "reset" });
           setTasksMade([]);
         }
-        setPhase((p) => phaseAfterState(p, recording, uploading));
+        setPhase((p) => phaseAfterState(p, recording, uploading, discarded));
         clockStore.set(elapsed);
       }),
       b.listen("transcript:final", (p) => dispatch({ type: "final", p })),
@@ -466,6 +470,18 @@ export function DesktopProvider({
       });
     },
     endCall: () => stop(t("Recording saved, minutes are being created"), t("Recording saved locally")),
+    discardRecording: () => {
+      b.invoke("discard_recording").then(
+        () => {
+          dispatch({ type: "reset" });
+          setTasksMade([]);
+          setPhase("idle");
+          clockStore.set(0);
+          say(t("Recording discarded"));
+        },
+        (e: unknown) => say(t("Recording: {error}", { error: String(e) })),
+      );
+    },
     restart: () => {
       start().catch((e: unknown) => {
         setPhase("idle");

@@ -4,8 +4,14 @@
 // widget / background tasks load it as well. Import it before any screen (index.ts does).
 import { getLocale, pickLocale, registerCatalog, setLocale, toLocale, type Catalog, type Locale } from "@kortex/i18n";
 import mobile from "./de/mobile.json";
+import ruheShell from "./de/ruhe-shell.json";
+import ruheAndB from "./de/ruhe-and-b.json";
+import r2And from "./de/r2-and.json";
 
 registerCatalog("de", mobile as Catalog);
+registerCatalog("de", ruheShell as Catalog);
+registerCatalog("de", ruheAndB as Catalog);
+registerCatalog("de", r2And as Catalog);
 
 export { PRODUCT_NAME, feature, byLocale, getLocale, intlLocale, msg, t, tn, toLocale, tx } from "@kortex/i18n";
 export type { Locale };

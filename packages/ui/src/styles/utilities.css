@@ -19,9 +19,8 @@
   strong, b { font-weight: 500; }
   :focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
   ::selection { background: var(--accent-ai-soft); }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { transition-duration: 0ms !important; animation: none !important; }
-  }
+  /* Bewegung "Aus" (or System on an OS that asks for reduced motion): apps/web/src/lib/settings/motion.ts */
+  [data-motion="reduced"] *, [data-motion="reduced"] *::before, [data-motion="reduced"] *::after { transition-duration: 0ms !important; animation: none !important; }
 }
 
 /* Surface recipes (glass-sidebar, card-3d-flat, kx-row, ...) live in components.css as the DS component layer. */

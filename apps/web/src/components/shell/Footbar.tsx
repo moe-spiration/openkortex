@@ -26,9 +26,11 @@ import { useCopilotChat } from "@/lib/shell/copilot-chat";
 import {
   applyMention,
   barHint,
+  capturePreview,
   commandQuery,
   detectMention,
   domainOf,
+  dropKindLabel,
   dropLabel,
   editorPrefill,
   enterAction,
@@ -42,6 +44,7 @@ import {
   recordingHint,
   routeTranscript,
   splitLink,
+  withContextLink,
   COMMAND_SKILL,
   type CaptureTarget,
   type OrbitCommand,
@@ -49,8 +52,10 @@ import {
 } from "@/lib/shell/orbit";
 import { useShellStatus } from "@/lib/shell/status";
 import { useShell } from "@/lib/shell/store";
-import { ALL_ITEMS, NOTE_TYPES, OBJECT_ITEMS, RECENT_NOTE_IDS, isLiveData, noteById } from "@/lib/workspace-data";
-import { msg, t, tn, tx } from "@/i18n";
+import { ALL_ITEMS, NOTE_TYPES, OBJECT_ITEMS, RECENT_NOTE_IDS, isLiveData, noteById, tagTone } from "@/lib/workspace-data";
+import { getLocale, msg, t, tn, tx } from "@/i18n";
+import { rich } from "@/components/ui/rich";
+import { useLook } from "@/components/theme/look";
 import { Ico, type IconId } from "./icons";
 import { ModelMenu } from "./ModelMenu";
 import { AutonomyMenu, ScopeMenu, TargetMenu, useSpaceContext } from "./TargetMenu";
@@ -111,11 +116,21 @@ const initials = (name: string) =>
 type ListRow = { key: string; label: string; help?: string; disabled?: string; render: "cmd" | "obj" | "tag"; cmd?: OrbitCommand; insert?: string };
 
 /** Glyphs of the dragged files (by MIME type), at most three, for the stacked drop preview. */
-function dropGlyphs(dt: DataTransfer | null): { files: number; icons: IconId[] } {
+function dropGlyphs(dt: DataTransfer | null): { files: number; icons: IconId[]; kind: string } {
   const items = Array.from(dt?.items ?? []).filter((i) => i.kind === "file");
   const icons = items.slice(0, 3).map<IconId>((i) => (i.type.startsWith("image/") ? "orbit-image" : "file-text"));
   while (icons.length < 3) icons.push(icons.length === 1 ? "orbit-image" : icons.length === 2 ? "link" : "file-text");
-  return { files: items.length, icons };
+  return { files: items.length, icons, kind: dropKindLabel(items.map((i) => i.type)) };
+}
+
+/** "Deutsch" / "English": the dictation language is the app language. */
+function languageName(): string {
+  const loc = getLocale();
+  try {
+    return new Intl.DisplayNames([loc], { type: "language" }).of(loc) ?? loc;
+  } catch {
+    return loc;
+  }
 }
 
 export function Footbar({
@@ -153,11 +168,17 @@ export function Footbar({
     drawer,
   } = shell;
   const { local } = useSettings();
+  const ruhe = useLook() === "ruhe";
+  // Kontext (Ruhe): with an entry open, captures to the inbox link it; the Ziel-Chip shows its title. Off per entry.
+  const [ctxOff, setCtxOff] = useState<string | null>(null);
+  const ctxEntry = ruhe && drawer.id ? noteById(drawer.id) : undefined;
+  const ctxNote = ctxEntry && ctxOff !== ctxEntry.id && captureTarget === "auto" ? ctxEntry : undefined;
   const askCopilot = useAsk();
   const router = useRouter();
   const onAgentPage = (usePathname() ?? "").startsWith("/agent");
   const { jobs: agentJobs } = useAgentJobs();
-  const runningJobs = agentJobs.filter((j) => j.status === "queued" || j.status === "running").length;
+  const activeJobs = agentJobs.filter((j) => j.status === "queued" || j.status === "running");
+  const runningJobs = activeJobs.length;
   const { capture, captureData } = useCapture();
   const copilotChat = useCopilotChat();
   // The item map is read only while a list needs it (@ mentions, note-mode ghost context): the tracked notes store then
@@ -204,7 +225,7 @@ export function Footbar({
     [askCopilot, copilotChat.live, onAgentPage, router, showToast, startJob],
   );
   const answering = copilotChat.live && (copilotChat.status === "submitted" || copilotChat.status === "streaming");
-  const [dragging, setDragging] = useState<{ files: number; icons: IconId[] } | null>(null);
+  const [dragging, setDragging] = useState<{ files: number; icons: IconId[]; kind: string } | null>(null);
   const [announce, setAnnounce] = useState("");
   const [link, setLink] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
@@ -237,7 +258,8 @@ export function Footbar({
       text: string,
       extra: { title?: string; typeHint?: "voice"; target?: CaptureTarget; note?: string } = {},
     ) => {
-      const plan = planCapture(text, extra.target ?? captureTarget, { space, objects: objectNames() });
+      const linked = ctxNote && !extra.target ? withContextLink(text, ctxNote.title) : text;
+      const plan = planCapture(linked, extra.target ?? captureTarget, { space, objects: objectNames() });
       if (!plan) return;
       if (plan.to === "ingest") {
         const typeHint = extra.typeHint ?? plan.typeHint;
@@ -268,7 +290,7 @@ export function Footbar({
         showToast(r.ok ? t("Task created: {title}", { title: plan.title.slice(0, 60) }) : t("Task not created: {error}", { error: r.error })),
       );
     },
-    [captureTarget, space, objectNames, capture, showToast],
+    [captureTarget, space, objectNames, capture, showToast, ctxNote],
   );
 
   const clearField = useCallback(() => {
@@ -755,6 +777,16 @@ export function Footbar({
               : "rest";
   const askMode = cmode === "ask";
   const sendLabel = askMode ? t("Send question") : tx("mode", "Capture");
+  // Ruhe look only (hidden in Classic by CSS): where the capture lands, and the newest running agent job.
+  const preview =
+    dataState === "typing" && !askMode
+      ? capturePreview(ctxNote && !link ? withContextLink(prompt, ctxNote.title) : prompt, captureTarget, {
+          space,
+          objects: OBJECT_ITEMS.map((o) => o.title),
+          link: !!link,
+        })
+      : null;
+  const dockJob = dataState === "rest" && !onAgentPage ? (activeJobs.find((j) => j.status === "running") ?? activeJobs[0]) : undefined;
 
   return (
     <div
@@ -783,9 +815,50 @@ export function Footbar({
         {announce}
       </span>
 
+      {preview && (
+        <div className="kx-orbit-above kx-orbit-preview kx-rz-only" aria-hidden>
+          <Ico name="corner-down-left" size={13} />
+          <span className="kx-truncate">
+            {rich(t("Becomes {as} in {dest}"), { as: <b>{preview.as}</b>, dest: <b>{preview.dest}</b> })}
+          </span>
+          {preview.tags.length > 0 && <span className="kx-orbit-pv-sep">· {t("Tags")}</span>}
+          {preview.tags.map((tag) => (
+            <span key={"#" + tag} className="kx-orbit-pv-tag">
+              <i aria-hidden style={{ background: `var(--tag-${tagTone("#" + tag.replace(/^#/, ""))}-dot, var(--accent-ink))` }} />
+              {tag.replace(/^#/, "")}
+            </span>
+          ))}
+          {preview.links.map((name) => (
+            <span key={"@" + name} className="kx-orbit-pv-tag is-obj">
+              {name}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {rec && ruhe && (
+        <div className="kx-orbit-above kx-orbit-listen" aria-hidden>
+          <span className="kx-orbit-listen-t">{rec.purpose === "voiceQuestion" ? t("Listening to your question …") : t("Listening …")}</span>
+          <span className="kx-orbit-listen-m">{rec.mode === "ptt" ? t("Release to finish, the text follows right after.") : t("Check mark finishes, the text follows right after.")}</span>
+        </div>
+      )}
+
+      {dockJob && (
+        <div className="kx-orbit-above kx-orbit-dockwrap kx-rz-only">
+          <button type="button" className="kx-orbit-dock" onClick={() => router.push(`/agent?job=${dockJob.id}`)}>
+            <span className="kx-spinner" aria-hidden />
+            <span className="kx-truncate kx-orbit-dock-t">{dockJob.title}</span>
+            <span className="kx-orbit-dock-m">
+              {dockJob.status === "running" ? t("running") : t("queued")}
+              {runningJobs > 1 ? " · " + tn(runningJobs - 1, "{n} more", "{n} more") : ""}
+            </span>
+          </button>
+        </div>
+      )}
+
       {listOpen && !dragging && (
         <div
-          className="kx-orbit-above kx-orbit-list tc-float"
+          className={"kx-orbit-above kx-orbit-list tc-float" + (ruhe && cmdOpen ? " is-slash" : "")}
           role="listbox"
           id="kx-orbit-list"
           aria-label={cmdOpen ? t("Commands") : mention?.sig === "@" ? t("Objects") : "Hashtags"}
@@ -806,7 +879,23 @@ export function Footbar({
               onMouseEnter={() => !r.disabled && setActive(i)}
               onClick={() => pickRow(r)}
             >
-              {r.render === "cmd" && r.cmd && skillOfCommand(r.cmd.id) ? (
+              {ruhe && r.render === "cmd" && r.cmd ? (
+                (() => {
+                  const sk = skillOfCommand(r.cmd.id);
+                  return (
+                    <>
+                      <Ico name={sk ? sk.icon : r.cmd.icon} size={14} />
+                      <span className="kx-orbit-cmd">{r.cmd.cmd}</span>
+                      <span className="kx-truncate kx-orbit-mi-dim">{sk ? t(sk.help) : r.label}</span>
+                      {r.cmd.keys && (
+                        <small>
+                          <Kbd size="sm">{r.cmd.keys}</Kbd>
+                        </small>
+                      )}
+                    </>
+                  );
+                })()
+              ) : r.render === "cmd" && r.cmd && skillOfCommand(r.cmd.id) ? (
                 (() => {
                   const sk = skillOfCommand(r.cmd.id)!;
                   return (
@@ -895,6 +984,15 @@ export function Footbar({
               {t("Drop to capture")} <span>· {dropLabel(dragging.files)}</span>
             </div>
             <div className="kx-orbit-drop-m">{t("PDF and EPUB are read, images captured by OCR, text becomes a note")}</div>
+            <div className="kx-orbit-drop-rz kx-rz-only">
+              <Ico name="arrow-down-to-line" size={16} />
+              <span className="kx-truncate">
+                {rich(t("Release: {what} → {dest}"), {
+                  what: <b>{dragging.kind}</b>,
+                  dest: "Inbox",
+                })}
+              </span>
+            </div>
           </div>
         ) : (
           <>
@@ -902,7 +1000,7 @@ export function Footbar({
               type="button"
               className={"kx-orbit-orb kx-orbit-mic" + (rec ? " is-rec" : "")}
               aria-label={micLabel}
-              title={`${micLabel} · ${t("Hold: push-to-talk")} · Ctrl+Shift+Space`}
+              title={rec && ruhe ? "" : `${micLabel} · ${t("Hold: push-to-talk")} · Ctrl+Shift+Space`}
               onPointerDown={orbDown}
               onPointerUp={orbUp}
               onPointerLeave={orbLeave}
@@ -918,8 +1016,13 @@ export function Footbar({
                 <span className="kx-orbit-rec-hint">
                   <em>{t("Voice note …")}</em> {recordingHint(recState, rec.mode === "ptt")}
                 </span>
-                <button type="button" className="kx-orbit-discard" onClick={() => stopRec(false)}>
-                  {t("Discard")}
+                <span className="kx-orbit-rec-kind kx-rz-only">
+                  <Ico name="audio-lines" size={14} />
+                  {rec.purpose === "voiceQuestion" ? t("Voice question") : t("Dictation")} · {languageName()}
+                </span>
+                <button type="button" className="kx-orbit-discard" aria-label={t("Discard")} onClick={() => stopRec(false)}>
+                  <span className="kx-rz-hide">{t("Discard")}</span>
+                  <Ico name="x" size={15} className="kx-rz-only" />
                 </button>
               </div>
             ) : (
@@ -997,7 +1100,25 @@ export function Footbar({
                       {tn(ghostCount, "Context: {n} linked item", "Context: {n} linked items")}
                     </span>
                   )}
-                  {askMode ? <ScopeMenu /> : <TargetMenu onNewNote={() => toEditor(prompt)} />}
+                  {askMode ? (
+                    <ScopeMenu />
+                  ) : (
+                    <TargetMenu
+                      onNewNote={() => toEditor(prompt)}
+                      context={
+                        ctxEntry
+                          ? {
+                              title: ctxEntry.title,
+                              on: !!ctxNote,
+                              set: (on) => {
+                                setCtxOff(on ? null : ctxEntry.id);
+                                if (on) shell.setCaptureTarget("auto");
+                              },
+                            }
+                          : undefined
+                      }
+                    />
+                  )}
                   {askMode && <AutonomyMenu />}
                   {!askMode && <ModelMenu />}
                   {runningJobs > 0 && !onAgentPage && (
@@ -1058,7 +1179,8 @@ export function Footbar({
                 title={t("Stop recording")}
                 onClick={() => stopRec(true)}
               >
-                <Ico name="send" size={16} />
+                <Ico name="send" size={16} className="kx-rz-hide" />
+                <Ico name="check" size={17} className="kx-rz-only" />
               </button>
             ) : askMode && answering && !hasContent ? (
               <button
@@ -1079,7 +1201,8 @@ export function Footbar({
                 aria-disabled={!canSend}
                 onClick={() => canSend && send()}
               >
-                <Ico name="corner-down-left" size={16} />
+                <Ico name="corner-down-left" size={16} className={hasContent ? "kx-rz-hide" : undefined} />
+                {hasContent && <Ico name="send" size={17} className="kx-rz-only" />}
               </button>
             )}
           </>

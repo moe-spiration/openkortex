@@ -15,16 +15,31 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { alpha } from "../theme/color";
-import { FONT, RADIUS, TYPE, type TagTone, type TypeStep, type Theme } from "../theme/tokens";
+import { FONT, RADIUS, ruheWeight, TYPE, type TagTone, type TypeStep, type Theme } from "../theme/tokens";
 import { isPackCover, type CoverSource } from "../theme/cover";
 import { PackTileImage } from "../theme/PackImages";
 import { useTheme } from "../theme/ThemeProvider";
 import { Icon, type IconName } from "./Icon";
+import { useGesturePlay } from "./ruhe/gestures";
+import { tick } from "../lib/haptics";
 
 /* Building blocks of the mobile design system (kx-* classes of the prototype as React Native components). */
 
 /** `inset 0 0 0 1px <color>`: the prototype's hairline ring. Cast: RN types the string form loosely. */
 export const ring = (color: string, px = 1): ViewStyle => ({ boxShadow: `inset 0 0 0 ${px}px ${color}` }) as ViewStyle;
+
+/**
+ * A content panel. Classic: a soft card. Ruhe ("structure you feel, not see"): no box, only a hairline above,
+ * the content runs on the canvas (web ruhe-views: journal without panel).
+ */
+export const panel = (th: Theme, gap = 10): ViewStyle =>
+  th.look === "ruhe"
+    ? ({ gap, paddingTop: 14, paddingBottom: 4, boxShadow: `inset 0 1px 0 0 ${th.hair}` } as ViewStyle)
+    : { gap, padding: 14, borderRadius: RADIUS.card, backgroundColor: alpha(th.bgSurfaceFlat, 0.72) };
+
+/** A list row surface. Classic: a filled row card. Ruhe: flat with a hairline below. */
+export const rowSurface = (th: Theme): ViewStyle =>
+  th.look === "ruhe" ? ({ borderRadius: 0, backgroundColor: "transparent", paddingHorizontal: 2, boxShadow: `inset 0 -1px 0 0 ${th.hair}` } as ViewStyle) : { borderRadius: RADIUS.row, backgroundColor: th.bgSurfaceFlat };
 
 export const glass = (th: Theme): ViewStyle =>
   ({
@@ -36,7 +51,7 @@ export const glass = (th: Theme): ViewStyle =>
 
 export interface TProps extends TextProps {
   size?: number;
-  weight?: 300 | 400 | 500 | 600;
+  weight?: 300 | 400 | 500 | 600 | 700;
   color?: string;
   lh?: number;
   /** Letter-spacing in em (CSS), converted to px. */
@@ -52,14 +67,31 @@ export interface TProps extends TextProps {
 }
 
 /** Base text: Geist 13/20, 500, -0.01em (prototype body). */
+/**
+ * Ruhe type steps (2026-11-26, 700 since 2026-11-27 with Geist 700 loaded): page titles large and tight (30/700, -0.03 em), section titles 600, the light
+ * display/greeting step becomes a page title too. Everything else keeps the v2 scale.
+ */
+const RUHE_T: Partial<Record<keyof typeof TYPE, { size: number; lh: number; weight: number; ls: number }>> = {
+  display: { size: 30, lh: 36, weight: 700, ls: -0.03 },
+  greeting: { size: 30, lh: 36, weight: 700, ls: -0.03 },
+  h1: { size: 28, lh: 34, weight: 700, ls: -0.03 },
+  h2: { size: 15, lh: 22, weight: 500, ls: -0.01 },
+  h3: { size: 15, lh: 22, weight: 500, ls: -0.01 },
+};
+
 export function T({ type, size: sizeProp, weight: weightProp, color, lh: lhProp, ls: lsProp, mono, display, num, align, style, children, ...rest }: TProps) {
   const th = useTheme();
-  const step = type ? TYPE[type] : undefined;
+  const ruhe = th.look === "ruhe";
+  const step = type ? (ruhe ? (RUHE_T[type] ?? TYPE[type]) : TYPE[type]) : undefined;
   const size = sizeProp ?? step?.size ?? 13;
-  const weight = (weightProp ?? step?.weight ?? 500) as 300 | 400 | 500 | 600;
+  const raw = (weightProp ?? step?.weight ?? 500) as 300 | 400 | 500 | 600 | 700;
+  // Ruhe: one step finer, no bold below title size (tokens ruheWeight); vivid keeps its weights.
+  const weight = ruhe ? ruheWeight(raw, size) : raw;
   const lh = lhProp ?? step?.lh ?? 20;
   const ls = lsProp ?? step?.ls ?? -0.01;
-  const family = display ? FONT.display : mono || num ? (weight <= 400 ? FONT.mono400 : FONT.mono500) : weight === 300 ? FONT.sans300 : weight === 400 ? FONT.sans400 : weight === 600 ? FONT.sans600 : FONT.sans500;
+  // Ruhe: numbers stay in Geist with tabular figures (density through type), mono only for real code.
+  const monoFace = mono || (num && !ruhe);
+  const family = display && !ruhe ? FONT.display : monoFace ? (weight <= 400 ? FONT.mono400 : FONT.mono500) : weight === 300 ? FONT.sans300 : weight === 400 ? FONT.sans400 : weight === 600 ? FONT.sans600 : weight === 700 ? FONT.sans700 : FONT.sans500;
   return (
     <Text
       {...rest}
@@ -71,6 +103,7 @@ export function T({ type, size: sizeProp, weight: weightProp, color, lh: lhProp,
           letterSpacing: ls * size,
           color: color ?? th.textPrimary,
           textAlign: align,
+          ...(num && ruhe ? { fontVariant: ["tabular-nums" as const] } : null),
         },
         style,
       ]}
@@ -113,6 +146,13 @@ export function Label({ children, style }: { children: ReactNode; style?: StyleP
 /** Group head in 11 px uppercase, +0.06em (`micro` step). */
 export function Micro({ children, color, style }: { children: ReactNode; color?: string; style?: StyleProp<TextStyle> }) {
   const th = useTheme();
+  // Ruhe: labels in sentence case (mockup `.mlab`), no uppercase tracking.
+  if (th.look === "ruhe")
+    return (
+      <T size={13} lh={18} ls={0} weight={600} color={color ?? th.t2} style={style}>
+        {children}
+      </T>
+    );
   return (
     <T type="micro" color={color ?? th.textMuted} style={[{ textTransform: "uppercase" }, style]}>
       {children}
@@ -199,7 +239,7 @@ export function Pill({
   );
   if (!onPress) return content;
   return (
-    <Pressable onPress={onPress} accessibilityLabel={accessibilityLabel} style={{ minHeight, justifyContent: "center", alignSelf: "flex-start" }}>
+    <Pressable onPress={onPress} accessibilityLabel={accessibilityLabel} style={({ pressed }) => ({ minHeight, justifyContent: "center", alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}>
       {content}
     </Pressable>
   );
@@ -246,6 +286,10 @@ export function IconTile({ icon, tone = "muted", large, size }: { icon?: IconNam
 
 /* ------------------------------------------------------------------ buttons */
 
+/** Press-in scale of buttons and tappable rows (static, no animation: cheap and immediate). */
+export const PRESS_IN = [{ scale: 0.97 }];
+const NO_PRESS = [{ scale: 1 }];
+
 type BtnVariant = "primary" | "secondary" | "ghost" | "ai" | "checkin";
 
 export function Btn({
@@ -287,11 +331,19 @@ export function Btn({
   // Flat first (2026-11-01): fills carry the button, no outline; touch height 44 (36 small).
   const ringColor = null as string | null;
   const h = sm ? 36 : 44;
+  const [play, fire] = useGesturePlay();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      onPress={onPress}
+      onPress={
+        onPress
+          ? () => {
+              fire();
+              onPress();
+            }
+          : undefined
+      }
       style={({ pressed }) => [
         {
           flexDirection: "row",
@@ -305,7 +357,9 @@ export function Btn({
           // V2-11F: controls are 8; only round icon buttons stay circles.
           borderRadius: round && iconOnly ? RADIUS.pill : RADIUS.control,
           backgroundColor: bg,
-          opacity: pressed ? 0.85 : 1,
+          // Touch feedback: a clear dim plus a slight press-in, so every tap visibly lands.
+          opacity: pressed ? 0.7 : 1,
+          transform: pressed ? PRESS_IN : NO_PRESS,
           flexGrow: grow ? 1 : 0,
           flexShrink: grow ? 1 : 0,
           flexBasis: grow ? 0 : undefined,
@@ -314,7 +368,7 @@ export function Btn({
         style,
       ]}
     >
-      {icon && <Icon name={icon} color={color ?? fg} />}
+      {icon && <Icon name={icon} play={play} color={color ?? fg} />}
       {typeof children === "string" ? (
         <T size={sm ? 12 : 13} lh={20} color={color ?? fg} numberOfLines={1}>
           {children}
@@ -360,7 +414,16 @@ export function Check({ on, onPress, label }: { on: boolean; onPress: () => void
 export function Toggle({ on, onPress, label }: { on: boolean; onPress: () => void; label: string }) {
   const th = useTheme();
   return (
-    <Pressable accessibilityRole="switch" accessibilityLabel={label} accessibilityState={{ checked: on }} onPress={onPress} hitSlop={8}>
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: on }}
+      onPress={() => {
+        tick();
+        onPress();
+      }}
+      hitSlop={8}
+    >
       <View style={{ width: 40, height: 24, borderRadius: RADIUS.pill, backgroundColor: on ? th.accentAiSolid : th.bgSurfaceMuted }}>
         <View style={{ position: "absolute", top: 2, left: on ? 18 : 2, width: 20, height: 20, borderRadius: 10, backgroundColor: "#FFFFFF" }} />
       </View>
@@ -499,12 +562,15 @@ export function Segmented<K extends string>({ items, value, onChange, small, lab
             accessibilityRole="tab"
             accessibilityLabel={it.aria ?? it.label}
             accessibilityState={{ selected: sel }}
-            onPress={() => onChange(it.key)}
-            style={{ flex: fill ? 1 : undefined, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, height: small ? 32 : 40, minHeight, paddingHorizontal: 12, borderRadius: RADIUS.control, backgroundColor: sel ? th.bgSurfaceFlat : "transparent" }}
+            onPress={() => {
+              if (!sel) tick();
+              onChange(it.key);
+            }}
+            style={({ pressed }) => ({ flex: fill ? 1 : undefined, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: fill ? 4 : 6, height: small ? 32 : 40, minHeight, paddingHorizontal: fill ? 4 : 12, borderRadius: RADIUS.control, backgroundColor: sel ? th.bgSurfaceFlat : pressed ? alpha(th.textPrimary, 0.06) : "transparent" })}
           >
             {it.icon && <Icon name={it.icon} size={14} color={sel ? th.textPrimary : th.textSecondary} />}
             {it.label && (
-              <T size={small ? 12 : 13} lh={20} color={sel ? th.textPrimary : th.textSecondary}>
+              <T size={small ? 12 : 13} lh={20} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85} color={sel ? th.textPrimary : th.textSecondary}>
                 {it.label}
               </T>
             )}

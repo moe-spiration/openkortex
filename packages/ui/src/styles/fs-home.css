@@ -105,10 +105,8 @@
     .hm-ds-title { font-size: calc(19px * var(--kx-fs, 1)); }
     .hm-ds-acts .kx-kbd { display: none; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .hm-ds-card { animation: none; transition: none; }
-    .hm-ds-q { transition: none; }
-  }
+  [data-motion="reduced"] .hm-ds-card { animation: none; transition: none; }
+  [data-motion="reduced"] .hm-ds-q { transition: none; }
 
   /* ---------- Live strip (.live) ---------- */
   .fs-home-live {
@@ -231,7 +229,5 @@
     .fs-home-live-t { max-width: none; flex: 1; }
     .fs-home-bg { height: 420px; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .fs-home-rec { animation: none; }
-  }
+  [data-motion="reduced"] .fs-home-rec { animation: none; }
 }

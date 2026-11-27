@@ -21,6 +21,7 @@ import { useShell } from "@/lib/shell/store";
 import {
   addTag as addTagAction,
   createNote,
+  loadItemBody,
   moveItem,
   patchWatch as patchWatchAction,
   removeTag as removeTagAction,
@@ -56,6 +57,11 @@ export type ObjectTarget = DomainObjectType | "note";
 interface NotesState {
   items: Record<string, KnowledgeItem>;
   get: (id: string) => KnowledgeItem | undefined;
+  /**
+   * Loads the body of an item the snapshot sent without it (`bodyPending`); no-op otherwise. Also used to prefetch on
+   * hover. Concurrent calls share one request.
+   */
+  loadBody: (id: string) => Promise<void>;
   setContent: (id: string, md: string) => void;
   toggleAction: (id: string, actionId: string) => void;
   /** Turn into Object: new type, metadata reduced to the target field set, folder suggestion. */
@@ -259,18 +265,49 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     const restore = takeRestorableDrafts(itemsRef.current);
     if (!restore.length) return;
     for (const { id, md } of restore) {
-      setItems((all) => (all[id] ? { ...all, [id]: { ...all[id], contentMd: md } } : all));
+      setItems((all) => (all[id] ? { ...all, [id]: { ...all[id], contentMd: md, bodyPending: undefined } } : all));
       saver.schedule(id, md);
     }
     const first = itemsRef.current[restore[0]!.id]?.title ?? t("Note");
     toastRef.current(restore.length === 1 ? t("Unsaved change to “{title}” restored", { title: first }) : t("{n} unsaved changes restored", { n: restore.length }));
   }, [saver]);
 
+  // Bodies on their way (bodyPending items): one request per id at a time.
+  const bodyLoads = useRef(new Map<string, Promise<void>>());
+  const loadBody = useCallback(
+    (id: string): Promise<void> => {
+      if (!itemsRef.current[id]?.bodyPending) return Promise.resolve();
+      const running = bodyLoads.current.get(id);
+      if (running) return running;
+      const p = loadItemBody(id)
+        .catch((err: unknown) => ({ ok: false as const, error: String(err) }))
+        .then((r) => {
+          bodyLoads.current.delete(id);
+          if (!r.ok) {
+            console.warn("[kortex] body not loaded:", r.error);
+            const title = itemsRef.current[id]?.title ?? t("Note");
+            toastRef.current(t("“{title}” not loaded: {error}", { title, error: r.error }), { label: t("Try again"), run: () => void loadBodyRef.current(id) });
+            return;
+          }
+          // Only fills a still-pending item: whatever arrived meanwhile (a newer snapshot copy) wins.
+          update(id, (i) => (i.bodyPending ? { ...i, contentMd: r.data.contentMd, bodyPending: undefined, updatedAt: i.updatedAt ?? r.data.updatedAt } : i));
+        });
+      bodyLoads.current.set(id, p);
+      return p;
+    },
+    [update],
+  );
+  const loadBodyRef = useRef(loadBody);
+  loadBodyRef.current = loadBody;
+
   const state = useMemo<NotesState>(
     () => ({
       items,
       get: (id) => items[id],
+      loadBody,
       setContent: (id, md) => {
+        // Never save over a body that has not been loaded yet (it is "" locally, not on the server).
+        if (items[id]?.bodyPending) return;
         if (items[id] && items[id].contentMd !== md) saveContent(id, md);
         update(id, (i) => {
           if (i.contentMd === md) return i;
@@ -293,7 +330,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         update(id, (i) => ({
           ...i,
           actionItems: i.actionItems.map((a) => (a.id === actionId ? { ...a, done: !a.done } : a)),
-          contentMd: action ? setChecklistDone(i.contentMd, action.text, !action.done) : i.contentMd,
+          contentMd: action && !i.bodyPending ? setChecklistDone(i.contentMd, action.text, !action.done) : i.contentMd,
         }));
         if (action) persist(before, () => setActionItemDone(actionId, !action.done));
       },
@@ -342,6 +379,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       applyServerEdit: (id, edit) => {
         const cur = items[id];
         if (!cur) return null;
+        if (cur.bodyPending) {
+          // The local body is not loaded: take the server's new text as the body, offer no local undo (it would
+          // restore the empty placeholder).
+          const md = edit.contentMd;
+          const title = edit.title;
+          update(id, (i) => ({ ...i, ...(md !== undefined ? { contentMd: md, bodyPending: undefined } : {}), ...(title ? { title } : {}) }));
+          return null;
+        }
         const before = { contentMd: cur.contentMd, title: cur.title };
         if (edit.contentMd !== undefined) {
           if (saver.dirtyIds().has(id)) {
@@ -520,7 +565,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         persist(before, () => patchWatchAction(id, patch));
       },
     }),
-    [items, update, baseTypes, baseLinks, persist, saveContent, saveTitle, saver],
+    [items, update, loadBody, baseTypes, baseLinks, persist, saveContent, saveTitle, saver],
   );
 
   const store = useTrackedStore(state, { get: "items" });

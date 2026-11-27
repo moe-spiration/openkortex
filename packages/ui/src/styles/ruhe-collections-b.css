@@ -1,0 +1,80 @@
+/*
+ * Ruhe (2026-11-27, web-scr2): reading and collection pages without a mockup screen, built from the principles: no
+ * boxes (sections are a quiet heading over hairline rows), actions appear on hover or for the current row, key hints
+ * under the list. Reminders (components/reminders/RemindersView.tsx, RemindersRuhe), Flashcards
+ * (components/views/FlashcardsView.tsx), Hashtags (components/views/HashtagsView.tsx) and flat empty states
+ * (.rz-cb-empty). Ruhe only; Vivid keeps its own styles.
+ */
+@layer components {
+  /* Flat empty state: pictogram, one line of title, one of help, no card. */
+  [data-look="ruhe"] .rz-cb-empty { display: grid; justify-items: start; gap: 6px; padding: 28px 2px; color: var(--t3); animation: rz-view-in var(--d3) var(--eo); }
+  [data-look="ruhe"] .rz-cb-empty h2 { margin: 0; color: var(--t1); font-size: var(--rz-fs-lead); font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .rz-cb-empty p { margin: 0; max-width: 460px; font-size: var(--rz-fs-body); line-height: 1.5; }
+
+  /* ---------- Reminders ---------- */
+  [data-look="ruhe"] .rz-rm { display: grid; gap: 22px; animation: rz-view-in var(--d3) var(--eo); }
+  [data-look="ruhe"] .rz-rm-none { margin: 0; color: var(--t3); font-size: var(--rz-fs-body); }
+  [data-look="ruhe"] .rz-rm-sec { display: grid; gap: 2px; }
+  [data-look="ruhe"] .rz-rm-h { display: flex; align-items: baseline; gap: 8px; margin: 0 0 4px; padding: 0 8px; color: var(--t2); font-size: var(--rz-fs-ui); font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .rz-rm-h span { color: var(--t4); font-weight: var(--rz-w-regular); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .rz-rm-list { list-style: none; margin: 0; padding: 0; }
+  [data-look="ruhe"] .rz-rm-row {
+    position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-height: 40px; padding: 6px 8px;
+    border-radius: 8px; box-shadow: inset 0 -1px 0 var(--hair);
+  }
+  [data-look="ruhe"] .rz-rm-row:last-child { box-shadow: none; }
+  [data-look="ruhe"] .rz-rm-row.is-cur { background: var(--lum-2); box-shadow: none; }
+  [data-look="ruhe"][data-theme="light"] .rz-rm-row.is-cur { background: var(--lum-3); }
+  [data-look="ruhe"] .rz-rm-ico { flex: none; color: var(--t4); }
+  [data-look="ruhe"] .rz-rm-ico.is-due { color: var(--crit-ink, var(--crit)); }
+  [data-look="ruhe"] .rz-rm-t { flex: 0 1 auto; min-width: 0; overflow: hidden; color: var(--t1); font-size: var(--rz-fs-body); font-weight: var(--rz-w-book); text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+  [data-look="ruhe"] .rz-rm-t:hover { text-decoration: underline; text-decoration-color: var(--hair-strong); text-underline-offset: 3px; }
+  [data-look="ruhe"] .rz-rm-m { flex: 1 1 120px; min-width: 0; color: var(--t3); font-size: var(--rz-fs-ui); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [data-look="ruhe"] .rz-rm-m.is-due { color: var(--crit-ink, var(--crit)); }
+  [data-look="ruhe"] .rz-rm-new { flex: none; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); font-size: var(--rz-fs-micro); font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .rz-rm-acts { display: flex; align-items: center; gap: 2px; margin-left: auto; opacity: 0; transition: opacity var(--d1) var(--eo); }
+  [data-look="ruhe"] .rz-rm-row:hover .rz-rm-acts, [data-look="ruhe"] .rz-rm-row.is-cur .rz-rm-acts, [data-look="ruhe"] .rz-rm-acts:focus-within { opacity: 1; }
+  [data-look="ruhe"] .rz-rm-acts .rz-bbtn { height: 26px; text-decoration: none; }
+  [data-look="ruhe"] .rz-rm-diff { flex: 1 0 100%; margin: 0 0 2px 24px; color: var(--t3); font-size: var(--rz-fs-ui); line-height: 1.45; }
+  @media (hover: none) {
+    [data-look="ruhe"] .rz-rm-acts { opacity: 1; }
+  }
+
+  /* ---------- Flashcards ---------- */
+  [data-look="ruhe"] .rz-fc-none { margin: 0; color: var(--t3); font-size: var(--rz-fs-body); }
+  [data-look="ruhe"] .rz-fc-empty { display: grid; justify-items: start; gap: 8px; padding: 24px 2px; color: var(--t3); }
+  [data-look="ruhe"] .rz-fc-empty h2 { margin: 0; color: var(--t1); font-size: var(--rz-fs-read); font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .rz-fc-empty p { margin: 0 0 6px; max-width: 460px; font-size: var(--rz-fs-body); line-height: 1.5; }
+  [data-look="ruhe"] .rz-fc-decks { list-style: none; margin: 0; padding: 0; animation: rz-view-in var(--d3) var(--eo); }
+  [data-look="ruhe"] .rz-fc-deck { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 8px; border-radius: 8px; box-shadow: inset 0 -1px 0 var(--hair); }
+  [data-look="ruhe"] .rz-fc-deck:last-child { box-shadow: none; }
+  [data-look="ruhe"] .rz-fc-deck:hover { background: var(--lum-2); box-shadow: none; }
+  [data-look="ruhe"][data-theme="light"] .rz-fc-deck:hover { background: var(--lum-3); }
+  [data-look="ruhe"] .rz-fc-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--t4); }
+  [data-look="ruhe"] .rz-fc-dot.is-due { background: var(--accent); box-shadow: none; }
+  [data-look="ruhe"] .rz-fc-deck-t { flex: 0 1 auto; min-width: 0; overflow: hidden; color: var(--t1); font-size: var(--rz-fs-body); font-weight: var(--rz-w-book); text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+  [data-look="ruhe"] .rz-fc-deck-m { flex: 1 1 auto; min-width: 0; color: var(--t3); font-size: var(--rz-fs-ui); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  [data-look="ruhe"] .rz-fc-deck-a { display: flex; gap: 2px; flex: none; }
+  [data-look="ruhe"] .rz-fc-deck-a .rz-bbtn:disabled { opacity: 0.4; cursor: default; }
+
+  [data-look="ruhe"] .rz-fc-progress { height: 2px; border-radius: 2px; background: var(--lum-3); overflow: hidden; }
+  [data-look="ruhe"] .rz-fc-progress i { display: block; height: 100%; background: var(--t3); transition: width var(--d3) var(--eo); }
+  [data-look="ruhe"] .rz-fc-card {
+    display: grid; gap: 14px; align-content: start; min-height: 260px; padding: 28px 2px 22px; border: 0; background: none; color: var(--t1);
+    font: inherit; text-align: left; cursor: pointer; animation: rz-view-in var(--d3) var(--eo);
+  }
+  [data-look="ruhe"] .rz-fc-side { color: var(--t4); font-size: var(--rz-fs-meta); }
+  [data-look="ruhe"] .rz-fc-q { font-size: var(--rz-fs-h1); line-height: 1.4; font-weight: var(--rz-w-semi); letter-spacing: -0.015em; white-space: pre-wrap; overflow-wrap: anywhere; }
+  [data-look="ruhe"] .rz-fc-a { padding-top: 14px; box-shadow: inset 0 1px 0 var(--hair); color: var(--t2); font-size: var(--rz-fs-big); line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+  [data-look="ruhe"] .rz-fc-src { color: var(--t4); font-size: var(--rz-fs-meta); }
+  [data-look="ruhe"] .rz-fc-grades { display: flex; flex-wrap: wrap; gap: 6px; }
+}
+
+/* ---------- Hashtags: grey sparklines (the accent has no job there), quieter object avatars ---------- */
+@layer components {
+  [data-look="ruhe"] [data-collection="hashtags"] .kc-spark path:first-child { fill: color-mix(in oklch, var(--t3) 12%, transparent); }
+  [data-look="ruhe"] [data-collection="hashtags"] .kc-spark circle { fill: var(--t2); }
+  [data-look="ruhe"] [data-collection="hashtags"] .kc-htrow:hover .kc-htbar > i { background: var(--t2); }
+  [data-look="ruhe"] [data-collection="hashtags"] .kc-avs { opacity: 0.7; filter: saturate(0); }
+  [data-look="ruhe"] [data-collection="hashtags"] .kc-htrow:not(.is-head):hover .kc-avs { opacity: 1; filter: none; }
+}

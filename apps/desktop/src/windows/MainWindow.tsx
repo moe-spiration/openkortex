@@ -1,5 +1,4 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
-import type { CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { bridge } from "@/bridge";
 import { DIco } from "@/components/icons";
 import { PRODUCT_NAME, t } from "@/i18n";
@@ -9,7 +8,8 @@ import { Clock } from "@/state/clock";
 /** Browser preview only: where "Web-App öffnen" leads (VITE_KORTEX_WEB_URL, else apps/web on :3000). */
 export const WEB_URL: string = import.meta.env.VITE_KORTEX_WEB_URL ?? "http://localhost:3000/home";
 
-const win = () => Promise.resolve(getCurrentWindow());
+/** Natively the titlebar buttons go through the one command `main_window` (main_bridge.rs, capability main-local). */
+const act = (action: "frame" | "minimize" | "toggle_maximize" | "close") => void bridge().invoke("main_window", { action }).catch(() => undefined);
 
 /**
  * Main window of the browser preview, and natively the bundled page `main` holds until the web app is loaded.
@@ -21,16 +21,22 @@ export function MainWindow({ placement }: { placement: CSSProperties }) {
   const d = useDesktop();
   const live = d.phase === "live";
   const native = bridge().native;
+  // One titlebar (Ruhe D1): `main` has no native frame; this page draws the buttons and says so to the core.
+  useEffect(() => {
+    if (native) act("frame");
+  }, [native]);
   return (
     <div className="kx-window kxd-main" style={placement} aria-hidden={d.winst === "min" ? "true" : "false"}>
-      {/* Tactile Craft v2: the frame titlebar (lum-0 with the accent glow) and Windows-style buttons (.tc-win). */}
+      {/* The one titlebar of the window (no native frame since 0.6.8) with Windows-style buttons (.tc-win). */}
       <div className="kxd-titlebar" data-tauri-drag-region>
         <span className="kx-appmark kxd-appmark" aria-hidden />
         <span className="kxd-brand">{PRODUCT_NAME}</span>
         {live && (
           <span className="kxd-rec">
             <span className="kx-live-dot" aria-hidden />
-            <span className="kx-num">REC <Clock /></span>
+            <span className="kx-num">
+              <Clock />
+            </span>
           </span>
         )}
         <span className="kxh-grow" data-tauri-drag-region />
@@ -41,7 +47,7 @@ export function MainWindow({ placement }: { placement: CSSProperties }) {
             aria-label={t("Minimize")}
             onClick={() => {
               d.minimize();
-              if (native) void win().then((w) => w.minimize());
+              if (native) act("minimize");
             }}
           >
             <DIco name="min" />
@@ -50,7 +56,7 @@ export function MainWindow({ placement }: { placement: CSSProperties }) {
             type="button"
             className="tc-wbtn tc-wbtn--max"
             aria-label={t("Maximize")}
-            onClick={() => native && void win().then((w) => w.toggleMaximize())}
+            onClick={() => native && act("toggle_maximize")}
           >
             <DIco name="max" />
           </button>
@@ -59,7 +65,7 @@ export function MainWindow({ placement }: { placement: CSSProperties }) {
             className="tc-wbtn tc-wbtn--close"
             aria-label={t("Minimize to tray")}
             onClick={() => {
-              if (native) void bridge().invoke("hide_to_tray");
+              if (native) act("close");
               d.say(t("Kortex keeps running in the tray"));
             }}
           >

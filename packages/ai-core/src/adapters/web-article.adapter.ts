@@ -26,8 +26,21 @@ const MIN_CONTENT_CHARS = 200;
 
 export interface WebArticleAdapterOptions {
   fetch?: FetchLike;
-  /** Jina Reader is only used with a key (keyless calls now answer 401). */
+  /** Jina Reader first in line with a key. */
   jinaApiKey?: string;
+  /**
+   * Without a key, Jina Reader is the last try for pages that block the direct fetch (403, bot wall,
+   * app-like pages). Free and rate-limited; it may answer 401 from some hosts, which then counts as one
+   * more failure. Default on; `false` (env KORTEX_KEYLESS_READER=off) keeps every page on this server.
+   */
+  keylessReader?: boolean;
+  /**
+   * The PDF adapter: a shared link that turns out to be a PDF is downloaded and read as a document
+   * instead of becoming an empty bookmark.
+   */
+  documentAdapter?: IngestionAdapter;
+  /** Size cap for such a PDF download. Default 40 MB. */
+  documentMaxBytes?: number;
   /** Firecrawl is only used with a key. */
   firecrawlApiKey?: string;
   timeoutMs?: number;
@@ -126,13 +139,13 @@ export function createWebArticleAdapter(options: WebArticleAdapterOptions = {}):
   const fetchFn = options.fetch ?? defaultFetch;
   const timeoutMs = options.timeoutMs ?? 45_000;
 
-  async function viaJina(url: string): Promise<ArticleResult> {
+  async function viaJina(url: string, keyless = false): Promise<ArticleResult> {
     const headers: Record<string, string> = {
       Accept: "application/json",
       "X-Return-Format": "markdown",
       "X-With-Generated-Alt": "true",
     };
-    if (options.jinaApiKey) headers.Authorization = `Bearer ${options.jinaApiKey}`;
+    if (options.jinaApiKey && !keyless) headers.Authorization = `Bearer ${options.jinaApiKey}`;
     const res = await requestJson<JinaResponse>(fetchFn, id, `${JINA_READER_URL}${url}`, {
       headers,
       timeoutMs,
@@ -173,6 +186,36 @@ export function createWebArticleAdapter(options: WebArticleAdapterOptions = {}):
       language: meta.language,
       author: meta.author,
     };
+  }
+
+  /** Downloads a linked PDF and hands it to the document adapter; null (reason recorded) when that fails. */
+  async function readLinkedDocument(
+    url: string,
+    input: RawIngestInput,
+    failures: string[],
+  ): Promise<ExtractedPayload | null> {
+    try {
+      const safe = createSafeFetch({ fetch: fetchFn, timeoutMs });
+      const res = await safe(url, { headers: { Accept: "application/pdf,*/*;q=0.5" } });
+      if (!res.ok) throw new ExtractionError(id, `pdf download: HTTP ${res.status}`);
+      const bytes = await readBodyLimited(res, options.documentMaxBytes ?? 40 * 1024 * 1024);
+      if (!bytes) throw new ExtractionError(id, "pdf download: larger than the size cap");
+      const name = decodeURIComponent(new URL(res.url || url).pathname.split("/").pop() || "") || "document.pdf";
+      const payload = await options.documentAdapter!.extract({
+        ...input,
+        fileBuffer: bytes,
+        mimeType: "application/pdf",
+        fileName: /\.pdf$/i.test(name) ? name : `${name}.pdf`,
+      });
+      return {
+        ...payload,
+        sourceUrl: payload.sourceUrl ?? url,
+        metadata: { ...payload.metadata, source_url: url, extractor: "pdf-link" },
+      };
+    } catch (err) {
+      failures.push(`pdf link: ${errorMessage(err)}`);
+      return null;
+    }
   }
 
   return {
@@ -254,6 +297,7 @@ export function createWebArticleAdapter(options: WebArticleAdapterOptions = {}):
         }
       }
 
+      let pdfLink = false;
       if (!article) {
         try {
           const r = await readDirect(fetchFn, url, {
@@ -272,7 +316,28 @@ export function createWebArticleAdapter(options: WebArticleAdapterOptions = {}):
             shortDirect = r;
           }
         } catch (err) {
-          failures.push(errorMessage(err));
+          const message = errorMessage(err);
+          pdfLink = /not an HTML page \(application\/pdf\)/i.test(message);
+          failures.push(message);
+        }
+      }
+
+      // A link to a PDF (shared from the phone, clipped): read the document itself.
+      if (!article && pdfLink && options.documentAdapter) {
+        const doc = await readLinkedDocument(url, input, failures);
+        if (doc) return doc;
+      }
+
+      // Blocked or thin page without a reader key: one keyless try through Jina Reader.
+      if (!article && !options.jinaApiKey && options.keylessReader !== false) {
+        try {
+          const r = await viaJina(url, true);
+          if (!usable(r, "jina (keyless)")) {
+            // blocked: reason recorded
+          } else if (r.markdown.trim().length >= MIN_CONTENT_CHARS) article = r;
+          else failures.push("jina (keyless): content too short");
+        } catch (err) {
+          failures.push(`jina (keyless): ${errorMessage(err)}`);
         }
       }
 

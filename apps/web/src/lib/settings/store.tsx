@@ -36,6 +36,7 @@ import {
   type Density,
 } from "./appearance";
 import { probeGpuWhenIdle } from "./gpu";
+import { REDUCED_MOTION_QUERY, applyMotion, motionChoice, osPrefersReducedMotion, resolveMotion, type MotionChoice, type MotionMode } from "./motion";
 import { checkUserSettingsPatch } from "./patch";
 import { toClientSettings, type ClientUserSettings } from "./types";
 
@@ -82,6 +83,9 @@ interface SettingsState {
   /** Tactile Craft appearance device prefs (backdrop, density, reduced transparency); see ./appearance.ts. */
   appearance: AppearancePrefs;
   setAppearance: (patch: Partial<AppearancePrefs>) => void;
+  /** Bewegung: what was picked, whether the OS asks for reduced motion, and what runs (./motion.ts). */
+  motion: { choice: MotionChoice; mode: MotionMode; osReduce: boolean };
+  setMotion: (choice: MotionChoice) => void;
   /** Stores (or with null clears) the density the user picked in one view scope. */
   setScopeDensity: (scope: string, d: Density | null) => void;
   /** New bearer token for the MCP HTTP transport; resolves to the full token, or null on failure. */
@@ -208,7 +212,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
     // Device prefs that change the whole UI.
     const d = document.documentElement;
-    d.dataset.motion = local.motion ? "reduced" : "full";
     d.dataset.heroes = local.heroes ? "on" : "off";
   }, [user, local, mcp.token, hydrated, live]);
 
@@ -223,6 +226,27 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   appearanceRef.current = appearance;
   useEffect(() => probeGpuWhenIdle(() => applyAppearance(appearanceRef.current)), []);
   const setAppearance = useCallback((patch: Partial<AppearancePrefs>) => setAppearanceState((a) => ({ ...a, ...patch })), []);
+
+  // Bewegung: the picked choice beats the OS ("system" follows it, also when it changes while the app is open).
+  const [osReduce, setOsReduce] = useState(false);
+  useEffect(() => {
+    setOsReduce(osPrefersReducedMotion());
+    const mq = typeof window.matchMedia === "function" ? window.matchMedia(REDUCED_MOTION_QUERY) : null;
+    const on = () => setOsReduce(mq?.matches === true);
+    mq?.addEventListener?.("change", on);
+    return () => mq?.removeEventListener?.("change", on);
+  }, []);
+  const choice = motionChoice(appearance.motion, { off: local.motion, calm: appearance.calmMotion });
+  const mode = resolveMotion(choice, osReduce);
+  useEffect(() => {
+    if (hydrated && appearanceReady) applyMotion(mode);
+  }, [mode, hydrated, appearanceReady]);
+  const motion = useMemo(() => ({ choice, mode, osReduce }), [choice, mode, osReduce]);
+  const setMotion = useCallback((m: MotionChoice) => {
+    // The legacy switches follow, so older code that still reads them agrees.
+    setLocalState((l) => ({ ...l, motion: m === "off" }));
+    setAppearanceState((a) => ({ ...a, motion: m, calmMotion: m === "calm" }));
+  }, []);
   const setScopeDensity = useCallback(
     (scope: string, d: Density | null) =>
       setAppearanceState((a) => {
@@ -322,9 +346,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           enabled_connectors: on.includes(id) ? on.filter((c) => c !== id) : [...on, id],
         });
       },
-      setLocal: (key, v) => setLocalState((l) => ({ ...l, [key]: v })),
+      // "Reduce motion" (classic settings) is Bewegung Aus / System, so both switches agree.
+      setLocal: (key, v) => (key === "motion" ? setMotion(v ? "off" : "system") : setLocalState((l) => ({ ...l, [key]: v }))),
       appearance,
       setAppearance,
+      motion,
+      setMotion,
       setScopeDensity,
       rotateMcpToken,
       revokeMcpToken,
@@ -339,6 +366,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       updateUserSettings,
       appearance,
       setAppearance,
+      motion,
+      setMotion,
       setScopeDensity,
       rotateMcpToken,
       revokeMcpToken,

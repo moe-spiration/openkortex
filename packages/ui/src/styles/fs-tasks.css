@@ -69,6 +69,8 @@
   /* Status board: five stages, cards with their moves below the title. */
   .fs-kb--st { grid-template-columns: repeat(5, minmax(190px, 1fr)); gap: 10px; overflow-x: auto; padding-bottom: 4px; }
   .fs-kb-card--st { grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 6px 10px; }
+  /* Status board columns are narrow: titles get two lines before they are cut. */
+  .fs-kb-card--st .fs-kb-t { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; line-height: 1.35; overflow-wrap: anywhere; }
   .fs-kb-card--st.is-ro { background: color-mix(in oklch, var(--lum-2) 55%, transparent); }
   .fs-kb-acts { grid-column: 1 / -1; display: flex; align-items: center; gap: 4px; min-width: 0; min-height: 28px; }
   .fs-kb-acts .fs-grow { flex: 1; }

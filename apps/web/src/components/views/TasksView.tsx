@@ -36,7 +36,17 @@ import {
   type ColumnKey,
   type DueBucket,
   type NewDue,
+  RUHE_COLUMNS,
+  RUHE_COLUMN_LABEL,
+  ruheColumnOf,
+  ruheDrop,
+  type RuheColumn,
 } from "@/lib/tasks-board";
+import { useLook } from "@/components/theme/look";
+import { ClipboardCopy, Download, NotebookPen } from "lucide-react";
+import { RuheSeg } from "./RuhePop";
+import { MenuItem, MenuLabel, MenuSep } from "@/components/ui/primitives";
+import { TasksRuhe, type TasksRuheView } from "./TasksRuhe";
 import { isLiveData, MOCK_TODAY, noteById, OBJECT_ITEMS, TASKS } from "@/lib/workspace-data";
 import {
   PRIORITY_LABEL,
@@ -208,6 +218,8 @@ export function TasksView() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropCol, setDropCol] = useState<ColumnKey | null>(null);
+  const ruhe = useLook() === "ruhe";
+  const [rview, setRview] = useState<TasksRuheView>("board");
   const projects = OBJECT_ITEMS.filter((o) => o.type === "project" || o.type === "goal");
   const projectTitle = (id?: string) => (id ? projects.find((p) => p.id === id)?.title : undefined);
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
@@ -229,9 +241,9 @@ export function TasksView() {
   const toggle = (id: string) => void setTaskDone(id, !done[id]);
 
   /** New due date (ISO day): optimistic, the server row replaces it, rolled back when the server refuses. */
-  const setDue = (id: string, due: string) => {
+  const setDue = (id: string, due: string): Promise<void> => {
     const prev = tasks.find((task) => task.id === id);
-    if (!prev) return;
+    if (!prev) return Promise.resolve();
     setTasks((all) =>
       all.map((task) => {
         if (task.id !== id) return task;
@@ -240,8 +252,8 @@ export function TasksView() {
         return n;
       }),
     );
-    if (!live || id.startsWith("tmp-")) return;
-    void updateActionItem(id, { due }).then((r) => {
+    if (!live || id.startsWith("tmp-")) return Promise.resolve();
+    return updateActionItem(id, { due }).then((r) => {
       if (r.ok) setTasks((all) => all.map((task) => (task.id === id ? fromRow(r.data, task) : task)));
       else {
         setTasks((all) => all.map((task) => (task.id === id ? prev : task)));
@@ -262,15 +274,19 @@ export function TasksView() {
   };
 
   const create = () => {
-    const title = draft.trim();
+    createWith(draft, newDueDate(draftDue, today));
+    setDraft("");
+  };
+
+  /** New task with the given due day ("" = no date): optimistic, the server row replaces it. */
+  const createWith = (text: string, due: string) => {
+    const title = text.trim();
     if (!title) return;
-    const due = newDueDate(draftDue, today);
     const tempId = `tmp-${Date.now().toString(36)}`;
     const local: ActionItem = { id: tempId, title, tag: "", due, priority: "medium", done: false, ai: false, assignee: "Me", sourceId: "", sourceKind: "note" };
     setTasks((all) => [local, ...all]);
-    setDraft("");
     if (!live) return;
-    void createActionItem({ title, due }).then((r) => {
+    void createActionItem({ title, ...(due ? { due } : {}) }).then((r) => {
       if (r.ok) {
         setTasks((all) => all.map((task) => (task.id === tempId ? fromRow(r.data) : task)));
         setDone((d) => ({ ...d, [r.data.id]: false }));
@@ -486,7 +502,19 @@ export function TasksView() {
     return names.map((name, i) => ({ key: name, label: name, tint: GROUP_TINTS[i % GROUP_TINTS.length]!, items: present.filter((task) => keyOf(task) === name).sort(byDue) }));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- projectTitle reads the stable object list
   }, [group, present]);
-  const order = (layout === "status" ? (group === "status" ? stageColumns : groupColumns) : columns).flatMap((c) => c.items.map((task) => task.id));
+  const ruheShape = (task: ActionItem) => ({ ...stageShape(task), ...(task.due ? { due: task.due } : {}) });
+  const ruheColumns = RUHE_COLUMNS.map((col) => ({ key: col, col, label: RUHE_COLUMN_LABEL[col], items: visible.filter((task) => ruheColumnOf(ruheShape(task), today) === col).sort(byDue) }));
+  const order = (
+    ruhe
+      ? rview === "board" && group !== "status"
+        ? groupColumns
+        : ruheColumns
+      : layout === "status"
+        ? group === "status"
+          ? stageColumns
+          : groupColumns
+        : columns
+  ).flatMap((c) => c.items.map((task) => task.id));
   const sel = useListSelection(order, { onDelete: (ids) => removeTasks(ids) });
   const cm = useContextMenu<string>();
   const menuIds = cm.menu ? targetsOf(sel.state, cm.menu.target) : [];
@@ -965,10 +993,211 @@ export function TasksView() {
     },
   });
 
+  /** Drop of a card into a Ruhe column (Offen / Heute / In Arbeit / Erledigt): due date first, then the stage. */
+  const ruheMove = (id: string, col: RuheColumn) => {
+    const task = tasks.find((x) => x.id === id);
+    if (!task) return;
+    const r = ruheDrop(ruheShape(task), col, today);
+    if (!r.stage && !r.due) return;
+    void (r.due ? setDue(id, r.due) : Promise.resolve()).then(() => {
+      if (r.stage) moveStage(id, r.stage, true);
+    });
+    showToast(`${task.title} → ${RUHE_COLUMN_LABEL[col]}`);
+  };
+
+  const contextMenu = (
+    <ContextMenu
+      at={cm.menu?.at ?? null}
+      label={t("Task")}
+      sections={menuFor({ kind: "task", count: menuIds.length, done: !!done[menuIds[0] ?? ""], hasSource: !!tasks.find((task) => task.id === menuIds[0])?.sourceId })}
+      onAction={(id: ActionId) => runTask(id, menuIds)}
+      onClose={cm.close}
+    />
+  );
+
+  if (ruhe) {
+    const ruheFilters = (
+      <>
+        <RuheSeg
+          label="Status"
+          value={filters.status}
+          onChange={(v) => set("status", v)}
+          options={[
+            { value: "all", label: t("All") },
+            { value: "open", label: tx("status", "Open") },
+            { value: "done", label: t("Done") },
+          ]}
+        />
+        <RuheSeg
+          label={t("Priority")}
+          value={filters.priority}
+          onChange={(v) => set("priority", v)}
+          options={[
+            { value: "all", label: t("All") },
+            { value: "urgent", label: t("Urgent") },
+            { value: "high", label: t("High") },
+            { value: "medium", label: t("Medium") },
+            { value: "low", label: t("Low") },
+          ]}
+        />
+        <RuheSeg
+          label={t("Due date")}
+          value={filters.due}
+          onChange={(v) => set("due", v)}
+          options={[
+            { value: "all", label: t("All") },
+            { value: "overdue", label: t("Overdue") },
+            { value: "today", label: t("Today") },
+            { value: "week", label: t("This week") },
+            { value: "later", label: t("Later") },
+          ]}
+        />
+        <RuheSeg
+          label={t("Source")}
+          value={filters.source}
+          onChange={(v) => set("source", v)}
+          options={[
+            { value: "all", label: t("All") },
+            { value: "meeting", label: t("Meeting") },
+            { value: "note", label: t("Note") },
+            { value: "voice", label: t("Voice memo") },
+            { value: "article", label: t("Article") },
+          ]}
+        />
+        <RuheSeg
+          label={tx("task", "Timeframe")}
+          value={filters.timeframe}
+          onChange={(v) => set("timeframe", v)}
+          options={[
+            { value: "all", label: t("All") },
+            { value: "today", label: t("Today") },
+            { value: "this_week", label: t("This week") },
+            { value: "later", label: t("Later") },
+            { value: "none", label: tx("status", "Open") },
+          ]}
+        />
+        <RuheSeg
+          label="Export"
+          value={filters.exported}
+          onChange={(v) => set("exported", v)}
+          options={[
+            { value: "all", label: t("All") },
+            { value: "open", label: t("Not transferred") },
+            { value: "exported", label: t("Transferred") },
+          ]}
+        />
+        <label className="rz-pop-row">
+          <span className="rz-pop-l">{t("Project")}</span>
+          <select className="rz-pop-select" value={filters.project} aria-label={t("Filter by project")} onChange={(e) => set("project", e.target.value)}>
+            <option value="all">{t("All")}</option>
+            <option value="none">{t("Without project")}</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        {filtered && (
+          <button type="button" className="rz-link rz-pop-reset" onClick={() => setFilters(NO_FILTER)}>
+            {t("Reset filters")}
+          </button>
+        )}
+      </>
+    );
+    const display = (
+      <>
+        <RuheSeg
+          label={t("Group by")}
+          value={group}
+          onChange={setGroup}
+          options={[
+            { value: "status", label: "Status" },
+            { value: "source", label: t("Source") },
+            { value: "project", label: t("Project") },
+          ]}
+        />
+        {griplyDirect && <p className="rz-pop-note">{t("Griply connected")}</p>}
+      </>
+    );
+    const grouped = rview === "board" && group !== "status";
+    return (
+      <>
+        <TasksRuhe
+          view={rview}
+          onView={setRview}
+          columns={grouped ? groupColumns : ruheColumns}
+          grouped={grouped}
+          meta={stageMeta(stageCounts(present.map(stageShape)))}
+          isDone={(id) => !!done[id]}
+          stage={(task) => stageOf(stageShape(task))}
+          source={(task) => (task.sourceId ? sourceOf(task).label : null)}
+          due={(task) => (done[task.id] || !task.due ? null : dueLabel(task, false, today))}
+          overdue={(task) => !done[task.id] && bucketOf(task.due || undefined, today) === "overdue"}
+          selected={sel.selected}
+          rowProps={rowEvents}
+          onToggle={toggle}
+          onOpen={jump}
+          onMove={ruheMove}
+          onStage={(id, to) => void moveStage(id, to)}
+          onAgent={(task) => void giveToAgent(task)}
+          onGriply={(task) => void giveToGriply(task)}
+          onDismiss={(id) => removeTasks([id])}
+          onCreate={(title, col) => createWith(title, col === "today" ? today : "")}
+          filters={ruheFilters}
+          filterCount={Object.values(filters).filter((v) => v !== "all").length}
+          display={display}
+          menu={
+            <>
+              <MenuLabel>{sel.count > 0 ? t("Export ({n} selected)", { n: sel.count }) : t("Export (open, visible tasks)")}</MenuLabel>
+              <MenuItem onSelect={() => void exportTasks("clipboard")}>
+                <ClipboardCopy aria-hidden size={14} strokeWidth={1.75} />
+                {t("Clipboard")}
+              </MenuItem>
+              <MenuItem onSelect={() => void exportTasks("markdown")}>
+                <Download aria-hidden size={14} strokeWidth={1.75} />
+                Markdown
+              </MenuItem>
+              <MenuItem onSelect={() => void exportTasks("csv")}>
+                <Download aria-hidden size={14} strokeWidth={1.75} />
+                CSV
+              </MenuItem>
+              <MenuSep />
+              <MenuItem onSelect={() => router.push("/journal/week")}>
+                <NotebookPen aria-hidden size={14} strokeWidth={1.75} />
+                {t("To the weekly review")}
+              </MenuItem>
+            </>
+          }
+          week={
+            <WeekCalendar
+              entries={[]}
+              plans={calPlans}
+              today={today}
+              unit="tasks"
+              onToggleTask={(id, next) => void setTaskDone(id, next)}
+              onOpen={(sourceId) => openNote(sourceId)}
+            />
+          }
+          detail={detail}
+          detailId={detailId}
+          onDetail={setDetailId}
+          selectionBar={
+            sel.count > 0 ? (
+              <SelectionBar count={sel.count} total={order.length} actions={bulkActions("task", sel.count)} onAction={(id) => runTask(id, [...sel.selected])} onSelectAll={sel.all} onClear={sel.clear} />
+            ) : null
+          }
+        />
+        {contextMenu}
+      </>
+    );
+  }
+
   return (
     <Page>
       <div className="fs-tasks">
         <PageTitle
+          icon="todo"
           title={tx("nav", "Tasks")}
           help={meta}
           aside={
@@ -1288,13 +1517,7 @@ export function TasksView() {
           </Link>
         </section>
       </div>
-      <ContextMenu
-        at={cm.menu?.at ?? null}
-        label={t("Task")}
-        sections={menuFor({ kind: "task", count: menuIds.length, done: !!done[menuIds[0] ?? ""], hasSource: !!tasks.find((task) => task.id === menuIds[0])?.sourceId })}
-        onAction={(id: ActionId) => runTask(id, menuIds)}
-        onClose={cm.close}
-      />
+      {contextMenu}
     </Page>
   );
 }

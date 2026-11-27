@@ -44,6 +44,7 @@ describe("tool listing", () => {
       "add_tags",
       "snooze",
       "clear_reminder",
+      "set_read_status",
       "turn_into_object",
     ]);
     expect(organize.object_type?.enum).toEqual([...DOMAIN_OBJECT_TYPES]);

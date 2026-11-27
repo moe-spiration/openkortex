@@ -1,0 +1,94 @@
+/*
+ * Ruhe (2026-11-27, web-scr1; gap web-b W2): the entry / note view (NoteSheet in the drawer and the full tab), artifact
+ * "Kortex Ruhe-Iteration", screen 03. Title 24/600, the properties as a quiet table (NoteHeadRuhe), "Kurz gesagt" on a
+ * soft accent surface, a dimmed cover without the type glow, backlinks as rows. Markup: components/note/NoteHeadRuhe.tsx,
+ * NoteSheet.tsx, AiPanel.tsx, Backlinks.tsx. Only under <html data-look="ruhe">; shared tokens only.
+ */
+
+@layer components {
+  [data-look="ruhe"] .kx-dr-in.fs-ed-in { padding-top: 22px; gap: 16px; }
+  [data-look="ruhe"] .kx-drawer[data-size="full"] .kx-dr-in.fs-ed-in { padding-top: 30px; }
+
+  /* Title and property table. */
+  [data-look="ruhe"] .rz-nh { display: flex; flex-direction: column; gap: 14px; }
+  [data-look="ruhe"] .kx-dr-title.rz-nh-title, [data-look="ruhe"] .kx-dr-title.rz-nh-title.is-full {
+    font-size: var(--rz-fs-doc); font-weight: var(--rz-w-semi); letter-spacing: -0.025em; line-height: 1.2; color: var(--t1);
+  }
+  [data-look="ruhe"] .rz-nh-title .kx-dr-title-edit { font: inherit; letter-spacing: inherit; }
+  [data-look="ruhe"] .rz-props { display: grid; grid-template-columns: 112px minmax(0, 1fr); row-gap: 2px; margin: 0; font-size: var(--rz-fs-body); }
+  [data-look="ruhe"] .rz-props-row { display: contents; }
+  [data-look="ruhe"] .rz-props dt { display: flex; align-items: center; gap: 8px; min-height: 28px; color: var(--t3); }
+  [data-look="ruhe"] .rz-props dt > svg { flex: none; color: var(--t4); }
+  [data-look="ruhe"] .rz-props dd { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; min-width: 0; min-height: 28px; margin: 0; color: var(--t1); }
+  [data-look="ruhe"] .rz-props dd .kx-typesel.fs-typesel { height: 24px; margin: 0 -6px; padding: 0 6px; color: var(--t1); }
+  [data-look="ruhe"] .rz-props dd .kx-typesel.fs-typesel .kx-nico, [data-look="ruhe"] .rz-props dd .kx-typesel.fs-typesel svg { color: var(--t4); }
+  [data-look="ruhe"] .rz-props dd > span { flex: none; max-width: 100%; white-space: nowrap; }
+  [data-look="ruhe"] .rz-props-meta { margin-left: -8px; color: var(--t3); }
+  [data-look="ruhe"] .rz-props-sep { margin-left: -12px; color: var(--t3); }
+  [data-look="ruhe"] .rz-props-empty { color: var(--t4); }
+  [data-look="ruhe"] .rz-props-src { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  [data-look="ruhe"] .rz-props-folder { font-size: var(--rz-fs-meta); color: var(--t2); }
+  [data-look="ruhe"] .rz-props-v { margin: 0 -6px; padding: 2px 6px; border: 0; border-radius: 6px; background: none; color: var(--t1); font: inherit; cursor: pointer; }
+  [data-look="ruhe"] .rz-props-v:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .rz-props-v.is-due { color: var(--warn-ink, var(--t1)); }
+  [data-look="ruhe"] .rz-ntag {
+    display: inline-flex; align-items: center; gap: 5px; margin: 0 -4px; padding: 2px 4px; border: 0; border-radius: 5px; background: none;
+    color: var(--t3); font: inherit; font-size: var(--rz-fs-meta); cursor: pointer; transition: color var(--d1) var(--eo), background var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-ntag + .rz-ntag { margin-left: 2px; }
+  [data-look="ruhe"] .rz-ntag:hover { color: var(--t1); background: var(--lum-2); }
+  [data-look="ruhe"] .rz-ntag > i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  [data-look="ruhe"] .rz-ntag.is-ai { color: var(--accent-ink); }
+  [data-look="ruhe"] .rz-ntag.is-ai:hover { background: var(--accent-soft); }
+  [data-look="ruhe"] .rz-nh-obj .rz-kv { grid-template-columns: 112px minmax(0, 1fr); font-size: var(--rz-fs-body); }
+  [data-look="ruhe"] .rz-nh-obj .rz-kv-all { display: none; }
+  [data-look="ruhe"] .rz-nh-obj { margin-top: -12px; }
+  [data-look="ruhe"] .rz-nh-acts { display: flex; gap: 2px; margin: -8px 0 0 -8px; }
+  [data-look="ruhe"] .rz-nh-act {
+    display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px; border: 0; border-radius: 7px; background: none;
+    color: var(--t4); font: inherit; font-size: var(--rz-fs-meta); cursor: pointer; transition: background var(--d1) var(--eo), color var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .rz-nh-act:hover, [data-look="ruhe"] .rz-nh-act[aria-expanded="true"] { background: var(--lum-2); color: var(--t1); }
+
+  /* Folded panels: no box, a hairline above, like the rest of the page. */
+  [data-look="ruhe"] .fs-ed-in .fs-ed-panel { padding: 12px 0 0; border-radius: 0; background: none; box-shadow: 0 -1px 0 var(--hair); }
+
+  /* "Kurz gesagt": soft accent surface, no ring; the actions recede until the box is hovered. */
+  [data-look="ruhe"] .fs-ed .fs-ai, [data-look="ruhe"] .fs-ed-in .fs-ai, [data-look="ruhe"][data-theme="light"] .fs-ed .fs-ai {
+    gap: 4px; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); box-shadow: none;
+  }
+  [data-look="ruhe"] .fs-ed-in .fs-ai > p { font-size: var(--rz-fs-body); line-height: 1.55; color: var(--t1); }
+  [data-look="ruhe"] .fs-ed-in .fs-ai li { color: var(--t1); }
+  [data-look="ruhe"] .fs-ed-in .fs-ai-acts { opacity: 0; transition: opacity var(--d2) var(--eo); }
+  [data-look="ruhe"] .fs-ed-in .fs-ai:hover .fs-ai-acts, [data-look="ruhe"] .fs-ed-in .fs-ai:focus-within .fs-ai-acts { opacity: 1; }
+  [data-look="ruhe"] .fs-ed-in .fs-ai .fs-pill { height: 22px; color: var(--accent-ink); }
+  [data-look="ruhe"] .fs-ed-in .fs-ai .fs-pill:hover { background: color-mix(in oklch, var(--accent) 12%, transparent); }
+  @media (hover: none) {
+    [data-look="ruhe"] .fs-ed-in .fs-ai-acts { opacity: 1; }
+  }
+
+  /* Cover: dimmed and desaturated, fading into the page; no type glow when there is none. */
+  [data-look="ruhe"] .fs-ed-glow { display: none; }
+  [data-look="ruhe"] .kx-drawer.fs-ed .kx-dr-cover { height: 150px; }
+  [data-look="ruhe"] .kx-drawer.fs-ed[data-size="full"] .kx-dr-cover { height: 190px; }
+  [data-look="ruhe"] .kx-drawer.fs-ed .kx-dr-cover img { opacity: 0.42; filter: saturate(0.7); }
+  [data-look="ruhe"][data-theme="light"] .kx-drawer.fs-ed .kx-dr-cover img { opacity: 0.5; filter: saturate(0.5); }
+  [data-look="ruhe"] .kx-drawer.fs-ed .kx-dr-cover::after { background: linear-gradient(180deg, transparent 0%, var(--lum-1) 96%); }
+
+  /* Action items of the note: square boxes as in the mockup, quiet rows. */
+  [data-look="ruhe"] .fs-ed-in .fs-h2 { font-size: var(--rz-fs-read); font-weight: var(--rz-w-semi); letter-spacing: -0.012em; }
+  [data-look="ruhe"] .fs-ed-in .fs-chk { padding: 5px 8px; color: var(--t1); font-size: var(--rz-fs-lead); }
+  [data-look="ruhe"] .fs-ed-in .fs-box { width: 15px; height: 15px; border-radius: 4px; box-shadow: inset 0 0 0 1.4px var(--t4); }
+  [data-look="ruhe"] .fs-ed-in .fs-box.is-on { box-shadow: none; }
+
+  /* Backlinks: "2 Rückverweise", then one row per entry (icon, title) instead of cards. */
+  [data-look="ruhe"] .fs-ed-in .fs-ed-links { gap: 6px; margin-top: 10px; padding-top: 14px; border-top: 0; box-shadow: 0 -1px 0 var(--hair); }
+  [data-look="ruhe"] .fs-ed-in .fs-ed-links > .fs-lbl { font-size: var(--rz-fs-ui); color: var(--t3); }
+  [data-look="ruhe"] .fs-ed-in .fs-bl-grid { display: flex; flex-direction: column; gap: 0; margin: 0 -8px; }
+  [data-look="ruhe"] .fs-ed-in .fs-bl {
+    height: 32px; padding: 0 8px; border-radius: 7px; background: none; box-shadow: none; color: var(--t1); font-size: var(--rz-fs-body);
+  }
+  [data-look="ruhe"] .fs-ed-in .fs-bl:hover { background: var(--lum-2); }
+  [data-look="ruhe"] .fs-ed-in .fs-bl .kx-nico { color: var(--t3); }
+  [data-look="ruhe"] .fs-ed-in .kx-md-note { color: var(--t4); }
+}

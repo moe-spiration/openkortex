@@ -13,6 +13,7 @@ import { BlockList, BlockMenu, BlockToolbar, useBlockEditing, type Focus } from 
 import { useChrome } from "../ui/Chrome";
 import { Icon } from "../ui/Icon";
 import { Btn, Help, Segmented, T } from "../ui/primitives";
+import { RButton, RSegment, RText } from "../ui/ruhe";
 import { useKeyboardInset } from "../ui/useKeyboard";
 
 /*
@@ -45,6 +46,7 @@ export function Editor() {
   const th = useTheme();
   const router = useRouter();
   const { top } = useChrome();
+  const ruhe = th.look === "ruhe";
   const insets = useSafeAreaInsets();
   const kb = useKeyboardInset();
   const a = useApp();
@@ -152,6 +154,30 @@ export function Editor() {
 
   return (
     <View style={{ flex: 1, backgroundColor: th.bgMainWindow, paddingBottom: kb }}>
+      {ruhe ? (
+        // Ruhe editor head (android-richtlinien.md 8 B): back link in accentInk, Note | Markdown as a small segment,
+        // save as the one primary (sm); the title below in the detail title step, the type line in t3.
+        <View style={{ paddingTop: top + 4, paddingLeft: 14, paddingRight: 16, paddingBottom: 6, flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Pressable accessibilityRole="link" accessibilityLabel={t("Back")} hitSlop={8} onPress={confirmLeave} style={({ pressed }) => ({ minHeight: 40, flexDirection: "row", alignItems: "center", gap: 6, opacity: pressed ? 0.6 : 1 })}>
+            <Icon name="chevLeft" size={18} color={th.accentInk} />
+            <RText step="body" color={th.accentInk}>
+              {t("Back")}
+            </RText>
+          </Pressable>
+          <View style={{ flex: 1 }} />
+          <RSegment
+            label={t("Editor mode")}
+            value={mode}
+            onChange={switchMode}
+            items={[
+              { key: "blocks", label: t("Note") },
+              { key: "markdown", label: "Markdown" },
+            ]}
+            style={{ width: 150, flexShrink: 1 }}
+          />
+          {saving ? <ActivityIndicator size="small" color={th.t3} style={{ width: 38 }} /> : <RButton variant={dirty ? "primary" : "secondary"} size="sm" label={dirty ? t("Save") : t("Saved")} onPress={() => void save()} />}
+        </View>
+      ) : (
       <View style={{ paddingTop: top + 6, paddingHorizontal: 12, paddingBottom: 6, flexDirection: "row", alignItems: "center", gap: 8 }}>
         <Btn variant="ghost" sm minHeight={40} onPress={confirmLeave}>
           <Icon name="chev" rotate={180} color={th.textSecondary} />
@@ -173,12 +199,13 @@ export function Editor() {
           {saving ? <ActivityIndicator size="small" color={th.onAccentAi} /> : dirty ? t("Save") : t("Saved")}
         </Btn>
       </View>
+      )}
 
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24, gap: 8 }}>
         <TextInput
           accessibilityLabel={t("Title")}
           placeholder={t("Title")}
-          placeholderTextColor={th.textMuted}
+          placeholderTextColor={ruhe ? th.t4 : th.textMuted}
           value={title}
           onChangeText={(v) => setTitle(v.replace(/\n/g, " "))}
           onFocus={() => setFocused(-1)}
@@ -186,7 +213,7 @@ export function Editor() {
           multiline
           submitBehavior="blurAndSubmit"
           onSubmitEditing={() => blocks[0] && mode === "blocks" && setFocus({ id: blocks[0].id, pos: 0 })}
-          style={[{ fontFamily: FONT.sans300, fontSize: 32, lineHeight: 38, letterSpacing: -0.64, color: th.textPrimary, paddingVertical: 4 }, Platform.OS === "web" ? ({ outlineStyle: "none" } as never) : null]}
+          style={[ruhe ? { fontFamily: FONT.sans700, fontSize: 24, lineHeight: 29, letterSpacing: -0.6, color: th.t1, paddingVertical: 4 } : { fontFamily: FONT.sans300, fontSize: 32, lineHeight: 38, letterSpacing: -0.64, color: th.textPrimary, paddingVertical: 4 }, Platform.OS === "web" ? ({ outlineStyle: "none" } as never) : null]}
         />
         <Help>{entry ? `${entry.type} · ${entry.when}` : t("New note · goes to the Inbox")}</Help>
         {mode === "blocks" ? (
@@ -234,7 +261,7 @@ export function Editor() {
       )}
 
       {editable && (mode === "markdown" || cur) && (
-        <View style={[{ flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 6, paddingRight: 8, paddingBottom: 6 + (kb ? 0 : insets.bottom), backgroundColor: th.bgFloatingGlass, boxShadow: `inset 0 1px 0 0 ${th.borderSubtle}` } as ViewStyle]}>
+        <View style={[{ flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 6, paddingRight: 8, paddingBottom: 6 + (kb ? 0 : insets.bottom), backgroundColor: ruhe ? th.lum1 : th.bgFloatingGlass, boxShadow: `inset 0 1px 0 0 ${ruhe ? th.hair : th.borderSubtle}` } as ViewStyle]}>
           <View style={{ flex: 1 }}>
             {mode === "blocks" && cur ? (
               <BlockToolbar

@@ -2,10 +2,9 @@ import { useEffect, type CSSProperties } from "react";
 import { bridge } from "@/bridge";
 import { Toast } from "@/components/Toast";
 import { useDesktop } from "@/state/desktop";
-import { Hud } from "@/windows/Hud";
 import { MainWindow } from "@/windows/MainWindow";
+import { MeetingBar } from "@/windows/MeetingBar";
 import { NativeWindow } from "@/windows/NativeWindow";
-import { Pill } from "@/windows/Pill";
 import { QuickCapture } from "@/windows/QuickCapture";
 import { TrayMenu } from "@/windows/TrayMenu";
 import { PreviewBar } from "./PreviewBar";
@@ -97,8 +96,8 @@ export function DesktopPreview({ theme }: { theme: "dark" | "light" }) {
       <Taskbar />
       {d.tray && <TrayMenu />}
       {d.win && <NativeWindow win={d.win} />}
-      {d.mode === "pill" && d.winst === "min" && d.phase === "live" && <Pill />}
-      {d.mode === "hud" && <Hud />}
+      {/* The meeting bar: collapsed ("pill") or with its panel ("hud"), one part since 0.6.8. */}
+      {(d.mode === "hud" || d.mode === "pill") && <MeetingBar />}
       {d.mode === "qc" && <QuickCapture />}
       <Toast />
     </div>

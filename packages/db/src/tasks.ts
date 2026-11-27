@@ -86,10 +86,21 @@ const clean = (s: string) => s.replace(/\s+/g, " ").trim();
  * Keys of a task line per language. Like the timeframe words they are stored in the vault and read
  * back, so they are a fixed table: `formatTaskLine` writes one language, `parseTaskLine` reads all.
  */
-const LINE_KEYS: Record<Locale, { project: string; timeframe: string; due: string; context: string }> = {
-  en: { project: "Project", timeframe: "Timeframe", due: "Due", context: "Context" },
-  de: { project: "Projekt", timeframe: "Zeitrahmen", due: "Fällig", context: "Kontext" },
+const LINE_KEYS: Record<Locale, { assignee: string; project: string; timeframe: string; due: string; context: string }> = {
+  en: { assignee: "Owner", project: "Project", timeframe: "Timeframe", due: "Due", context: "Context" },
+  de: { assignee: "Zuständig", project: "Projekt", timeframe: "Zeitrahmen", due: "Fällig", context: "Kontext" },
 };
+
+/**
+ * Assignees that mean the user (the extractors' default "Me", the German "Ich"): a task line leaves them
+ * out, since every task without an owner is the user's anyway.
+ */
+const SELF_ASSIGNEES = new Set(["me", "ich", "self", "user"]);
+/** The assignee worth showing on a task line, or null for none or the user. */
+export function shownAssignee(assignee: string | null | undefined): string | null {
+  const a = assignee?.replace(/\s+/g, " ").trim().replace(/^@/, "");
+  return a && !SELF_ASSIGNEES.has(a.toLowerCase()) ? a : null;
+}
 type LineKey = keyof (typeof LINE_KEYS)["en"];
 const LINE_KEY_OF = new Map<string, LineKey>(
   Object.values(LINE_KEYS).flatMap((keys) => (Object.entries(keys) as [LineKey, string][]).map(([k, word]) => [word, k] as const)),
@@ -97,14 +108,16 @@ const LINE_KEY_OF = new Map<string, LineKey>(
 const LINE_KEY_RE = new RegExp(`^(${[...LINE_KEY_OF.keys()].join("|")}): (.+)$`);
 
 /**
- * One portable checklist line: `- [ ] Title · Project: [[Kortex]] · Timeframe: this week ·
- * Due: 2026-11-05 · Context: why <!-- task:<id> -->` (German: `Projekt:`, `Zeitrahmen: diese Woche`,
- * `Fällig:`, `Kontext:`). Every key and the id marker are optional (exports leave the id out);
+ * One portable checklist line: `- [ ] Title · Owner: Max · Project: [[Kortex]] · Timeframe: this week ·
+ * Due: 2026-11-05 · Context: why <!-- task:<id> -->` (German: `Zuständig:`, `Projekt:`, `Zeitrahmen: diese Woche`,
+ * `Fällig:`, `Kontext:`; the owner only when it is not the user). Every key and the id marker are optional (exports leave the id out);
  * `parseTaskLine` reads both languages back. `locale` defaults to the current language.
  */
 export function formatTaskLine(task: ExportTask, locale: Locale = getLocale()): string {
   const key = LINE_KEYS[locale];
   const parts = [clean(task.title)];
+  const owner = shownAssignee(task.assignee);
+  if (owner) parts.push(`${key.assignee}: ${owner}`);
   if (task.project?.trim()) parts.push(`${key.project}: [[${clean(task.project)}]]`);
   const tf = timeframeLabel(task.timeframe, locale);
   if (tf) parts.push(`${key.timeframe}: ${tf}`);
@@ -117,6 +130,8 @@ export function formatTaskLine(task: ExportTask, locale: Locale = getLocale()): 
 export interface ParsedTaskLine {
   title: string;
   done: boolean;
+  /** `Owner:` / `Zuständig:` (read-only, like the project). */
+  assignee: string | null;
   project: string | null;
   timeframe: string | null;
   due: string | null;
@@ -139,6 +154,7 @@ export function parseTaskLine(line: string): ParsedTaskLine | null {
   const out: ParsedTaskLine = {
     title: "",
     done: m[1] !== " ",
+    assignee: null,
     project: null,
     timeframe: null,
     due: null,
@@ -155,7 +171,8 @@ export function parseTaskLine(line: string): ParsedTaskLine | null {
     }
     const v = kv[2]!.trim();
     const field = LINE_KEY_OF.get(kv[1]!);
-    if (field === "project") out.project = /^\[\[(.+)\]\]$/.exec(v)?.[1] ?? v;
+    if (field === "assignee") out.assignee = v;
+    else if (field === "project") out.project = /^\[\[(.+)\]\]$/.exec(v)?.[1] ?? v;
     else if (field === "timeframe") out.timeframe = normalizeTimeframe(v);
     else if (field === "due") out.due = ISO_DAY.test(v) ? v : null;
     else out.context = v;

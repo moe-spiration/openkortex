@@ -16,6 +16,7 @@ import { linksOf, resolveWiki, wikiTitles } from "../lib/links";
 import { findLifePage, LIFE_PAGE_FOLDER, lifePageTemplate, lifeTag } from "../lib/lifePage";
 import { SPACES, backInToJump, emptyHome, homeOf, inboxOf, itemsToEntries, lifeToAreas, sortTasks, type Art, type InboxJob, type ItemRow, type JumpItem, type LiveHome, type Processed, type ReviewRow, type TaskRow } from "../data/live";
 import { DEFAULT_AUTO_PLACE_THRESHOLD, thresholdOf } from "@kortex/db/gates";
+import { clearSnapshots, readSnapshot, snapshotKey, writeSnapshot } from "../data/startCache";
 import { checkAllowed, clearFlashcards, setRead, patchItemMetadata, patchItemWatch, createNote, deleteItems, saveNote, createTask, setArchived, setTasksExported, handOverTask, updateTask, isConfigured, switchInstance, loadArchived, loadFolderItems, loadFolderPaths, loadLifePages, loadLinkedItems, findItemByTitle, loadHome, loadItems, loadLife, loadSettings, loadTasks, patchSettings, setTaskDone, signIn as apiSignIn, secureStorage, signOut as apiSignOut, supabase, updateItem } from "../api/kortex";
 
 /*
@@ -210,11 +211,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Start cache (startCache.ts): the last live load per account and server, shown at once on the next start.
+  const cacheKey = useRef<string | null>(null);
+  cacheKey.current = snapshotKey(server, email);
+  /** Set once a live load came back: from then on the cache never overwrites fresh data. */
+  const loadedRef = useRef(false);
+
   const refreshItems = useCallback(async () => {
     if (!live.current) return;
     try {
       setRows(await loadItems());
       setError(null);
+      // New or changed entries: the "Einträge" widget follows.
+      void refreshWidgets();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -226,6 +235,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     void syncLocale();
     // Each part on its own, so one failing endpoint does not blank the others.
     const [items, home, life, taskRows] = await Promise.allSettled([loadItems(), loadHome(), loadLife(), loadTasks()]);
+    loadedRef.current = true;
     if (taskRows.status === "fulfilled") setTasks(taskRows.value);
     if (items.status === "fulfilled") {
       setRows(items.value);
@@ -239,6 +249,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const failed = [items, home, life, taskRows].find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
     setError(failed ? String(failed.reason instanceof Error ? failed.reason.message : failed.reason) : null);
     setLoading(false);
+    if (items.status === "fulfilled")
+      void writeSnapshot(cacheKey.current, {
+        v: 1,
+        at: Date.now(),
+        items: items.value,
+        tasks: taskRows.status === "fulfilled" ? taskRows.value : null,
+        home: home.status === "fulfilled" ? home.value : null,
+        life: life.status === "fulfilled" ? life.value : null,
+      });
   }, [syncLocale]);
 
   // Restore the server (entered on first start, unless the build names one) and the stored session.
@@ -279,7 +298,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [server]);
 
   useEffect(() => {
-    if (auth === "live") void refresh();
+    if (auth === "live") {
+      loadedRef.current = false;
+      // The cached vault appears while the fresh load is still on its way (the app feels instant on start).
+      void readSnapshot(cacheKey.current).then((snap) => {
+        if (!snap || loadedRef.current) return;
+        if (snap.items.length) setRows(snap.items);
+        if (snap.tasks) setTasks(snap.tasks);
+        if (snap.home) {
+          setJump(backInToJump(snap.home.backIn ?? []));
+          setHome(homeOf(snap.home));
+        }
+        if (snap.life) setAreas(lifeToAreas(snap.life, art));
+      });
+      void refresh();
+    }
     if (auth === "demo") setTasks(DEMO_TASKS);
   }, [auth, refresh]);
 
@@ -326,6 +359,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (auth !== "demo") await apiSignOut().catch(() => undefined);
         await createQueue(secureStorage).clear().catch(() => undefined);
         await forgetInstance(AsyncStorage).catch(() => undefined);
+        await clearSnapshots();
         switchInstance(null);
         setServer(null);
         setRows([]);
@@ -350,6 +384,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       signOut: async () => {
         if (auth !== "demo") await apiSignOut().catch(() => undefined);
         await createQueue(secureStorage).clear().catch(() => undefined);
+        await clearSnapshots();
         setRows([]);
         setArchivedRows([]);
         setExtraRows([]);

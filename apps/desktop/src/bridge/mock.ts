@@ -1,5 +1,5 @@
 import { getLocale } from "@kortex/i18n";
-import type { Bridge, CommandName, Commands, EventName, Events, FolderCheck, Unlisten, VaultStatus } from "./contract";
+import type { Bridge, CoachCard, CommandName, Commands, EventName, Events, FolderCheck, ThemePref, Unlisten, VaultStatus } from "./contract";
 
 /**
  * Browser stand-in for the Rust core (browser preview and tests only; the Tauri app never loads it).
@@ -17,9 +17,14 @@ export const DEMO_LINES: Array<{ channel: 0 | 1; text: string }> = [
   { channel: 1, text: "Can we make that by the Q4 release?" },
 ];
 export const DEMO_EVERY = 6;
-export const DEMO_CARDS: Array<{ kind: "fact" | "question" | "action"; text: string }> = [
+export const DEMO_CARDS: CoachCard[] = [
+  {
+    kind: "question",
+    title: "Good moment now",
+    text: "Ask how the user sees conflicts before anything is overwritten. From the file: Tom decides with examples.",
+    object: { id: "00000000-0000-4000-8000-00000000c001", title: "Tom", type: "person" },
+  },
   { kind: "fact", text: "Matches doc 02: SHA-256 checksum plus .conflict.md on divergence." },
-  { kind: "question", text: "How does the user see conflicts before anything is overwritten?" },
   { kind: "action", text: "Send the checksum concept to Tom by Friday." },
 ];
 const MOCK_ITEM = "00000000-0000-4000-8000-00000000d001";
@@ -204,6 +209,12 @@ export function createMockBridge(opts: { tickMs?: number } = {}): Bridge & { dis
       emit("meeting:live", { state: "ended", item_id: MOCK_ITEM });
       return { file: "C:\\Users\\max\\AppData\\Roaming\\io.github.moe-spiration.openkortex\\recordings\\2026-10-22_11-00-00.wav", seconds: elapsed, uploading: true };
     },
+    discard_recording: async () => {
+      recording = false;
+      emit("meeting:state", { recording, elapsed, uploading: false, discarded: true });
+      emit("meeting:live", { state: "ended", item_id: MOCK_ITEM });
+      return null;
+    },
     meeting_clip: async ({ text }) => ({ id: "clip-" + Date.now().toString(36), at_sec: elapsed, text }),
     meeting_task: async () => "task-" + Date.now().toString(36),
     refresh_coaching: async () => {
@@ -331,6 +342,11 @@ export function createMockBridge(opts: { tickMs?: number } = {}): Bridge & { dis
       emit("settings:locale", { locale });
       return locale;
     },
+    set_theme: async ({ theme }: { theme: ThemePref }) => {
+      emit("settings:theme", { theme });
+      return theme;
+    },
+    main_window: async () => null,
     get_reminders: async () => reminders,
     set_reminders: async ({ enabled }) => (reminders = enabled),
     // Preview: the same events as the native self-test, in a few seconds.

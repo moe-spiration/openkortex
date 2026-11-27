@@ -67,8 +67,8 @@ const endOf = (now: Date) => {
 const shortDay = (iso: string, locale: string) => new Date(`${iso}T12:00:00`).toLocaleDateString(locale, { day: "numeric", month: "short" });
 
 /** The cards of the day, most pressing first, at most STACK_MAX. `today` is YYYY-MM-DD (phone time). */
-export function buildStack(input: { entries: readonly StackEntry[]; tasks: readonly StackTask[]; home: StackHome | null; today: string; now: Date; locale: string; titleOf?: (id: string) => string | undefined }): StackCard[] {
-  const { entries, tasks, home, today, now, locale, titleOf } = input;
+export function buildStack(input: { entries: readonly StackEntry[]; tasks: readonly StackTask[]; home: StackHome | null; today: string; now: Date; locale: string; titleOf?: (id: string) => string | undefined; imgOf?: (id: string) => CoverSource | null | undefined }): StackCard[] {
+  const { entries, tasks, home, today, now, locale, titleOf, imgOf } = input;
   const out: StackCard[] = [];
   const shown = entries.filter((e) => !e.error);
 
@@ -82,7 +82,8 @@ export function buildStack(input: { entries: readonly StackEntry[]; tasks: reado
       title: task.title,
       sub: dueDay < today ? t("Overdue since {date}", { date: shortDay(dueDay, locale) }) : t("Due today"),
       chips: source ? [source] : [],
-      img: null,
+      // The entry the task came from lends its cover, so a task card can carry the image like the others.
+      img: (task.source_item_id ? imgOf?.(task.source_item_id) : null) ?? null,
       open: task.source_item_id,
       refId: task.id,
     });

@@ -1,6 +1,7 @@
 import { accentFill, accentPair } from "./accent";
 import { APPEARANCE_KEY, FONT_SCALES } from "@/lib/settings/appearance";
 import { GPU_KEY } from "@/lib/settings/gpu";
+import { MOTION_PREPAINT } from "@/lib/settings/motion";
 import type { IconId } from "@/components/shell/icons";
 import { VAULT_OPEN_DEFAULT } from "@/lib/workspace-data";
 import { HOME_TAB_KEY, isDocTabKey } from "./routes";
@@ -159,11 +160,11 @@ export function applyDocumentPrefs(
 /**
  * Inline <head> script: applies persisted prefs before first paint (no theme, sidebar, accent or backdrop flash).
  * Shell prefs (theme incl. "System", rail, sidebar, accent, --kx-accent-fill, --kx-on-accent) and the appearance prefs of
- * lib/settings/appearance.ts (data-backdrop, data-density, data-glass, --kx-fs; glass also solid on a stored software-render probe,
+ * lib/settings/appearance.ts (data-backdrop, data-density, data-glass, data-look, --kx-fs; glass also solid on a stored software-render probe,
  * lib/settings/gpu.ts).
  */
 export const PREPAINT_SCRIPT = `(function(){try{var accentPair=${accentPair.toString()};var accentFill=${accentFill.toString()};var p=JSON.parse(localStorage.getItem(${JSON.stringify(
   PREFS_KEY,
 )})||"{}");var d=document.documentElement;var t=p.theme;if(p.followSystem){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}if(t)d.dataset.theme=t;d.dataset.rail=String(!!p.rail);d.dataset.sb=p.sidebarClosed?"closed":"open";var a=accentPair(p.accent);d.style.setProperty("--kx-accent",a[0]);d.style.setProperty("--kx-accent-solid",a[1]);var f=accentFill(a[0]);d.style.setProperty("--kx-accent-fill",f[0]);d.style.setProperty("--kx-on-accent",f[1]);var ap=JSON.parse(localStorage.getItem(${JSON.stringify(
   APPEARANCE_KEY,
-)})||"{}");var g=ap.reduceTransparency===true;d.dataset.backdrop=!g&&ap.backdrop==="pack"?"pack":"glow";d.dataset.density=ap.density==="komfort"||ap.density==="dicht"?ap.density:"kompakt";var sr=false;try{sr=localStorage.getItem(${JSON.stringify(GPU_KEY)})==="soft";}catch(e){}d.dataset.glass=g||sr?"solid":"on";var fs=ap.fontScale;if(${JSON.stringify(FONT_SCALES)}.indexOf(fs)>=0)d.style.setProperty("--kx-fs",String(fs));}catch(e){}})();`;
+)})||"{}");var g=ap.reduceTransparency===true;d.dataset.backdrop=!g&&ap.backdrop==="pack"?"pack":"glow";d.dataset.density=ap.density==="komfort"||ap.density==="dicht"?ap.density:"kompakt";var sr=false;try{sr=localStorage.getItem(${JSON.stringify(GPU_KEY)})==="soft";}catch(e){}d.dataset.glass=g||sr?"solid":"on";var fs=ap.fontScale;if(${JSON.stringify(FONT_SCALES)}.indexOf(fs)>=0)d.style.setProperty("--kx-fs",String(fs));d.dataset.look=ap.look==="vivid"?"vivid":"ruhe";if(typeof ap.baseHue==="number")d.style.setProperty("--ruhe-h",String(ap.baseHue));if(typeof ap.tint==="number")d.style.setProperty("--ruhe-c",String(ap.tint));if(ap.contrast==="soft"||ap.contrast==="high")d.dataset.contrast=ap.contrast;${MOTION_PREPAINT}}catch(e){}})();`;

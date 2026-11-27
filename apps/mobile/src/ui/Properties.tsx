@@ -1,4 +1,5 @@
 import { t } from "../i18n";
+import type { ReactNode } from "react";
 import { Linking, Pressable, View } from "react-native";
 import { fieldLabel, metadataFields, statusLabel, typeDefinition, typeStatuses } from "@kortex/db/type-registry";
 import { metaLink, metaValue } from "../data/meta";
@@ -7,7 +8,9 @@ import { useApp } from "../state/AppState";
 import { useData } from "../state/Data";
 import { useTheme } from "../theme/ThemeProvider";
 import { RADIUS } from "../theme/tokens";
-import { Icon } from "./Icon";
+import { useGesturePlay } from "./ruhe/gestures";
+import { Icon, type IconName } from "./Icon";
+import { RChip, RText } from "./ruhe";
 import { Help, Micro, T } from "./primitives";
 import { typeIconName } from "./typeIcon";
 
@@ -115,6 +118,92 @@ export function Properties({ id, type, meta }: { id: string; type: string; meta:
           })}
         </View>
       )}
+    </View>
+  );
+}
+
+/** One line of the Ruhe key/value list (label column, value; a link opens in the browser). */
+export interface PropRow {
+  label: string;
+  value: string;
+  icon?: IconName;
+  link?: string | null;
+  onPress?: () => void;
+}
+
+/**
+ * Ruhe Eigenschaften (mockup "Eigenschaften"): a quiet key/value list, label column 112 in t3, value in t1, no
+ * lines and no boxes. `base` rows (type, date, folder, source) come first; with an `id` the registry part follows:
+ * status as chips, rating as five stars (0–10, 2 per star) and the typed fields. Energy stays a 1–10 value.
+ */
+export function PropertiesRuhe({ base, id, type, meta }: { base: PropRow[]; id?: string; type?: string; meta?: Record<string, unknown> }) {
+  const th = useTheme();
+  const [starPlay, fireStars] = useGesturePlay();
+  const a = useApp();
+  const d = useData();
+  const m = meta ?? {};
+  const statuses = id && type ? typeStatuses(type) : [];
+  const ratable = !!id && !!type && "rating" in (typeDefinition(type)?.metadata?.shape ?? {});
+  const status = typeof m.status === "string" ? m.status : null;
+  const rating = typeof m.rating === "number" ? m.rating : null;
+  const fields = type ? metadataFields(type).filter((f) => !OWN.has(f) && m[f] != null && metaValue(m[f]) !== "") : [];
+  const energy = typeof m.energy === "number" ? m.energy : null;
+  const set = (patch: Record<string, unknown>, ok: string) => id && void d.patchMeta(id, patch).then((err) => a.say(err ?? ok));
+  const rows: PropRow[] = [
+    ...base,
+    ...(energy != null && !fields.includes("energy") ? [{ label: t("Energy"), value: t("{n} of 10", { n: energy }) }] : []),
+    ...fields.map((f) => ({ label: fieldLabel(f), value: f === "energy" && typeof m[f] === "number" ? t("{n} of 10", { n: m[f] as number }) : metaValue(m[f]), link: metaLink(f, m[f]) })),
+  ];
+  const line = (label: string, value: ReactNode, key: string, onPress?: () => void) => (
+    <Pressable key={key} disabled={!onPress} accessibilityRole={onPress ? "link" : undefined} onPress={onPress} style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, minHeight: 36, paddingVertical: 8, paddingHorizontal: 20 }}>
+      <RText step="rowSub" color={th.t3} style={{ width: 112, paddingTop: 1.5 }} numberOfLines={1}>
+        {label}
+      </RText>
+      <View style={{ flex: 1, minWidth: 0 }}>{value}</View>
+    </Pressable>
+  );
+  return (
+    <View>
+      {rows.map((r) =>
+        line(
+          r.label,
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            {!!r.icon && <Icon name={r.icon} size={14} color={th.t3} />}
+            <RText step="rowTitle" weight={400} color={r.link || r.onPress ? th.accentInk : th.t1} numberOfLines={3} style={{ flex: 1 }}>
+              {r.value}
+            </RText>
+          </View>,
+          r.label,
+          r.onPress ?? (r.link ? () => void Linking.openURL(r.link!) : undefined),
+        ),
+      )}
+      {statuses.length > 0 &&
+        line(
+          t("Status"),
+          <View accessibilityRole="radiogroup" accessibilityLabel={t("Status")} style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: -4 }}>
+            {statuses.map((s) => {
+              const on = status === s;
+              return <RChip key={s} label={statusLabel(s)} on={on} onPress={() => set({ status: on ? null : s }, on ? t("Status removed") : t("Status: {status}", { status: statusLabel(s) }))} />;
+            })}
+          </View>,
+          "status",
+        )}
+      {ratable &&
+        line(
+          t("Rating"),
+          <View style={{ flexDirection: "row", gap: 2, marginTop: -6 }}>
+            {[1, 2, 3, 4, 5].map((n) => {
+              const value = n * 2;
+              const on = rating != null && rating >= value - 1;
+              return (
+                <Pressable key={n} accessibilityRole="button" accessibilityLabel={t("{n} of 5 stars", { n })} hitSlop={4} onPress={() => (fireStars(), set({ rating: rating === value ? null : value }, rating === value ? t("Rating removed") : t("Rating: {n} of 5", { n })))} style={{ width: 30, height: 30, alignItems: "center", justifyContent: "center" }}>
+                  <Icon name="star" size={18} play={starPlay} color={on ? th.accentInk : th.t4} />
+                </Pressable>
+              );
+            })}
+          </View>,
+          "rating",
+        )}
     </View>
   );
 }

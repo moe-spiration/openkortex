@@ -5,6 +5,7 @@ import {
   applyMention,
   availableScopes,
   barHint,
+  capturePreview,
   clipboardUrl,
   commandQuery,
   detectMention,
@@ -372,5 +373,25 @@ describe("focus quick actions and drop text", () => {
     expect(dropLabel(3)).toBe("3 Dateien → Inbox");
     expect(dropLabel(1)).toBe("1 Datei → Inbox");
     expect(dropLabel(0)).toBe("→ Inbox");
+  });
+});
+
+describe("capturePreview (Ruhe look, typing state)", () => {
+  it("says what the capture becomes and where it lands, like planCapture", () => {
+    expect(capturePreview("", "auto")).toBeNull();
+    expect(capturePreview("Idee #kortex mit @Jonas Weber", "auto", { objects: ["Jonas Weber"] })).toEqual({
+      as: "Notiz",
+      dest: "Inbox, KI sortiert ein",
+      tags: ["kortex"],
+      links: ["Jonas Weber"],
+    });
+    expect(capturePreview("x", "inbox")?.dest).toBe(INBOX_FOLDER);
+    expect(capturePreview("x", "space", { space: { label: "Ideen", folderPath: "10_Notes/Ideen" } })?.dest).toBe("10_Notes/Ideen");
+    expect(capturePreview("x", "space", { space: { label: "Rezepte", typeHint: "recipe" } })?.dest).toBe("Rezepte");
+    expect(capturePreview("x", "journal")).toMatchObject({ as: "Mind Dump", dest: "Tagesnotiz" });
+    expect(capturePreview("x", "task")).toMatchObject({ as: "Aufgabe", dest: "Aufgaben" });
+  });
+  it("a link chip without text still previews as a link", () => {
+    expect(capturePreview("", "auto", { link: true })).toMatchObject({ as: "Link", tags: [] });
   });
 });

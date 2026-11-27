@@ -146,9 +146,20 @@ export const levelOf = (db: number) => Math.max(0.2, Math.min(1, (db + 60) / 45)
 export const QUIET_DB = -55;
 export const isAudible = (db: number) => db > QUIET_DB;
 
-/** English sources; shown with `t(COACH_EYEBROW[kind])`. */
-export const COACH_EYEBROW: Record<CoachCard["kind"], string> = {
+/** Default headline of a coaching card without its own title (English sources, shown with `t`). */
+export const COACH_TITLE: Record<CoachCard["kind"], string> = {
   fact: msg("Fact check"),
-  question: msg("Follow-up question"),
+  question: msg("Good moment to ask"),
   action: msg("Action item detected"),
 };
+
+/** The object file the coaching draws on (first card that names one), for the chip "Akte …". */
+export function coachObject(cards: readonly CoachCard[]): NonNullable<CoachCard["object"]> | null {
+  return cards.find((c) => c.object?.id && c.object.title)?.object ?? null;
+}
+
+/** Action items among the coaching cards (chip "2 Aufgaben erkannt"). */
+export const actionCount = (cards: readonly CoachCard[]) => cards.filter((c) => c.kind === "action").length;
+
+/** Index of the card shown after `at` (wraps), -1 without cards. */
+export const nextCard = (cards: readonly CoachCard[], at: number) => (cards.length ? (at + 1) % cards.length : -1);

@@ -17,6 +17,13 @@ import {
 import { AGENTS_GUIDE_ID, AGENTS_GUIDE_URI, renderAgentsDocument } from "./agents-guide";
 import { OBJECT_FIELDS, validateObjectMetadata } from "./objects";
 import {
+  READ_STATUSES,
+  READING_TYPES,
+  checkSectionBody,
+  readStatusPatch,
+  upsertSection,
+} from "./reading";
+import {
   isEnrichable,
   type BrainItem,
   type BrainRepository,
@@ -173,6 +180,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         "Returns ranked hits with id, title, snippet, folder, tags and metadata (status, rating, ...); use brain_get_item to read an item in full. " +
         'Filters: type/types (every registry type, e.g. scratchpad, session, prompt), remind_due_by (due reminders of any type), status (shorthand for metadata.status, e.g. "want_to_read", "to_watch", "wishlist"), metadata (exact key match), folder_path, tags. ' +
         "Without a query the newest items matching the filters are listed (e.g. all books with status want_to_read). " +
+        `Reading queue: unread true lists clippings and documents (${READING_TYPES.join(", ")} unless type/types say otherwise) the user has not read or skipped and that are not snoozed; with a query (e.g. today's goals and projects) they are ranked by it, and each hit carries its summary. Mark them with brain_organize set_read_status. ` +
         "Before saving something the user refers to (a book, film, person, product), search for it first and update the hit with brain_save_item(id) instead of creating a duplicate. " +
         `Where things live (folders, types, routing rules, folder index): brain_get_item with id "${AGENTS_GUIDE_ID}".`,
       inputSchema: {
@@ -216,6 +224,12 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
           .describe(
             "Due reminders: only items whose remind_at is at or before this ISO 8601 instant (e.g. now = what is due). Oldest reminder first when there is no query.",
           ),
+        unread: z
+          .boolean()
+          .optional()
+          .describe(
+            "Reading queue: only unread, not snoozed clippings/documents (metadata.read_status not read or skipped).",
+          ),
         limit: z
           .number()
           .int()
@@ -238,11 +252,13 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         Object.keys(metadata).length > 0 ||
         !!args.folder_path ||
         !!args.tags?.length ||
-        !!args.remind_due_by;
+        !!args.remind_due_by ||
+        !!args.unread;
       if (!query && !hasFilter)
         throw new BrainError(
-          "Give a query or at least one filter (type, status, metadata, folder_path, tags, remind_due_by)",
+          "Give a query or at least one filter (type, status, metadata, folder_path, tags, remind_due_by, unread)",
         );
+      const readingDefault = args.unread && !args.type && !args.types?.length;
       let embedding: number[] | null = null;
       if (embedder && query) {
         try {
@@ -259,8 +275,9 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         embedding,
         embeddingModel: embedding ? (embedder?.modelKey ?? null) : null,
         type: args.type,
-        types: args.types?.length ? args.types : undefined,
+        types: args.types?.length ? args.types : readingDefault ? [...READING_TYPES] : undefined,
         metadata: Object.keys(metadata).length ? metadata : undefined,
+        unreadAt: args.unread ? now().toISOString() : undefined,
         folderPath: args.folder_path ? normalizeFolderPath(args.folder_path) : undefined,
         tags: args.tags?.length ? normalizeTags(args.tags) : undefined,
         remindDueBy: args.remind_due_by
@@ -324,6 +341,8 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         'brain_save_item with id + metadata {status: "read", feedback, rating}. Never create a new note when the entry exists. ' +
         "Without folder_path the item lands in the Inbox (or the type's home folder) and the AI organizer files it later; " +
         "an explicit folder_path is treated as manual placement and is never moved by the organizer. " +
+        "Managed section: section (a heading) + content_md replaces only the \"## <section>\" part of the note given by id, or of the daily note of date (YYYY-MM-DD, created if missing), " +
+        "and keeps everything else; calling it again replaces the same section (e.g. an assistant's morning brief in today's daily note). Section content uses ### and deeper headings. " +
         "Prefer brain_log_agent_memory for session summaries. " +
         `Folder and routing rules: brain_get_item with id "${AGENTS_GUIDE_ID}".`,
       inputSchema: {
@@ -360,6 +379,20 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
           .optional()
           .describe("Origin URL, if any."),
         tags: tagList.optional(),
+        section: z
+          .string()
+          .min(1)
+          .max(80)
+          .regex(/^[^\n#]+$/, "one line, without #")
+          .optional()
+          .describe(
+            'Heading of a managed section, e.g. "Noema Brief": content_md replaces only this "## " section of the note (id) or daily note (date).',
+          ),
+        date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD")
+          .optional()
+          .describe("With section: the daily note of this date (10_Notes/Daily/<date>.md), created if missing."),
       },
       annotations: {
         readOnlyHint: false,
@@ -369,6 +402,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
       },
     },
     guarded("brain_save_item", async (args) => {
+      if (args.section !== undefined || args.date !== undefined) return ok(await saveSection(ctx, args));
       const remindAt = args.remind_at === undefined ? undefined : normalizeRemindAt(args.remind_at);
       if (args.id) {
         const existing = await repo.getItem(args.id);
@@ -457,12 +491,21 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         "add_tags (item_id + tags), " +
         "snooze (item_id + date as ISO 8601: sets the reminder remind_at so the item resurfaces then; works for every type, e.g. scratchpad, session, prompt), " +
         "clear_reminder (item_id: removes the reminder), " +
+        `set_read_status (item_id + read_status [${READ_STATUSES.join("|")}]: reading state of a clipping or document, sets metadata.read_status and read_at; unread clears it; brain_search unread lists the rest), ` +
         `turn_into_object (item_id + object_type [${DOMAIN_OBJECT_TYPES.join("|")}] + optional metadata: retypes a note into a domain object stored in 70_Objects/<Type>; ` +
         "metadata fields per type: " +
         DOMAIN_OBJECT_TYPES.map((t) => `${t}: ${OBJECT_FIELDS[t].join(", ")}`).join("; ") +
         "; unknown fields are rejected).",
       inputSchema: {
-        action: z.enum(["create_folder", "move_item", "add_tags", "snooze", "clear_reminder", "turn_into_object"]),
+        action: z.enum([
+          "create_folder",
+          "move_item",
+          "add_tags",
+          "snooze",
+          "clear_reminder",
+          "set_read_status",
+          "turn_into_object",
+        ]),
         folder_path: z
           .string()
           .optional()
@@ -470,12 +513,15 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         item_id: z
           .uuid()
           .optional()
-          .describe("move_item / add_tags / snooze / clear_reminder / turn_into_object: the item."),
+          .describe(
+            "move_item / add_tags / snooze / clear_reminder / set_read_status / turn_into_object: the item.",
+          ),
         date: z
           .string()
           .optional()
           .describe("snooze: ISO 8601 date or timestamp to resurface the item."),
         tags: tagList.optional().describe("add_tags: tags to add."),
+        read_status: z.enum(READ_STATUSES).optional().describe("set_read_status: the new state."),
         object_type: z
           .enum(DOMAIN_OBJECT_TYPES)
           .optional()
@@ -530,6 +576,19 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
           const item = await repo.updateItem(id, { remind_at: null });
           if (!item) throw notFound("Item", id);
           return ok({ action, ...pick(item, ["id", "title", "type", "remind_at"]) });
+        }
+        case "set_read_status": {
+          const id = requireArg(args.item_id, "item_id", action);
+          const status = requireArg(args.read_status, "read_status", action);
+          const existing = await repo.getItem(id);
+          if (!existing) throw notFound("Item", id);
+          if (typeDefinition(existing.type)?.metadata)
+            throw new BrainError(
+              `set_read_status is for clippings and documents; ${existing.type} has its own status (brain_save_item metadata.status)`,
+            );
+          const item = await repo.updateItem(id, { metadata: readStatusPatch(status, now()) });
+          if (!item) throw notFound("Item", id);
+          return ok({ action, ...pick(item, ["id", "title", "type", "metadata"]) });
         }
         case "turn_into_object": {
           const id = requireArg(args.item_id, "item_id", action);
@@ -756,6 +815,52 @@ async function checkProject(repo: BrainRepository, id: string): Promise<string> 
 }
 
 /** Validates metadata fields (null = remove, not validated) against the type's registry schema. */
+const DAILY_FOLDER = "10_Notes/Daily";
+
+/** brain_save_item with section/date: replace one "## " section of a note or a daily note. */
+async function saveSection(
+  ctx: ToolContext,
+  args: { id?: string; section?: string; date?: string; content_md?: string },
+): Promise<Record<string, unknown>> {
+  const { repo } = ctx;
+  const section = requireArg(args.section?.trim(), "section", "section");
+  const body = requireArg(args.content_md, "content_md", "section");
+  checkSectionBody(body);
+  if (!args.id && !args.date) throw new BrainError('"id" or "date" is required with "section"');
+  let item: BrainItem | null;
+  let created = false;
+  if (args.id) {
+    item = await repo.getItem(args.id);
+    if (!item) throw notFound("Item", args.id);
+  } else {
+    const date = args.date!;
+    if (!repo.findDailyNote) throw new BrainError("Daily notes are not available in this store");
+    item = await repo.findDailyNote(date);
+    if (!item) {
+      item = await repo.createItem({
+        type: "daily_note",
+        title: `Daily Journal ${date}`,
+        slug: date,
+        content_md: "",
+        folder_path: DAILY_FOLDER,
+        is_manual_placement: true,
+        tags: ["daily"],
+        metadata: { date },
+      });
+      created = true;
+    }
+  }
+  const content_md = upsertSection(item.content_md, section, body);
+  const updated = content_md === item.content_md ? item : await repo.updateItem(item.id, { content_md });
+  if (!updated) throw notFound("Item", item.id);
+  return {
+    section,
+    created,
+    changed: updated !== item,
+    ...pick(updated, ["id", "title", "type", "slug", "folder_path"]),
+  };
+}
+
 function checkMetadata(type: string, metadata: Record<string, unknown>): Record<string, unknown> {
   const checked = validateTypeMetadata(type, stripNulls(metadata));
   if (!checked.ok) {

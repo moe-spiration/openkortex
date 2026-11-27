@@ -33,7 +33,8 @@ function useRailEdges() {
   const scroll = useCallback((dir: -1 | 1, step?: number) => {
     const el = ref.current;
     if (!el) return;
-    const reduced = typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    // Bewegung "Aus" is data-motion="reduced" on <html> (the app resolves the user's choice against the OS there).
+    const reduced = typeof document !== "undefined" && document.documentElement.dataset.motion === "reduced";
     el.scrollBy({ left: dir * railStep(el.clientWidth, step), behavior: reduced ? "auto" : "smooth" });
   }, []);
   return { ref, edges, update, scroll };

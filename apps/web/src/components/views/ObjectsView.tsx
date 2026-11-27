@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { Boxes, Plus, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Boxes, Hash, Plus, SlidersHorizontal, X } from "lucide-react";
 import { DensitySwitch, HScroll, OBJECT_TYPES } from "@kortex/ui";
 import { Ico, type IconId } from "@/components/shell/icons";
 import { MOCK_TODAY } from "@/lib/workspace-data";
@@ -18,6 +19,10 @@ import { lastLabel, type ObjectTable } from "./objectRows";
 import { useCollection } from "./useCollection";
 import { useIncremental } from "./useIncremental";
 import { t } from "@/i18n";
+import { EmptyPic } from "@/components/motion/EmptyPic";
+import { useLook } from "@/components/theme/look";
+import { BarButton, LocationBar, ViewBar } from "@/components/shell/Bars";
+import { BarPopover, FilterChip } from "./LibraryRuhe";
 
 /*
  * Objekte (Tactile Craft v2, dummy `Objects`): record table per object type with type tabs and counters, density
@@ -63,9 +68,50 @@ export function ObjectsView({
     openNote(item.id);
   };
 
+  const ruhe = useLook() === "ruhe";
+  const router = useRouter();
+  const current = tabs.find((x) => x.type === type);
+
   return (
-    <div className="kc-page" data-density={density} data-collection={`objects:${type}`}>
-      <CollectionHead
+    <div className="kc-page" data-density={density} data-collection={`objects:${type}`} data-objects-ruhe={ruhe || undefined}>
+      {ruhe && (
+        <>
+          <LocationBar
+            icon={<Boxes aria-hidden />}
+            crumbs={[{ label: t("Objects") }, { label: current?.label ?? t("Objects") }]}
+            meta={<span className="kc-mono">70_Objects/{folder}/</span>}
+            actions={
+              <BarButton icon={<Plus aria-hidden />} onClick={createObject}>
+                {NEW_OBJECT_TITLE[type]}
+              </BarButton>
+            }
+          />
+          <ViewBar
+            label={t("Object types")}
+            tabs={tabs.map((tab) => {
+              const Icon = OBJECT_TYPES[tab.type].Icon;
+              return { id: tab.type, label: tab.label, icon: <Icon aria-hidden />, count: tab.type === type ? tab.count : undefined };
+            })}
+            value={type}
+            onChange={(k) => router.push(objectHref(k))}
+            right={
+              <BarPopover label={t("Display")} width={240} trigger={<BarButton icon={<SlidersHorizontal aria-hidden />}>{t("Display")}</BarButton>}>
+                <div className="rz-lpop-sec rz-lpop-row">
+                  <span className="rz-lpop-lab">{t("Density")}</span>
+                  <DensitySwitch value={density} onChange={setDensity} />
+                </div>
+              </BarPopover>
+            }
+          >
+            {filter && (
+              <FilterChip icon={<Hash aria-hidden />} label={t("Remove filter {label}", { label: filter.label })} onClear={() => router.push(filter.clearHref)}>
+                {filter.label.replace(/^#/, "")}
+              </FilterChip>
+            )}
+          </ViewBar>
+        </>
+      )}
+      {!ruhe && <><CollectionHead
         icon={<Boxes aria-hidden />}
         crumbs={[{ label: t("Knowledge") }, { label: t("Objects") }]}
         title={t("Objects")}
@@ -79,7 +125,7 @@ export function ObjectsView({
         aside={
           <>
             <button type="button" className="kx-btn kx-btn--secondary kx-btn--sm" onClick={createObject}>
-              <Plus aria-hidden />
+              <Plus size={14} aria-hidden />
               {NEW_OBJECT_TITLE[type]}
             </button>
             <DensitySwitch value={density} onChange={setDensity} />
@@ -109,15 +155,26 @@ export function ObjectsView({
           </Link>
         </div>
       )}
+      </>}
 
       {c.selectionBar}
 
       {rows.length === 0 ? (
-        <div className="kc-section kc-empty-line">
+        <EmptyPic
+          kind={filter ? "search" : "idea"}
+          size="lg"
+          classic={
+            <div className="kc-section kc-empty-line">
+              {filter
+                ? t("There are no objects of this type for this hashtag yet.")
+                : t("No objects of this type yet. Create “{title}” above or turn a note into an object.", { title: NEW_OBJECT_TITLE[type] })}
+            </div>
+          }
+        >
           {filter
             ? t("There are no objects of this type for this hashtag yet.")
             : t("No objects of this type yet. Create “{title}” above or turn a note into an object.", { title: NEW_OBJECT_TITLE[type] })}
-        </div>
+        </EmptyPic>
       ) : (
         <HScroll className="kc-tbl-wrap">
           <table className="kc-tbl" data-view="objects">

@@ -896,10 +896,8 @@
 .kx-editor .kx-ed-toggle-title {
   color: var(--text-primary);
 }
-@media (prefers-reduced-motion: reduce) {
-  .kx-editor .kx-ed-toggle > .bn-toggle-button {
-    transition: none;
-  }
+[data-motion="reduced"] .kx-editor .kx-ed-toggle > .bn-toggle-button {
+  transition: none;
 }
 
 /* Underline (`<u>…</u>`). */

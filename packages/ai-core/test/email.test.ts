@@ -194,7 +194,7 @@ describe("structured email note", () => {
     };
     const out = withEmailDigest(md, digest);
     expect(out).toContain(
-      "- **Weitergeleitet von:** Max Miller <max@example.com>, 2026-11-01 08:15 UTC\n\n## TL;DR\n\nAnna schickt das Angebot für den Workshop am 12.11.\n\n## Action Items\n\n- [ ] Anna bis Mittwoch antworten · Fällig: 2026-11-04\n\n> **Notiz beim Weiterleiten:**",
+      "- **Weitergeleitet von:** Max Miller <max@example.com>, 2026-11-01 08:15 UTC\n\n## TL;DR\n\nAnna schickt das Angebot für den Workshop am 12.11.\n\n## Aufgaben\n\n- [ ] Anna bis Mittwoch antworten · Fällig: 2026-11-04\n\n> **Notiz beim Weiterleiten:**",
     );
     expect(withEmailDigest(out, digest)).toBe(out);
     expect(withEmailDigest(md, { summary: null, actionItems: [] })).toBe(md);
@@ -347,7 +347,7 @@ describe("email adapter", () => {
     // The organizer's TL;DR and tasks sit under the header block (one model call, no extra one).
     const md = res.item.content_md!;
     expect(md).toContain(
-      "## TL;DR\n\nAnna schickt das Angebot für den Workshop am 12.11.\n\n## Action Items\n\n- [ ] Anna bis Mittwoch antworten · Fällig: 2026-11-04",
+      "## TL;DR\n\nAnna schickt das Angebot für den Workshop am 12.11.\n\n## Aufgaben\n\n- [ ] Anna bis Mittwoch antworten · Fällig: 2026-11-04",
     );
     expect(md.indexOf("- **Von:** Anna Muster")).toBe(0);
     expect(md.indexOf("## TL;DR")).toBeLessThan(md.indexOf("## Nachricht"));

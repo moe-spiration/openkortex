@@ -24,12 +24,14 @@ import {
   type ExtensionSettings,
   type LanguageSetting,
   type SummaryLevel,
+  type LookSetting,
   type ThemeSetting,
 } from "../../lib/settings";
 import { normalizeUserTag } from "../../lib/suggest";
 import { summaryTabs } from "../../ui/ClipSettings";
 import { StatusChip } from "../../ui/StatusChip";
 import { ThemeRoot, useDocumentTheme } from "../../ui/ThemeRoot";
+import { RuheOptions } from "../../ui/ruhe/Options";
 
 const Field = ({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) => (
   <label className="grid gap-1.5">
@@ -77,7 +79,7 @@ const hostPattern = (baseUrl: string) => {
   return `${u.protocol}//${u.hostname}/*`;
 };
 
-const KIND_LABEL: Record<IngestKind, string> = { web_clip: msg("Clip"), highlight: msg("Highlight"), ai_chat: msg("Chat"), note: msg("Note") };
+const KIND_LABEL: Record<IngestKind | "file", string> = { web_clip: msg("Clip"), highlight: msg("Highlight"), ai_chat: msg("Chat"), note: msg("Note"), file: msg("Screenshot") };
 
 const list = (v: string) => v.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
 
@@ -99,7 +101,7 @@ function Options() {
   const [inbox, setInbox] = useState<MockInboxEntry[]>([]);
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
   const [queue, setQueue] = useState<OutboxEntry[]>([]);
-  useDocumentTheme(s.theme);
+  useDocumentTheme(s.theme, s.look);
 
   const refreshLists = useCallback(async () => {
     setInbox(await readMockInbox(chromeStore));
@@ -300,6 +302,19 @@ function Options() {
               ]}
             />
           </Group>
+          <Group label={t("Look")}>
+            <SegmentedTabs<LookSetting>
+              size="sm"
+              block
+              aria-label={t("Look")}
+              value={s.look}
+              onChange={(look) => patch({ look })}
+              tabs={[
+                { value: "ruhe", label: t("Calm") },
+                { value: "vivid", label: t("Vivid") },
+              ]}
+            />
+          </Group>
           <Group label={t("Language")}>
             <SegmentedTabs<LanguageSetting>
               size="sm"
@@ -472,12 +487,32 @@ function Options() {
   );
 }
 
+/** Ruhe is the default look; Vivid keeps the classic page. A look change in either page swaps them. */
+function App() {
+  const [s, setS] = useState<ExtensionSettings | null>(null);
+  useEffect(() => {
+    const load = () => void loadSettings(chromeStore).then(setS);
+    load();
+    const on = (_c: unknown, area: string) => area !== "session" && load();
+    chrome.storage.onChanged.addListener(on);
+    return () => chrome.storage.onChanged.removeListener(on);
+  }, []);
+  useDocumentTheme(s?.theme ?? "auto", s?.look ?? "ruhe");
+  if (!s) return null;
+  if (s.look !== "ruhe") return <Options />;
+  return (
+    <ThemeRoot theme={s.theme} look="ruhe" className="kx-page">
+      <RuheOptions initial={s} />
+    </ThemeRoot>
+  );
+}
+
 const root = createRoot(document.getElementById("root")!);
 void startPage(() => {
   document.title = t("Kortex options");
   root.render(
     <StrictMode>
-      <Options />
+      <App />
     </StrictMode>,
   );
 });

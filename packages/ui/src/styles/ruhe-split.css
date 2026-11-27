@@ -1,0 +1,166 @@
+/*
+ * Ruhe Runde 2 (r2-split, 2026-11-27): views follow the width of their pane, not the window. In the split view
+ * (Ctrl+Shift+\, pinned note drawer at 50 %) and in a half-screen Windows window the pane is 500 to 700 px wide while
+ * the viewport is not, so the views' layout rules are container queries on the view host (`kx-view`, the scrolling
+ * pane in AppShell.tsx). Only layout lives here (columns, wrapping, what folds under or away); type sizes and weights
+ * stay with the type tokens. Imported last, so equal selectors here win.
+ */
+/* Soft edges of the scrolling type tabs (scroll-driven, see "Kopfzeilen" below). */
+@property --rz-fade-l { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --rz-fade-r { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@keyframes rz-tabs-edge {
+  0% { --rz-fade-l: 0px; --rz-fade-r: 28px; }
+  8% { --rz-fade-l: 20px; }
+  92% { --rz-fade-r: 20px; }
+  100% { --rz-fade-l: 28px; --rz-fade-r: 0px; }
+}
+@layer components {
+  /* The view host is the size container of every view, in both looks (Ruhe already made it one, unnamed). */
+  [data-view-host] { container: kx-view / inline-size; }
+
+  /* ---------- Kopfzeilen (alle Ansichten) ---------- */
+  /* The location bar's meta text gives way first (ellipsis, then gone), so the view's name stays readable. */
+  [data-look="ruhe"] .rz-locbar-path { flex-shrink: 0; max-width: 62%; }
+  [data-look="ruhe"] .rz-locbar-meta { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  @container kx-view (max-width: 520px) {
+    [data-look="ruhe"] .rz-locbar-meta { display: none; }
+  }
+  /* The type tabs of the view bar scroll sideways in a narrow pane; a soft edge shows that there is more. */
+  @supports (animation-timeline: scroll()) {
+    [data-look="ruhe"] .rz-viewbar-tabs {
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--rz-fade-l), #000 calc(100% - var(--rz-fade-r)), transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 var(--rz-fade-l), #000 calc(100% - var(--rz-fade-r)), transparent);
+      animation: rz-tabs-edge linear both; animation-timeline: scroll(self inline);
+    }
+  }
+
+  /* ---------- Heute ---------- */
+  /* Two columns need about 480 px for the stack card next to the 340 px rail (paddings 84, gap 40). */
+  @container kx-view (max-width: 959px) {
+    .rzh-grid { grid-template-columns: minmax(0, 1fr); gap: 34px; padding: 18px 24px 0; }
+    /* The rail's sections sit under the content side by side where they fit, instead of one long column. */
+    .rzh-rail { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 26px 32px; padding-top: 0; }
+  }
+  @container kx-view (max-width: 600px) {
+    .rzh-grid { padding: 16px 16px 0; }
+    .rzh-title { overflow-wrap: anywhere; }
+    .rz-card { flex-direction: row; gap: 14px; padding: 14px; }
+    .rz-card-img { width: 104px; height: 76px; }
+    .rz-stack-h { flex-wrap: wrap; row-gap: 6px; }
+    .rz-card-acts { flex-wrap: wrap; }
+  }
+  @container kx-view (max-width: 420px) {
+    .rz-card { flex-direction: column; }
+    .rz-card-img { width: 100%; height: 120px; }
+  }
+
+  /* ---------- Bibliothek: Zeitleiste ---------- */
+  /* Dense rows (the density the library switches to beside an open note) hide the picture; its 0 px column stayed
+     in the grid, so title and summary landed in it and vanished. Without the picture the row has four columns. */
+  [data-fs="collection"][data-density="dicht"] .kc-tl-row { grid-template-columns: 44px 22px minmax(0, 1fr) auto; }
+  [data-look="ruhe"] [data-fs="collection"][data-density="dicht"] .kc-tl-row { grid-template-columns: 48px 28px minmax(0, 1fr) auto; }
+
+  /* ---------- Bibliothek: Liste ---------- */
+  /* The summary column was a flex box, so its text was cut hard at the edge; as a block it ends in an ellipsis.
+     Rows with a running job keep the flex layout for their spinner. */
+  .rz-lrow-s:not(:has(> .kx-spinner)) { display: block; }
+
+  /* ---------- Aufgaben ---------- */
+  /* Rows never get wider than the list: the title and source shrink to an ellipsis instead of pushing the marks out. */
+  [data-look="ruhe"] .rz-tk-list { grid-template-columns: minmax(0, 1fr); }
+  [data-look="ruhe"] .rz-tk-row { min-width: 0; }
+  /* Board in a narrow pane: the four columns keep a readable width and scroll sideways (like Linear), instead of
+     squeezing to 140 px or folding two below two out of sight. */
+  @container kx-view (max-width: 759px) {
+    [data-look="ruhe"] .rz-tk-board, [data-look="ruhe"] .rz-tk-board.is-many {
+      grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr);
+      margin: 0 -18px; padding: 0 18px 8px; overflow-x: auto; overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity; scroll-padding: 0 18px; scrollbar-width: thin;
+    }
+    [data-look="ruhe"] .rz-tk-board > .rz-tk-col { scroll-snap-align: start; }
+  }
+  /* Week in a narrow pane: one row per day (date left, tasks right) instead of seven 45 px columns. */
+  @container kx-view (max-width: 760px) {
+    [data-look="ruhe"] .rz-tk-week .kc-week-g { grid-template-columns: minmax(0, 1fr); min-width: 0; }
+    [data-look="ruhe"] .rz-tk-week .kc-wd {
+      display: grid; grid-template-columns: 74px minmax(0, 1fr); align-items: start; gap: 2px 10px; height: auto; min-height: 40px;
+      padding: 8px 4px; border-left: 0; box-shadow: inset 0 1px 0 var(--hair); overflow: visible;
+    }
+    [data-look="ruhe"] .rz-tk-week .kc-wd:first-child { box-shadow: none; }
+    [data-look="ruhe"] .rz-tk-week .kc-wd-h { padding-bottom: 0; }
+    [data-look="ruhe"] .rz-tk-week .kc-we-more { grid-column: 2; }
+  }
+
+  /* ---------- Agent und Inbox ---------- */
+  /* The confirm bar of a change set wraps its buttons under the text when the detail pane is narrow. */
+  [data-look="ruhe"] .rz-diff-h { flex-wrap: wrap; row-gap: 6px; }
+  /* One column (detail under the list): the reply composer stays with its job instead of sticking to the bottom edge,
+     where it peeked out under the Orbit-Bar above a list it does not belong to. */
+  @container kx-view (max-width: 759px) {
+    [data-look="ruhe"] .rz-ag .rz-compose { position: static; }
+  }
+
+  /* ---------- Tagebuch ---------- */
+  /* "Morgen": a long task wraps onto a second line under its own text, never over the next checkbox. */
+  [data-look="ruhe"] .rz-jr-todo li { height: auto; min-height: 30px; padding: 3px 0; line-height: 1.35; }
+  [data-look="ruhe"] .rz-jr-todo li > span { min-width: 0; overflow-wrap: anywhere; }
+  /* Week (both looks): the seven day cards, the signals and the review follow the pane width. */
+  @container kx-view (max-width: 640px) {
+    .jr-main { grid-template-columns: minmax(0, 1fr); }
+    .jr-sigs { grid-template-columns: minmax(0, 1fr); }
+    .jr-wk { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @container kx-view (max-width: 420px) {
+    .jr-wk { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* ---------- Insights ---------- */
+  .kx-rec-top { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .kx-rec-top[data-two] { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+  .kx-rec-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 0; }
+  @container kx-view (max-width: 820px) {
+    .kx-rec-top[data-two] { grid-template-columns: minmax(0, 1fr); }
+  }
+  @container kx-view (max-width: 480px) {
+    .kx-rec-row { grid-template-columns: 40px minmax(0, 1fr); row-gap: 6px; }
+    .kx-rec-row > :nth-child(3) { grid-column: 2; justify-self: start; }
+  }
+
+  /* ---------- Einstellungen ---------- */
+  /* Narrow pane: the chapter list becomes a scrolling row above the page, the page gets the whole width. */
+  @container kx-view (max-width: 760px) {
+    .rzs-frame { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+    .rzs-nav {
+      position: sticky; top: 0; z-index: 3; flex-direction: row; gap: 2px; padding: 8px 12px; overflow-x: auto; scrollbar-width: none;
+      border-right: 0; border-bottom: 1px solid var(--hair); background: var(--lum-1);
+    }
+    .rzs-nav::-webkit-scrollbar { display: none; }
+    .rzs-nav-row { flex: none; white-space: nowrap; }
+    .rzs-nav-sp, .rzs-ver { display: none; }
+    .rzs-sc { padding: 20px 20px max(120px, var(--kx-footbar-safe, 100px)); }
+    .rzs-grp { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  }
+  /* A settings row that wraps keeps its value at the right end, so it never reads as part of the next row. */
+  .kx-settings-body .kxh-row > .kxh-grow + * { margin-left: auto; }
+
+  /* ---------- Orbit-Bar ---------- */
+  /* The bar is centred over list and editor and at most the pane wide. Labels fold earlier, so the text field keeps
+     its room in a half-screen window (900 px) instead of being pushed out to the right. */
+  @container kx-orbit (max-width: 770px) {
+    html[data-look="ruhe"] .kx-orbit-chip-l, html[data-look="ruhe"] .kx-orbit-keys { display: none; }
+    html[data-look="ruhe"] .kx-orbit-seg button { padding: 0 10px; }
+  }
+  @container kx-orbit (max-width: 640px) {
+    html[data-look="ruhe"] :is(.kx-orbit-attach, .kx-orbit-seg-label, .kx-orbit-rec-hint, .kx-orbit-discard) { display: none; }
+    html[data-look="ruhe"] .kx-orbit-opt .kx-orbit-optwrap:not(:last-child) { display: none; }
+  }
+  /* While an agent job chip floats above the bar, the views keep that much more room at their end. */
+  .kx-main-window:has(.kx-orbit-dockwrap) [data-view-host] > * { --kx-footbar-safe: 132px; }
+
+  /* ---------- Hashtags ---------- */
+  /* The five-column table keeps tag, count and trend when the page is narrow (as on a phone); share and objects fold away. */
+  @container kc-page (max-width: 640px) {
+    .kc-htrow { grid-template-columns: minmax(0, 1fr) 50px 80px; }
+    .kc-htrow .kc-hide-s { display: none; }
+  }
+}

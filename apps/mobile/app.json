@@ -3,14 +3,14 @@
     "name": "OpenKortex",
     "slug": "kortex",
     "scheme": "kortex",
-    "version": "0.6.4",
+    "version": "0.6.9",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/brand/icon.png",
     "newArchEnabled": true,
     "android": {
       "package": "io.github.moe_spiration.openkortex",
-      "versionCode": 12,
+      "versionCode": 18,
       "adaptiveIcon": {
         "foregroundImage": "./assets/brand/adaptive-foreground.png",
         "monochromeImage": "./assets/brand/adaptive-monochrome.png",
@@ -70,6 +70,7 @@
         }
       ],
       "expo-background-task",
+      "./plugins/with-quick-capture",
       [
         "react-native-android-widget",
         {
@@ -77,23 +78,49 @@
             {
               "name": "KortexCapture",
               "label": "OpenKortex Capture",
-              "description": "Capture a voice memo, note or photo right away",
-              "minWidth": "250dp",
+              "description": "Sprachnotiz, Notiz oder Foto festhalten; zweizeilig mit Frag-Kortex-Leiste",
+              "minWidth": "180dp",
               "minHeight": "56dp",
               "targetCellWidth": 4,
               "targetCellHeight": 1,
-              "resizeMode": "horizontal",
+              "resizeMode": "horizontal|vertical",
+              "widgetFeatures": "reconfigurable|configuration_optional",
               "updatePeriodMillis": 0
             },
             {
               "name": "KortexToday",
               "label": "OpenKortex Today",
-              "description": "Due reminders and tasks",
+              "description": "Fällige Erinnerungen und Tasks, scrollbar, Tasks direkt abhaken",
               "minWidth": "250dp",
               "minHeight": "110dp",
               "targetCellWidth": 4,
-              "targetCellHeight": 2,
+              "targetCellHeight": 3,
               "resizeMode": "horizontal|vertical",
+              "widgetFeatures": "reconfigurable|configuration_optional",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "KortexEntries",
+              "label": "OpenKortex Einträge",
+              "description": "Neueste Einträge, Favoriten oder Inbox als scrollbare Karten",
+              "minWidth": "250dp",
+              "minHeight": "180dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 3,
+              "resizeMode": "horizontal|vertical",
+              "widgetFeatures": "reconfigurable|configuration_optional",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "KortexCheckin",
+              "label": "OpenKortex Energie",
+              "description": "Energie-Check-in mit einem Tipp, Serie und Woche",
+              "minWidth": "250dp",
+              "minHeight": "80dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 1,
+              "resizeMode": "horizontal|vertical",
+              "widgetFeatures": "reconfigurable|configuration_optional",
               "updatePeriodMillis": 1800000
             }
           ]

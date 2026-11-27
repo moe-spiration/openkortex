@@ -5,8 +5,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { addScratchpad, loadScratchpad, type ScratchEntry } from "../api/kortex";
 import { kortexUrl } from "../api/config";
 import { useApp } from "../state/AppState";
-import { useTheme } from "../theme/ThemeProvider";
-import { FONT, RADIUS } from "../theme/tokens";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
+import { FONT, RADIUS, RUHE_TYPE } from "../theme/tokens";
+import { RButton, RSheet, RText } from "./ruhe";
 import { Grip, sheetBody } from "./Capture";
 import { Btn, Help, Micro, T } from "./primitives";
 import { Icon } from "./Icon";
@@ -24,6 +25,7 @@ import { useKeyboardInset } from "./useKeyboard";
 const SHOW = 20;
 export function ScratchpadSheet() {
   const th = useTheme();
+  const ruhe = useRuhe();
   const a = useApp();
   const kb = useKeyboardInset();
   const insets = useSafeAreaInsets();
@@ -67,6 +69,66 @@ export function ScratchpadSheet() {
       setBusy(false);
     }
   };
+
+  if (ruhe) {
+    // Ruhe: the glass sheet like the quick note; target line instead of a heading, input without a box.
+    const dark = th.name === "dark";
+    return (
+      <RSheet z={15} onClose={a.closeCap} target={{ icon: "note", text: t("Scratchpad") }} label={t("Scratchpad")}>
+        <TextInput
+          accessibilityLabel={t("Scratchpad entry")}
+          multiline
+          autoFocus
+          placeholder={t("Thought, number, snippet …")}
+          placeholderTextColor={th.t4}
+          selectionColor={th.accent}
+          cursorColor={th.accent}
+          value={a.noteText}
+          onChangeText={a.setNoteText}
+          style={[{ minHeight: 84, maxHeight: 200, padding: 0, fontFamily: FONT.sans400, fontSize: RUHE_TYPE.input.size, lineHeight: RUHE_TYPE.input.lh, letterSpacing: RUHE_TYPE.input.ls * RUHE_TYPE.input.size, color: th.t1, textAlignVertical: "top" }, Platform.OS === "web" ? ({ outlineStyle: "none", caretColor: th.accent } as never) : null]}
+        />
+        <RButton variant="primary" icon="note" label={t("To the scratchpad")} disabled={busy} onPress={() => void save()} style={{ marginTop: 14 }} />
+        {a.live && (
+          <View style={{ marginTop: 18 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <RText step="label" color={th.t2} style={{ flex: 1 }}>
+                {t("Last noted")}
+              </RText>
+              {!!entries?.length && (
+                <RText step="meta" tnum color={th.t4}>
+                  {String(entries.length)}
+                </RText>
+              )}
+              <Pressable accessibilityRole="link" hitSlop={8} onPress={() => void Linking.openURL(`${kortexUrl()}/home?scratchpad=1`)} style={{ flexDirection: "row", alignItems: "center", gap: 4, minHeight: 32, marginLeft: 8 }}>
+                <Icon name="sparkles" size={13} color={th.accentInk} />
+                <RText step="kind" color={th.accentInk}>
+                  {t("Tidy up on the web")}
+                </RText>
+              </Pressable>
+            </View>
+            {failed || entries === null || entries.length === 0 ? (
+              <RText step="rowSub" color={th.t3}>
+                {failed ?? (entries === null ? t("Loading …") : t("Still empty."))}
+              </RText>
+            ) : (
+              <ScrollView style={{ maxHeight: 200 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                {entries.map((e) => (
+                  <View key={e.id} style={{ paddingVertical: 7, gap: 2 }}>
+                    <RText step="meta" tnum color={dark ? th.t4 : th.t3}>
+                      {e.at}
+                    </RText>
+                    <RText step="rowTitle" weight={400} numberOfLines={4}>
+                      {e.text}
+                    </RText>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        )}
+      </RSheet>
+    );
+  }
 
   return (
     <>

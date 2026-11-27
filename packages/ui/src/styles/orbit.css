@@ -1116,22 +1116,6 @@
   }
 
   /* ---------- reduced motion: no breathing glow, static ring, no sliding thumb ---------- */
-  @media (prefers-reduced-motion: reduce) {
-    .kx-orbit-wrap,
-    .kx-orbit,
-    .kx-orbit-thumb,
-    .kx-orbit-orb {
-      transition: none;
-    }
-    .kx-orbit-wrap .kx-orbit-glow {
-      animation: none;
-    }
-    .kx-orbit-orb.is-rec::after {
-      animation: none;
-      transform: scale(1.12);
-      opacity: 0.5;
-    }
-  }
   html[data-motion="reduced"] .kx-orbit-wrap,
   html[data-motion="reduced"] .kx-orbit,
   html[data-motion="reduced"] .kx-orbit-thumb,

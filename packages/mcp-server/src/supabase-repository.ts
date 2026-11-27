@@ -36,6 +36,7 @@ import type {
   TaskPatch,
 } from "./repository";
 import { candidateOf } from "./repository";
+import { isUnread } from "./reading";
 import {
   applyMetadataPatch,
   BrainError,
@@ -154,7 +155,8 @@ export class SupabaseBrainRepository implements EnrichableRepository {
   async search(p: SearchParams): Promise<SearchHit[]> {
     const types = [...(p.type ? [p.type] : []), ...(p.types ?? [])];
     if (!p.query.trim()) return this.listMatching(p, types);
-    const filtered = !!p.tags?.length || !!p.metadata || types.length > 1 || !!p.remindDueBy;
+    const filtered =
+      !!p.tags?.length || !!p.metadata || types.length > 1 || !!p.remindDueBy || !!p.unreadAt;
     const overfetch = filtered ? Math.min(p.limit * 4, 200) : p.limit;
     const hits = await this.hybrid(
       { ...p, type: types.length === 1 ? types[0] : undefined },
@@ -189,6 +191,7 @@ export class SupabaseBrainRepository implements EnrichableRepository {
         (h) =>
           (types.length === 0 || types.includes(h.type)) &&
           isDue(h.remind_at, p.remindDueBy) &&
+          (!p.unreadAt || isUnread(h.metadata, h.remind_at, p.unreadAt)) &&
           metadataMatches(h.metadata, p.metadata) &&
           !p.tags?.some((t) => !tagMatches(h.tags, t)),
       )
@@ -210,10 +213,11 @@ export class SupabaseBrainRepository implements EnrichableRepository {
     const rows = unwrap(
       await q
         .order(p.remindDueBy ? "remind_at" : "updated_at", { ascending: !!p.remindDueBy })
-        .limit(p.tags?.length ? 200 : p.limit),
+        .limit(p.tags?.length || p.unreadAt ? 200 : p.limit),
     );
     return (rows ?? [])
       .filter((r) => !p.tags?.some((t) => !tagMatches(r.tags ?? [], t)))
+      .filter((r) => !p.unreadAt || isUnread(r.metadata as Record<string, unknown> | null, r.remind_at, p.unreadAt))
       .slice(0, p.limit)
       .map((r) => ({
         item_id: r.id,
@@ -257,6 +261,21 @@ export class SupabaseBrainRepository implements EnrichableRepository {
       source_url: r.source_url,
       score: r.combined_score,
     }));
+  }
+
+  async findDailyNote(date: string) {
+    const row = unwrap(
+      await this.db
+        .from("knowledge_items")
+        .select(ITEM_COLUMNS)
+        .eq("user_id", this.uid)
+        .eq("type", "daily_note")
+        .eq("slug", date)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+    );
+    return row ? toItem(row as unknown as ItemRow) : null;
   }
 
   async getItem(id: string) {

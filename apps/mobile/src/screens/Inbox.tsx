@@ -5,12 +5,13 @@ import { INBOX_JOBS } from "../data/mock";
 import { SPACES, spaceOf } from "../data/live";
 import { useData } from "../state/Data";
 import { useApp } from "../state/AppState";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
 import { RADIUS } from "../theme/tokens";
 import { Icon } from "../ui/Icon";
-import { Btn, Help, Micro, Photo, Pill, Progress, T } from "../ui/primitives";
+import { Btn, Help, Micro, Photo, Pill, Progress, rowSurface, T } from "../ui/primitives";
 import { ScreenScroll } from "../ui/Screen";
 import { useEntryActions } from "../ui/entryActions";
+import { InboxRuhe } from "./ruhe/InboxRuhe";
 
 /*
  * Inbox (like the web Inbox): "In Bearbeitung" with the running jobs, then "Einsortiert, bitte kurz prüfen": every
@@ -21,10 +22,8 @@ import { useEntryActions } from "../ui/entryActions";
 const spaceLabel = (folder: string) => SPACES.find(([f]) => spaceOf(f) === spaceOf(folder))?.[1] ?? spaceOf(folder);
 
 export function Inbox() {
-  const th = useTheme();
   const a = useApp();
   const d = useData();
-  const act = useEntryActions();
   const live = d.auth === "live";
   const { refreshItems } = d;
 
@@ -39,8 +38,18 @@ export function Inbox() {
     return () => clearInterval(iv);
   }, [a.tickInbox, refreshItems, live]);
 
+  return useRuhe() ? <InboxRuhe /> : <InboxVivid />;
+}
+
+function InboxVivid() {
+  const th = useTheme();
+  const a = useApp();
+  const d = useData();
+  const act = useEntryActions();
+  const live = d.auth === "live";
+
   const card = (key: string, img: Parameters<typeof Photo>[0]["source"], title: string, step: string, pct: number, done: boolean) => (
-    <View key={key} style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 10, borderRadius: RADIUS.xl, backgroundColor: th.bgSurfaceFlat }}>
+    <View key={key} style={[{ flexDirection: "row", alignItems: "center", gap: 12, padding: 10 }, rowSurface(th)]}>
       <View style={{ width: 52, height: 52, borderRadius: RADIUS.lg, overflow: "hidden" }}>
         <Photo source={img} />
       </View>
@@ -102,7 +111,7 @@ export function Inbox() {
               ],
             });
           return (
-            <Pressable key={r.id} onPress={() => a.openEntry(r.id)} onLongPress={e ? () => act.openMenu(e) : undefined} style={{ gap: 8, padding: 12, borderRadius: RADIUS.xl, backgroundColor: th.bgSurfaceFlat }}>
+            <Pressable key={r.id} onPress={() => a.openEntry(r.id)} onLongPress={e ? () => act.openMenu(e) : undefined} style={[{ gap: 8, padding: 12 }, rowSurface(th)]}>
               <T size={14} lh={20} weight={500} numberOfLines={2}>
                 {r.title}
               </T>

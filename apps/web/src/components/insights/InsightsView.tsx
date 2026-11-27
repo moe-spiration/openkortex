@@ -16,6 +16,8 @@ import { EnergyInsights } from "./EnergyInsights";
 import { Recommendations, type RecHandlers, type RecState } from "./Recommendations";
 import { useInsightsData } from "./useInsightsData";
 import { ThemeHero } from "@/components/theme/ThemeHero";
+import { LocationBar, ViewBar } from "@/components/shell/Bars";
+import { useLook } from "@/components/theme/look";
 import { t } from "@/i18n";
 
 /** Insights dashboard (design/reference/Insights.dc.html). */
@@ -51,6 +53,7 @@ export function InsightsView() {
 function InsightsBody({ d, live }: { d: InsightsData; live: boolean }) {
   const router = useRouter();
   const { openNote, showToast } = useShell();
+  const ruhe = useLook() === "ruhe";
   const [range, setRange] = useState<InsightsRange>(30);
   const [rec, setRec] = useState<RecState>({ cat: "all", done: {}, later: {}, hero: false });
 
@@ -100,7 +103,7 @@ function InsightsBody({ d, live }: { d: InsightsData; live: boolean }) {
         maxWidth: 1160,
         margin: "0 auto", // V2-08d: the footbar (60 px + 16 px inset) and the quick chips float over the scroll area;
         // 136 px keeps the last block >= 24 px above them.
-        padding: "130px 32px 136px", // title block at the bottom of the pack background (spec 5.2)
+        padding: ruhe ? "22px 32px 136px" : "130px 32px 136px", // Vivid: title block at the bottom of the pack background (spec 5.2); Ruhe: the head is the location bar
         position: "relative",
         zIndex: 1,
         display: "grid",
@@ -108,31 +111,41 @@ function InsightsBody({ d, live }: { d: InsightsData; live: boolean }) {
         gap: 22,
       }}
     >
-      <header style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
-        <div style={{ flex: "1 1 320px", minWidth: 0 }}>
-          <span className="kx-eyebrow">Insights</span>
-          <h1 className="kx-h-page" style={{ margin: "4px 0 0" }}>
-            {t("Your Second Brain in numbers")}
-          </h1>
-          <p className="kx-body kx-muted" style={{ margin: "6px 0 0" }}>
-            {d.asOf}
-          </p>
-        </div>
-        <div className="kx-tabs" role="tablist" aria-label={t("Period")}>
-          {RANGES.map(([r]) => (
-            <button
-              key={r}
-              type="button"
-              className="kx-tab"
-              role="tab"
-              aria-selected={range === r}
-              onClick={() => setRange(r)}
-            >
-              {t("{n} days", { n: r })}
-            </button>
-          ))}
-        </div>
-      </header>
+      {ruhe ? (
+        <>
+          <LocationBar icon="chart" crumbs={[{ label: "Insights" }]} meta={d.asOf} />
+          <ViewBar tabs={RANGES.map(([r]) => ({ id: String(r), label: t("{n} days", { n: r }) }))} value={String(range)} onChange={(v) => setRange(Number(v) as typeof range)} label={t("Period")} />
+        </>
+      ) : (
+        <header
+          className="kx-pagetitle kx-insights-head"
+          style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}
+        >
+          <div className="kx-pagetitle-text" style={{ flex: "1 1 320px", minWidth: 0 }}>
+            <span className="kx-eyebrow">Insights</span>
+            <h1 className="kx-h-page" style={{ margin: "4px 0 0" }}>
+              {t("Your Second Brain in numbers")}
+            </h1>
+            <p className="kx-body kx-muted kx-pagetitle-meta" style={{ margin: "6px 0 0" }}>
+              {d.asOf}
+            </p>
+          </div>
+          <div className="kx-tabs" role="tablist" aria-label={t("Period")}>
+            {RANGES.map(([r]) => (
+              <button
+                key={r}
+                type="button"
+                className="kx-tab"
+                role="tab"
+                aria-selected={range === r}
+                onClick={() => setRange(r)}
+              >
+                {t("{n} days", { n: r })}
+              </button>
+            ))}
+          </div>
+        </header>
+      )}
 
       <Recommendations d={d} s={rec} h={handlers} />
       <Kpis d={d} range={range} />

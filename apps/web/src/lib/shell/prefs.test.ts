@@ -16,9 +16,9 @@ beforeEach(() => {
 describe("pre-paint script (Tactile Craft prefs before hydration)", () => {
   it("applies theme, sidebar, accent, on-accent and the appearance attributes", () => {
     window.localStorage.setItem(PREFS_KEY, JSON.stringify({ theme: "light", accent: "#FDE047", sidebarClosed: true, rail: false }));
-    window.localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ backdrop: "pack", density: "dicht" }));
+    window.localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ backdrop: "pack", density: "dicht", look: "ruhe" }));
     runPrepaint();
-    expect({ ...d.dataset }).toEqual({ theme: "light", rail: "false", sb: "closed", backdrop: "pack", density: "dicht", glass: "on" });
+    expect({ ...d.dataset }).toEqual({ theme: "light", rail: "false", sb: "closed", backdrop: "pack", density: "dicht", glass: "on", look: "ruhe", motion: "full" });
     expect(d.style.getPropertyValue("--kx-accent")).toBe("#FDE047");
     expect(d.style.getPropertyValue("--kx-on-accent")).toBe("#111114");
     expect(d.style.getPropertyValue("--kx-accent-fill")).toMatch(/^#[0-9A-F]{6}$/);
@@ -27,7 +27,7 @@ describe("pre-paint script (Tactile Craft prefs before hydration)", () => {
   it("defaults without stored prefs; reduced transparency keeps the glow", () => {
     window.localStorage.setItem(APPEARANCE_KEY, JSON.stringify({ backdrop: "pack", reduceTransparency: true }));
     runPrepaint();
-    expect({ ...d.dataset }).toMatchObject({ sb: "open", backdrop: "glow", density: "kompakt", glass: "solid" });
+    expect({ ...d.dataset }).toMatchObject({ sb: "open", backdrop: "glow", density: "kompakt", glass: "solid", look: "ruhe" });
     expect(d.style.getPropertyValue("--kx-on-accent")).toBe("#FFFFFF");
   });
 

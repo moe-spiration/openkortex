@@ -1,6 +1,7 @@
 "use client";
 
 import { msg, t, tx } from "@/i18n";
+import { useLook } from "@/components/theme/look";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Ico } from "@/components/shell/icons";
 import { chatAction } from "@/lib/api/client";
@@ -137,11 +138,13 @@ export function NoteSummary({
   onChip: (chip: "tasks" | "cards") => void;
 }) {
   const [open, setOpen] = useState(true);
+  // Ruhe (mockup screen 03): "Kurz gesagt" on a soft accent surface, the actions recede until hover.
+  const ruhe = useLook() === "ruhe";
   return (
     <section aria-label={t("AI summary")} data-summary className="fs-ai">
       <div className="fs-ai-h">
         <Ico name="sparkles" size="sm" />
-        <span>{t("AI summary")}</span>
+        <span>{ruhe ? t("In short") : t("AI summary")}</span>
         <span className="fs-ai-acts">
           <button type="button" className="fs-pill" onClick={() => onChip("tasks")}>
             {t("Extract tasks")}

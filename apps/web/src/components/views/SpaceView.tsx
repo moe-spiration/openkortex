@@ -9,9 +9,11 @@ import type { TableVirtuosoHandle, TableVirtuosoProps } from "react-virtuoso";
 const TableVirtuoso = dynamic(() => import("react-virtuoso").then((m) => m.TableVirtuoso), { ssr: false }) as unknown as <D, C>(
   p: TableVirtuosoProps<D, C> & { ref?: React.Ref<TableVirtuosoHandle> },
 ) => React.ReactElement;
-import { ChevronsUpDown, Clock, Hash, Search, LayoutGrid, List, Shapes, SquareCheckBig, Users, X } from "lucide-react";
+import { ChevronsUpDown, Clock, Hash, Search, LayoutGrid, List, Shapes, Sparkles, SquareCheckBig, Users, X } from "lucide-react";
 import { DensitySwitch, HScroll } from "@kortex/ui";
 import { EmptyState } from "@/components/shell/Page";
+import type { PictogramKind } from "@/components/motion/Pictogram";
+import { EmptyPic } from "@/components/motion/EmptyPic";
 import { isLiveData, MOCK_TODAY, TASKS } from "@/lib/workspace-data";
 import { setActionItemDone } from "@/lib/api/actions";
 import { useShell } from "@/lib/shell/store";
@@ -28,6 +30,12 @@ import { groupByDay, type ViewEntry } from "./entries";
 import { useCollection } from "./useCollection";
 import { useViewMode, type ViewMode } from "./useViewMode";
 import { useIncremental } from "./useIncremental";
+import { useLook } from "@/components/theme/look";
+import { BarButton, LocationBar, ViewBar } from "@/components/shell/Bars";
+import { MenuItem, MenuSep } from "@/components/ui/primitives";
+import { useCopilotChat } from "@/lib/shell/copilot-chat";
+import { bucketTotals, gridBucket } from "@/lib/data/library-groups";
+import { DisplayMenu, FilterChip, FilterMenu, GroupedGrid, GroupedList, ViewIcons } from "./LibraryRuhe";
 import { monthShort, weekdayShort } from "@/lib/date/words";
 import { msg, t, tn } from "@/i18n";
 
@@ -64,6 +72,8 @@ export interface SpaceViewProps {
   before?: ReactNode;
   aside?: ReactNode;
   emptyText?: string;
+  /** Animated pictogram of the empty state in the Ruhe look (default: inbox). */
+  emptyArt?: PictogramKind;
   /** Headline of the empty state (default "Hier ist noch nichts"). */
   emptyTitle?: string;
   /** Buttons of the empty state; null hides them (default: reset filter + capture). */
@@ -108,6 +118,7 @@ export function capturedLabel(date: string, time: string, today: string): string
 export function SpaceView(p: SpaceViewProps) {
   const router = useRouter();
   const { showToast, setCmode } = useShell();
+  const chat = useCopilotChat();
   const [mode, setMode] = useViewMode(p.scope, "list");
   const view = mode ?? "list";
   const c = useCollection(p.entries, { archived: p.archived });
@@ -126,6 +137,12 @@ export function SpaceView(p: SpaceViewProps) {
   const [scroller, setScroller] = useState<HTMLElement | null>(null);
   useEffect(() => setScroller(pageRef.current?.closest<HTMLElement>(".kx-scroll") ?? null), []);
   const today = MOCK_TODAY;
+  // Ruhe look: type tabs and the L / G / T switch live in the view bar, active filters as accent chips there.
+  const ruhe = useLook() === "ruhe";
+  // Ruhe: the filter popover (F opens it) and the two blocks above the entries, switchable under "Anzeige".
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [showMixes, setShowMixes] = useBlockPref("mixes");
+  const [showCalendar, setShowCalendar] = useBlockPref("calendar");
 
   // L / G / T switch the view.
   useEffect(() => {
@@ -142,6 +159,8 @@ export function SpaceView(p: SpaceViewProps) {
 
   const all = c.rows;
   const chips = useMemo(() => typeChips(all.map(entryType)), [all]);
+  // Ruhe view bar: "All" plus every type as tabs, largest first (the tab row scrolls when it runs out of room).
+  const tabChips = useMemo(() => [chips[0]!, ...chips.slice(1).sort((a, b) => b.count - a.count)], [chips]);
   const tagCounts = useMemo(() => {
     const m = new Map<string, number>();
     for (const e of all) for (const t of e.tags) m.set(t.label, (m.get(t.label) ?? 0) + 1);
@@ -239,7 +258,8 @@ export function SpaceView(p: SpaceViewProps) {
     else router.push(spaceHref("all", t));
   };
 
-  const virtual = view === "list" && list.length > VIRTUAL_MIN && !!scroller;
+  // Ruhe renders the list grouped (Heute / Gestern / …) and in batches like the grid; Vivid virtualises long tables.
+  const virtual = !ruhe && view === "list" && list.length > VIRTUAL_MIN && !!scroller;
   // Grid and timeline: the first rows render at once, more while scrolling (the list view is virtualised instead).
   const lazy = useIncremental(list.length, [p.scope, view, type, tag, obj, withTasks, sort, find].join("|"), { root: scroller });
   // The timeline shows days newest first whatever the sort, so its batches follow that order.
@@ -258,13 +278,16 @@ export function SpaceView(p: SpaceViewProps) {
   listRef.current = list;
   const seqRef = useRef(seq);
   seqRef.current = seq;
+  const ruheRef = useRef(ruhe);
+  ruheRef.current = ruhe;
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (typing(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
       const k = e.key.toLowerCase();
       if (k === "f" && !e.shiftKey) {
         e.preventDefault();
-        findRef.current?.focus();
+        if (ruheRef.current) setFilterOpen(true);
+        else findRef.current?.focus();
         return;
       }
       if ((k !== "j" && k !== "k") || !c.drawerOpen) return;
@@ -286,6 +309,8 @@ export function SpaceView(p: SpaceViewProps) {
   }, [c, virtual, lazy]);
   const empty = p.entries.length === 0;
   const filteredEmpty = !empty && list.length === 0;
+  const byDate = sort !== "title";
+  const totals = useMemo(() => (ruhe && byDate ? bucketTotals(list, today, view === "grid" ? gridBucket : undefined) : new Map<string, number>()), [ruhe, byDate, list, today, view]);
 
   const viewSeg = (
     <div className="kc-viewseg" role="tablist" aria-label={t("View")}>
@@ -307,9 +332,140 @@ export function SpaceView(p: SpaceViewProps) {
     setWithTasks(false);
   };
 
+  const card = (n: ViewEntry) => (
+    <EntryCard
+      key={n.id}
+      entry={n}
+      data-date={n.date}
+      when={capturedLabel(n.date, n.time, today)}
+      active={c.isActive(n)}
+      selected={c.sel.selected.has(n.id)}
+      {...c.rowProps(n)}
+    />
+  );
+  const tidy = () => {
+    if (!chat.live) {
+      showToast(t("The agent needs an account (not available in mock mode)"));
+      return;
+    }
+    setCmode("ask");
+    chat.send(t("Sort the inbox and find duplicates"), { skill: "tidy" });
+  };
+  const copyLink = () =>
+    void navigator.clipboard?.writeText(window.location.href).then(
+      () => showToast(t("Link copied")),
+      () => showToast(t("Clipboard not writable")),
+    );
+  // Ruhe location bar: "Bibliothek › Alle Einträge" (the route's first crumb, then the title, unless the path already ends in it).
+  const lastCrumb = p.crumbs[p.crumbs.length - 1]?.label;
+  const locCrumbs = typeof p.title === "string" && p.title !== lastCrumb ? [...p.crumbs.slice(0, 1), { label: p.title }] : p.crumbs;
+
+  const ruheHead = ruhe && (
+    <>
+      <LocationBar
+        crumbs={locCrumbs}
+        actions={
+          <>
+            {p.aside}
+            {!p.archived && (
+              <BarButton icon={<Sparkles aria-hidden />} title={t("Agent: sort the inbox and find duplicates")} onClick={tidy}>
+                {t("Tidy up")}
+              </BarButton>
+            )}
+          </>
+        }
+        more={
+          <>
+            <MenuItem onSelect={copyLink}>{t("Copy link")}</MenuItem>
+            <MenuItem onSelect={() => setFilterOpen(true)}>{t("Filter")}</MenuItem>
+            {anyClientFilter && (
+              <>
+                <MenuSep />
+                <MenuItem onSelect={resetClient}>{t("Reset filters")}</MenuItem>
+              </>
+            )}
+          </>
+        }
+      />
+      <ViewBar
+        label={t("Type")}
+        tabs={chips.length > 1 ? tabChips.map((ch) => ({ id: ch.key, label: ch.label, count: ch.key === type ? ch.count : undefined })) : undefined}
+        value={type}
+        onChange={setType}
+        right={
+          <>
+            <FilterMenu
+              f={{
+                find,
+                setFind,
+                tag,
+                setTag,
+                obj,
+                setObj,
+                withTasks,
+                setWithTasks,
+                tagCounts,
+                objCounts,
+                anyWithTasks,
+                reset: resetClient,
+                active: !!(tag || obj || withTasks || find),
+                findRef,
+                drawerOpen: c.drawerOpen,
+                onEnter: () => list[0] && c.open(list[0]),
+                open: filterOpen,
+                setOpen: setFilterOpen,
+              }}
+            />
+            <DisplayMenu
+              view={view}
+              setView={setMode}
+              sort={sort}
+              setSort={setSort}
+              density={density}
+              setDensity={setDensity}
+              mixes={!!p.mixes}
+              showMixes={showMixes}
+              setShowMixes={setShowMixes}
+              showCalendar={showCalendar}
+              setShowCalendar={setShowCalendar}
+            />
+            {!c.drawerOpen && <ViewIcons view={view} setView={setMode} />}
+          </>
+        }
+      >
+        {p.filters?.map((f) => (
+          <FilterChip key={f.label} icon={<Hash aria-hidden />} label={t("Remove filter {label}", { label: f.label })} onClear={() => router.push(f.clearHref)}>
+            {f.label.replace(/^#/, "")}
+          </FilterChip>
+        ))}
+        {tag && (
+          <FilterChip icon={<Sparkles aria-hidden />} label={t("Remove filter {label}", { label: tag })} onClear={() => setTag(null)}>
+            {tag.replace(/^#/, "")}
+          </FilterChip>
+        )}
+        {obj && (
+          <FilterChip icon={<Users aria-hidden />} label={t("Remove object filter")} onClear={() => setObj(null)}>
+            {objCounts.find(([id]) => id === obj)?.[1].title ?? t("Object")}
+          </FilterChip>
+        )}
+        {withTasks && (
+          <FilterChip icon={<SquareCheckBig aria-hidden />} label={t("Only entries with open tasks")} onClear={() => setWithTasks(false)}>
+            {t("With tasks")}
+          </FilterChip>
+        )}
+        {find && (
+          <FilterChip icon={<Search aria-hidden />} label={t("Search in this view")} onClear={() => setFind("")}>
+            {find}
+          </FilterChip>
+        )}
+      </ViewBar>
+    </>
+  );
+
   return (
-    <div ref={pageRef} className="kc-page" data-fs="collection" data-density={density} data-collection={p.scope}>
-      <CollectionHead
+    <div ref={pageRef} className="kc-page" data-fs="collection" data-density={density} data-collection={p.scope} data-view={ruhe ? view : undefined}>
+      {ruheHead}
+      {!ruhe && <><CollectionHead
         crumbs={p.crumbs}
         title={p.title}
         stats={stats}
@@ -317,12 +473,36 @@ export function SpaceView(p: SpaceViewProps) {
         aside={
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
             {p.aside}
-            {viewSeg}
+            {!ruhe && viewSeg}
           </span>
         }
       />
 
       <div className="kc-filters" role="toolbar" aria-label={t("Filter")}>
+        {ruhe && chips.length > 1 && (
+          <div className="kc-typetabs" role="tablist" aria-label={t("Type")}>
+            {tabChips.map((ch) => (
+              <button key={ch.key} type="button" role="tab" aria-selected={type === ch.key} onClick={() => setType(ch.key)}>
+                {ch.label}
+                <span className="kc-num">{ch.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {ruhe && tag && (
+          <button type="button" className="kc-fchip" aria-label={t("Remove filter {label}", { label: tag })} onClick={() => setTag(null)}>
+            <Hash aria-hidden />
+            {tag.replace(/^#/, "")}
+            <X aria-hidden />
+          </button>
+        )}
+        {ruhe && obj && (
+          <button type="button" className="kc-fchip" aria-label={t("Remove object filter")} onClick={() => setObj(null)}>
+            <Users aria-hidden />
+            {objCounts.find(([id]) => id === obj)?.[1].title ?? t("Object")}
+            <X aria-hidden />
+          </button>
+        )}
         <label className="kc-find">
           <Search aria-hidden />
           <input
@@ -374,10 +554,10 @@ export function SpaceView(p: SpaceViewProps) {
             onClick={() => setWithTasks((v) => !v)}
           >
             <SquareCheckBig aria-hidden />
-            {t("With tasks")}
+            <span className="kc-l">{t("With tasks")}</span>
           </button>
         )}
-        {chips.length > 2 && (
+        {chips.length > 2 && !ruhe && (
           <FilterPopover
             label={type === "all" ? t("Type") : (chips.find((ch) => ch.key === type)?.label ?? t("Type"))}
             icon={<Shapes aria-hidden />}
@@ -394,9 +574,10 @@ export function SpaceView(p: SpaceViewProps) {
           onPick={(k) => setSort(k as SortKey)}
         />
         <DensitySwitch value={density} onChange={setDensity} />
+        {ruhe && viewSeg}
       </div>
 
-      {(!!p.filters?.length || tag || obj) && (
+      {(!!p.filters?.length || (!ruhe && (tag || obj))) && (
         <div className="kc-activefilters">
           <span className="kc-meta">Filter:</span>
           {p.filters?.map((f) => (
@@ -405,13 +586,13 @@ export function SpaceView(p: SpaceViewProps) {
               <X aria-hidden />
             </Link>
           ))}
-          {tag && (
+          {tag && !ruhe && (
             <button type="button" className="kc-chip is-on" aria-label={t("Remove filter {label}", { label: tag })} onClick={() => setTag(null)}>
               {tag}
               <X aria-hidden />
             </button>
           )}
-          {obj && (
+          {obj && !ruhe && (
             <button type="button" className="kc-chip is-on" aria-label={t("Remove object filter")} onClick={() => setObj(null)}>
               {objCounts.find(([id]) => id === obj)?.[1].title ?? t("Object")}
               <X aria-hidden />
@@ -419,12 +600,13 @@ export function SpaceView(p: SpaceViewProps) {
           )}
         </div>
       )}
+      </>}
 
       {p.before}
       {c.selectionBar}
 
-      {p.mixes && !c.drawerOpen && <MixesRail entries={all} active={tag} onPick={pickMix} />}
-      {p.week !== false && !empty && (
+      {p.mixes && !c.drawerOpen && (!ruhe || showMixes) && <MixesRail entries={all} active={tag} onPick={pickMix} />}
+      {p.week !== false && !empty && !(ruhe && (c.drawerOpen || !showCalendar)) && (
         <WeekCalendar
           entries={weekEntries}
           plans={plans}
@@ -441,6 +623,7 @@ export function SpaceView(p: SpaceViewProps) {
         <div className="kc-section">
           <EmptyState
             title={p.emptyTitle ?? t("Nothing here yet")}
+            art={p.emptyArt}
             actions={
               p.emptyActions !== undefined ? p.emptyActions ?? undefined : <>
                 <Link href={p.resetHref} className="kx-btn kx-btn--secondary kx-btn--sm">
@@ -465,7 +648,16 @@ export function SpaceView(p: SpaceViewProps) {
         </div>
       )}
 
-      {filteredEmpty && (
+      {filteredEmpty && ruhe && (
+        <EmptyPic kind="search" size="lg" title={t("No entries for these filters.")}>
+          {anyClientFilter && (
+            <button type="button" className="kc-chip" onClick={resetClient}>
+              {t("Reset filters")}
+            </button>
+          )}
+        </EmptyPic>
+      )}
+      {filteredEmpty && !ruhe && (
         <div className="kc-section kc-empty-line">
           {t("No entries for these filters.")}
           {anyClientFilter && (
@@ -476,23 +668,14 @@ export function SpaceView(p: SpaceViewProps) {
         </div>
       )}
 
-      {mode && !empty && view === "grid" && (
-        <div className="kc-grid" data-view="grid">
-          {shownList.map((n) => (
-            <EntryCard
-              key={n.id}
-              entry={n}
-              data-date={n.date}
-              when={capturedLabel(n.date, n.time, today)}
-              active={c.isActive(n)}
-              selected={c.sel.selected.has(n.id)}
-              {...c.rowProps(n)}
-            />
-          ))}
-        </div>
+      {mode && !empty && view === "grid" && !ruhe && <div className="kc-grid" data-view="grid">{shownList.map(card)}</div>}
+      {mode && !empty && view === "grid" && ruhe && list.length > 0 && (
+        <GroupedGrid rows={shownList} today={today} byDate={byDate} total={totals} order={sort === "oldest" ? t("Oldest first") : t("Newest first")} card={card} />
       )}
 
-      {mode && !empty && view === "list" && list.length > 0 && (
+      {mode && !empty && view === "list" && ruhe && list.length > 0 && <GroupedList rows={shownList} c={c} today={today} byDate={byDate} total={totals} />}
+
+      {mode && !empty && view === "list" && !ruhe && list.length > 0 && (
         <HScroll className="kc-tbl-wrap">
           {virtual ? (
             <TableVirtuoso
@@ -529,6 +712,7 @@ export function SpaceView(p: SpaceViewProps) {
             <section key={g.anchor} id={g.anchor} data-date={g.date} aria-label={g.label} style={{ scrollMarginTop: 8 }}>
               <div className="kc-tl-day">
                 <span className="tc-micro">{g.label}</span>
+                {ruhe && <span className="kc-tl-sub2">{g.sub}</span>}
                 <span className="kc-count">{dayCount.get(g.date) ?? g.items.length}</span>
               </div>
               <div className="kc-tl-list">
@@ -538,7 +722,7 @@ export function SpaceView(p: SpaceViewProps) {
                   return (
                     <button key={n.id} type="button" className={"kc-tl-row" + (c.isActive(n) ? " is-on" : "")} aria-pressed={c.sel.selected.has(n.id) || undefined} {...c.rowProps(n)}>
                       <span className="kc-tl-time">{n.time}</span>
-                      <span className="kc-tdot" aria-hidden />
+                      <span className="kc-tdot" aria-hidden style={ruhe ? ({ "--c": n.tone.dot } as React.CSSProperties) : undefined} />
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element -- user covers come from arbitrary hosts
                         <img className="kc-tl-img" src={img} alt="" loading="lazy" decoding="async" />
@@ -564,7 +748,7 @@ export function SpaceView(p: SpaceViewProps) {
           ))}
         </div>
       )}
-      {mode && !empty && view !== "list" && lazy.more && <LoadMore sentinel={lazy.sentinel} shown={lazy.shown} total={list.length} onMore={() => lazy.reveal(lazy.shown)} />}
+      {mode && !empty && (view !== "list" || ruhe) && lazy.more && <LoadMore sentinel={lazy.sentinel} shown={lazy.shown} total={list.length} onMore={() => lazy.reveal(lazy.shown)} />}
       {c.menus}
     </div>
   );
@@ -646,6 +830,7 @@ function ListRow({ item: n, context, children, ...rest }: { item: ViewEntry; con
       draggable={rp.draggable}
       onDragStart={rp.onDragStart}
       className={[c.isActive(n) && "is-on", c.sel.selected.has(n.id) && "is-sel"].filter(Boolean).join(" ") || undefined}
+      onPointerEnter={rp.onPointerEnter}
       onClick={rp.onClick}
       onContextMenu={rp.onContextMenu}
       onKeyDown={(e) => {
@@ -670,3 +855,31 @@ const VIRTUAL_TABLE = {
     return <ListRow item={item} context={context!} {...rest} />;
   },
 };
+
+const BLOCKS_KEY = "kortex.library.blocks.v1";
+
+/** Ruhe "Anzeige": show the mixes / the calendar above the entries (per browser, on by default). */
+function useBlockPref(which: "mixes" | "calendar"): [boolean, (v: boolean) => void] {
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    try {
+      const v = (JSON.parse(localStorage.getItem(BLOCKS_KEY) ?? "{}") as Record<string, unknown>)[which];
+      if (typeof v === "boolean") setOn(v);
+    } catch {
+      /* storage blocked: default */
+    }
+  }, [which]);
+  const set = useCallback(
+    (v: boolean) => {
+      setOn(v);
+      try {
+        const all = JSON.parse(localStorage.getItem(BLOCKS_KEY) ?? "{}") as Record<string, unknown>;
+        localStorage.setItem(BLOCKS_KEY, JSON.stringify({ ...all, [which]: v }));
+      } catch {
+        /* storage blocked: the choice lasts for this visit */
+      }
+    },
+    [which],
+  );
+  return [on, set];
+}

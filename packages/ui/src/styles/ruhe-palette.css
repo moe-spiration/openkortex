@@ -1,0 +1,200 @@
+/*
+ * Ruhe look: command palette (web-lib W6, mock `palette`). PaletteRuhe.tsx renders its own markup (rz-pal-*), so
+ * nothing here touches the Vivid palette (.kx-palette). 640 px sheet on l2 with a hairline, the query row 52 px,
+ * rows 38 px (active l3), grey subtitles, kbd hints on the right, a footer with the keys.
+ */
+@layer components {
+  .rz-pal.kx-dlg {
+    top: 118px;
+    width: 640px;
+    max-width: calc(100% - 32px);
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--lum-2);
+    box-shadow:
+      0 0 0 1px var(--hair-strong),
+      0 30px 80px -20px rgb(0 0 0 / 0.7);
+    color: var(--t1);
+    font-size: var(--rz-fs-body);
+  }
+  [data-theme="light"] .rz-pal.kx-dlg {
+    background: var(--lum-1);
+    box-shadow:
+      0 0 0 1px var(--hair-strong),
+      0 30px 70px -24px oklch(0.25 0.01 75 / 0.3);
+  }
+  .rz-pal-dim.kx-scrim {
+    background: oklch(0.1 0 0 / 0.45);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  [data-theme="light"] .rz-pal-dim.kx-scrim {
+    background: oklch(0.2 0.01 75 / 0.18);
+  }
+
+  .rz-pal kbd {
+    display: inline-block;
+    min-width: 17px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--lum-3);
+    color: var(--t3);
+    font: var(--rz-w-regular) var(--rz-fs-kbd) / 15px var(--font-mono);
+    text-align: center;
+  }
+  [data-theme="light"] .rz-pal kbd {
+    background: var(--lum-4);
+  }
+
+  /* query row */
+  .rz-pal-q {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--hair);
+    color: var(--t3);
+  }
+  .rz-pal-q > .kx-ico {
+    flex: none;
+  }
+  .rz-pal-scope {
+    flex: none;
+    max-width: 40%;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 6px;
+    background: var(--lum-3);
+    color: var(--t2);
+    font-size: var(--rz-fs-meta);
+    line-height: 22px;
+  }
+  .rz-pal-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--t1);
+    caret-color: var(--accent);
+    font: inherit;
+    font-size: var(--rz-fs-read);
+    letter-spacing: -0.005em;
+  }
+  .rz-pal-input::placeholder {
+    color: var(--t4);
+  }
+  .rz-pal-esc {
+    flex: none;
+    color: var(--t4);
+    font-size: var(--rz-fs-meta);
+  }
+
+  /* groups and rows */
+  .rz-pal-body {
+    max-height: min(420px, calc(100vh - 260px));
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .rz-pal-g {
+    padding: 8px 8px 6px;
+  }
+  .rz-pal-g + .rz-pal-g {
+    border-top: 1px solid var(--hair);
+  }
+  .rz-pal-g [cmdk-group-heading] {
+    padding: 6px 8px 4px;
+    color: var(--t3);
+    font-size: var(--rz-fs-meta);
+    font-weight: var(--rz-w-book);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .rz-pal-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 8px;
+    cursor: default;
+    user-select: none;
+  }
+  .rz-pal-row > .kx-ico {
+    flex: none;
+    color: var(--t3);
+  }
+  .rz-pal-row > .kx-ico.rz-pal-acc {
+    color: var(--accent-ink);
+  }
+  .rz-pal-row[data-selected="true"] {
+    background: var(--lum-3);
+  }
+  [data-theme="light"] .rz-pal-row[data-selected="true"] {
+    background: var(--lum-3);
+  }
+  .rz-pal-t {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--t1);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rz-pal-s {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--t3);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rz-pal-r {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    color: var(--t4);
+    font-size: var(--rz-fs-meta);
+  }
+  .rz-pal-enter {
+    visibility: hidden;
+  }
+  .rz-pal-row[data-selected="true"] .rz-pal-enter {
+    visibility: visible;
+  }
+
+  .rz-pal-empty {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 22px 12px 10px;
+    color: var(--t3);
+    font-size: var(--rz-fs-ui);
+    text-align: center;
+  }
+
+  /* footer */
+  .rz-pal-ft {
+    display: flex;
+    gap: 16px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--hair);
+    color: var(--t4);
+    font-size: var(--rz-fs-micro);
+  }
+  .rz-pal-ft span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .rz-pal-ft kbd + kbd {
+    margin-left: -2px;
+  }
+  .rz-pal-ft-end {
+    margin-left: auto;
+  }
+}

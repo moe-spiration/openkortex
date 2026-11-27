@@ -64,13 +64,28 @@ export function buildWebClip(page: PageMeta, choice: ClipChoice, now = new Date(
   };
 }
 
+/** Highlight colours of the selection bar (sand, indigo, sage, rose); stored as `item_highlights.color`. */
+export const HIGHLIGHT_COLORS = ["yellow", "indigo", "green", "pink"] as const;
+export type HighlightColor = (typeof HIGHLIGHT_COLORS)[number];
+
 export function buildHighlight(
   page: { url: string; title: string },
   quote: string,
   locator: HighlightLocator,
   now = new Date(),
+  extra: { color?: HighlightColor; note?: string } = {},
 ): HighlightRequest {
-  return { ...stamp(now), kind: "highlight", url: page.url, page_title: page.title, quote_text: quote, locator, color: "yellow" };
+  const note = extra.note?.trim();
+  return {
+    ...stamp(now),
+    kind: "highlight",
+    url: page.url,
+    page_title: page.title,
+    quote_text: quote,
+    locator,
+    color: extra.color ?? "yellow",
+    ...(note ? { note_text: note } : {}),
+  };
 }
 
 export function buildAiChat(

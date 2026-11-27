@@ -50,6 +50,27 @@ function domainMetadata(o: DomainObject): Record<string, unknown> {
 
 const noteTitle = (id: string) => NOTES.find((n) => n.id === id)?.title;
 
+/**
+ * Living dossier of the first person (lib/dossier.ts sections), so the Akte view (ObjectDossier) shows where things
+ * stand, the open points and the own notes in the mock mode as well.
+ */
+const DOSSIER_MD: Record<string, string> = {
+  "o-p1": `## Where things stand
+
+Priya reviews the offer for the MCP rollout. Two phases are decided; the tiered prices and the timeline for phase 2 are still open. The next step is yours.
+
+## Open points
+
+- Send the tiered prices
+- Agree on the timeline for phase 2
+- Feedback on the security concept
+
+## My notes
+
+Likes short mails, decides fast. Numbers rather than slides.
+`,
+};
+
 function toItem(o: DomainObject): MockObject {
   const linked = noteTitle(o.noteId);
   const metadata = Object.fromEntries(Object.entries(domainMetadata(o)).filter(([, v]) => v !== undefined));
@@ -64,7 +85,7 @@ function toItem(o: DomainObject): MockObject {
     tldr: o.tldr,
     links: [o.noteId],
     metadata,
-    contentMd: o.tldr + "\n" + (linked ? `\nLast mentioned in [[${linked}]].\n` : ""),
+    contentMd: DOSSIER_MD[o.id] ?? o.tldr + "\n" + (linked ? `\nLast mentioned in [[${linked}]].\n` : ""),
     cover: coverSrc(o.cover),
     actionItems: [],
   };

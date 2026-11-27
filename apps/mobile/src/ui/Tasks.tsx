@@ -22,10 +22,10 @@ import { SwipeRow } from "./SwipeRow";
  * Erledigt); the long-press menu moves a task between stages. "In Griply" hands the task over for real (POST /api/mobile/griply), like the web board.
  */
 
-const STAGE_ICON: Record<Stage, "sparkles" | "check" | "bolt" | "share" | "checkSquare"> = { suggested: "sparkles", accepted: "check", agent: "bolt", external: "share", done: "checkSquare" };
+export const STAGE_ICON: Record<Stage, "sparkles" | "check" | "bolt" | "share" | "checkSquare"> = { suggested: "sparkles", accepted: "check", agent: "bolt", external: "share", done: "checkSquare" };
 
-export function Tasks() {
-  const th = useTheme();
+/** State and actions of the task list, shared by the vivid list here and the Ruhe page (screens/ruhe/TasksRuhe). */
+export function useTasksModel() {
   const a = useApp();
   const d = useData();
   const router = useRouter();
@@ -93,6 +93,30 @@ export function Tasks() {
     setText("");
     void d.addTask(v).then((err) => a.say(err ?? t("Task created")));
   };
+  const menu = (task: TaskRow) => {
+    const done = task.status === "done";
+    const source = task.source_item_id ? d.entryById(task.source_item_id) : undefined;
+    a.openMenu({
+      title: task.title,
+      items: [
+        { label: done ? t("Reopen") : t("Done"), icon: "check", run: () => toggle(task.id) },
+        ...(["suggested", "accepted", "agent"] as const)
+          .filter((to) => to !== stageOf(task) && !!stageUpdate(task, to))
+          .map((to) => ({ label: t("Move to “{stage}”", { stage: stageLabel(to) }), icon: STAGE_ICON[to], run: () => moveTo(task.id, to) })),
+        { label: t("Edit details"), icon: "note", run: () => setEditId(task.id) },
+        { label: t("Share as Markdown"), icon: "share", run: () => void share("markdown", [task]) },
+        ...(task.exported_at ? [{ label: t("Undo handed over"), icon: "check" as const, run: () => void d.markTasksExported([task.id], false) }] : []),
+        ...(source ? [{ label: t("Source: {title}", { title: source.title }), icon: "note", run: () => a.openEntry(source.id) }] : []),
+      ],
+    });
+  };
+  return { a, d, now, text, setText, editId, setEditId, stage, setStage, counts, shown, open, projects, projectTitle, patch, exportMenu, toggle, add, menu };
+}
+
+export function Tasks() {
+  const th = useTheme();
+  const m = useTasksModel();
+  const { a, d, now, text, setText, editId, stage, setStage, counts, shown, open, projects, projectTitle, patch, exportMenu, toggle, add } = m;
 
   return (
     <View style={{ gap: 6 }}>
@@ -133,21 +157,7 @@ export function Tasks() {
               onPress={() => (source ? a.openEntry(source.id) : toggle(task.id))}
               onLeadPress={() => toggle(task.id)}
               leadWidth={36}
-              onLongPress={() =>
-                a.openMenu({
-                  title: task.title,
-                  items: [
-                    { label: done ? t("Reopen") : t("Done"), icon: "check", run: () => toggle(task.id) },
-                    ...(["suggested", "accepted", "agent"] as const)
-                      .filter((to) => to !== stageOf(task) && !!stageUpdate(task, to))
-                      .map((to) => ({ label: t("Move to “{stage}”", { stage: stageLabel(to) }), icon: STAGE_ICON[to], run: () => moveTo(task.id, to) })),
-                    { label: t("Edit details"), icon: "note", run: () => setEditId(task.id) },
-                    { label: t("Share as Markdown"), icon: "share", run: () => void share("markdown", [task]) },
-                    ...(task.exported_at ? [{ label: t("Undo handed over"), icon: "check" as const, run: () => void d.markTasksExported([task.id], false) }] : []),
-                    ...(source ? [{ label: t("Source: {title}", { title: source.title }), icon: "note", run: () => a.openEntry(source.id) }] : []),
-                  ],
-                })
-              }
+              onLongPress={() => m.menu(task)}
               left={done ? undefined : doneAction}
               right={done ? doneAction : undefined}
             >

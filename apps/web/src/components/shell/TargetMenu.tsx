@@ -195,7 +195,14 @@ const dayLabel = () =>
   new Intl.DateTimeFormat(intlLocale(), { weekday: "short", day: "numeric", month: "long" }).format(new Date());
 
 /** Ziel-Chip (Festhalten). "Neue Notiz" hands the field text to the editor. */
-export function TargetMenu({ onNewNote }: { onNewNote: () => void }) {
+export function TargetMenu({
+  onNewNote,
+  context,
+}: {
+  onNewNote: () => void;
+  /** Ruhe: the open entry a capture links ([[Title]]); `on` while it is the target. */
+  context?: { title: string; on: boolean; set: (on: boolean) => void };
+}) {
   const { captureTarget, setCaptureTarget } = useShell();
   const space = useSpaceContext();
   const [open, setOpen] = useState(false);
@@ -213,11 +220,14 @@ export function TargetMenu({ onNewNote }: { onNewNote: () => void }) {
             : t("Current space")
           : t(c.help),
     icon: c.icon,
-    on: c.id === captureTarget,
+    on: c.id === captureTarget && !context?.on,
     disabled: c.id === "space" && !space ? t("There is no space or folder in this view") : undefined,
   }));
   items.push({ id: "new-note", label: t(TARGET_NEW_NOTE.label), help: t(TARGET_NEW_NOTE.help), icon: "file-plus" });
+  if (context) items.unshift({ id: "context", label: context.title, help: t("Inbox, linked to the open entry"), icon: "link", on: context.on });
   const effective = captureTarget === "space" && !space ? "auto" : captureTarget;
+  const chipLabel = context?.on ? context.title : targetLabel(effective, space);
+  const chipIcon: IconId = context?.on ? "orbit-inbox" : (CAPTURE_TARGETS.find((c) => c.id === effective)?.icon ?? "orbit-inbox");
   return (
     <div ref={ref} className="kx-orbit-optwrap">
       <button
@@ -225,12 +235,13 @@ export function TargetMenu({ onNewNote }: { onNewNote: () => void }) {
         className="kx-orbit-chip"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={t("Target when capturing: {target}", { target: targetLabel(effective, space) })}
+        aria-label={t("Target when capturing: {target}", { target: chipLabel })}
         title={t("Target when capturing")}
         onClick={() => setOpen(!open)}
       >
-        <Ico name="arrow-down-to-line" size={14} />
-        <span className="kx-orbit-chip-l kx-truncate">{targetLabel(effective, space)}</span>
+        <Ico name="arrow-down-to-line" size={14} className="kx-rz-hide" />
+        <Ico name={chipIcon} size={14} className="kx-rz-only" />
+        <span className="kx-orbit-chip-l kx-truncate">{chipLabel}</span>
         <Ico name="chev-d" size={14} />
       </button>
       {open && (
@@ -242,7 +253,11 @@ export function TargetMenu({ onNewNote }: { onNewNote: () => void }) {
           onPick={(id) => {
             setOpen(false);
             if (id === "new-note") onNewNote();
-            else setCaptureTarget(id as (typeof CAPTURE_TARGETS)[number]["id"]);
+            else if (id === "context") context?.set(true);
+            else {
+              context?.set(false);
+              setCaptureTarget(id as (typeof CAPTURE_TARGETS)[number]["id"]);
+            }
           }}
         />
       )}

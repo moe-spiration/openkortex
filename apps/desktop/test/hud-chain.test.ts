@@ -21,6 +21,19 @@ describe("dragging the HUD and the pill", () => {
     expect(startsDrag(svg, 0)).toBe(true);
   });
 
+  it("small native windows (Ruhe round 2): their title text and spacer move the window, the close button does not", () => {
+    const bar = document.createElement("div");
+    const name = document.createElement("span");
+    const grow = document.createElement("span");
+    const close = document.createElement("button");
+    const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    close.appendChild(x);
+    bar.append(name, grow, close);
+    expect(startsDrag(name, 0)).toBe(true);
+    expect(startsDrag(grow, 0)).toBe(true);
+    expect(startsDrag(x, 0)).toBe(false);
+  });
+
   it("leaves buttons, fields and links alone, and only reacts to the left button", () => {
     const head = document.createElement("header");
     const btn = document.createElement("button");
@@ -92,5 +105,8 @@ describe("phase after a stop from tray, hotkey or auto-stop (audit D-09)", () =>
     expect(phaseAfterState("done", true)).toBe("live");
     // Older cores without the flag: as before.
     expect(phaseAfterState("live", false)).toBe("gen");
+    // Discarded: nothing follows, ready for the next recording (also in a window that showed "gen").
+    expect(phaseAfterState("live", false, false, true)).toBe("idle");
+    expect(phaseAfterState("gen", false, false, true)).toBe("idle");
   });
 });

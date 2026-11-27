@@ -34,20 +34,28 @@ describe("timeframeBucket", () => {
 });
 
 describe("task line", () => {
+  it("leaves the user out as owner", () => {
+    expect(formatTaskLine({ title: "Folien senden", assignee: "Me" })).toBe("- [ ] Folien senden");
+    expect(formatTaskLine({ title: "Folien senden", assignee: "ich" })).toBe("- [ ] Folien senden");
+    expect(formatTaskLine({ title: "Send slides", assignee: "@Anna" }, "en")).toBe("- [ ] Send slides · Owner: Anna");
+  });
+
   it("round-trips all fields", () => {
     const line = formatTaskLine({
       title: "Folien senden",
+      assignee: "Max",
       project: "Kortex",
       timeframe: "this_week",
       due: "2026-11-05T00:00:00Z",
       context: "Aus dem Sync vom Montag",
     });
     expect(line).toBe(
-      "- [ ] Folien senden · Projekt: [[Kortex]] · Zeitrahmen: diese Woche · Fällig: 2026-11-05 · Kontext: Aus dem Sync vom Montag",
+      "- [ ] Folien senden · Zuständig: Max · Projekt: [[Kortex]] · Zeitrahmen: diese Woche · Fällig: 2026-11-05 · Kontext: Aus dem Sync vom Montag",
     );
     expect(parseTaskLine(line)).toEqual({
       title: "Folien senden",
       done: false,
+      assignee: "Max",
       project: "Kortex",
       timeframe: "this_week",
       due: "2026-11-05",
@@ -94,7 +102,7 @@ describe("task line in English", () => {
     const task = { title: "Send slides", project: "Kortex", timeframe: "this_week", due: "2026-11-05T00:00:00Z", context: "From Monday" };
     const line = withLocale("en", () => formatTaskLine(task));
     expect(line).toBe("- [ ] Send slides · Project: [[Kortex]] · Timeframe: this week · Due: 2026-11-05 · Context: From Monday");
-    const parsed = { title: "Send slides", done: false, project: "Kortex", timeframe: "this_week", due: "2026-11-05", context: "From Monday", id: null };
+    const parsed = { title: "Send slides", done: false, assignee: null, project: "Kortex", timeframe: "this_week", due: "2026-11-05", context: "From Monday", id: null };
     expect(parseTaskLine(line)).toEqual(parsed);
     expect(withLocale("en", () => parseTaskLine(formatTaskLine(task, "de")))).toEqual(parsed);
     expect(withLocale("en", () => normalizeTimeframe("später"))).toBe("later");

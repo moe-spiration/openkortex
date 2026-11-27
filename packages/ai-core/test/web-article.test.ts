@@ -5,7 +5,10 @@ import {
   JINA_READER_URL,
 } from "../src/adapters/web-article.adapter";
 import { ExtractionError } from "../src/errors";
-import { fakeFetch, json, USER_ID } from "./helpers";
+import { fakeFetch, html, json, USER_ID } from "./helpers";
+import { createPdfDocumentAdapter } from "../src/adapters/pdf-document.adapter";
+import { createMemoryStorageGateway } from "../src/storage";
+import { makePdf } from "./fixtures/make-pdf";
 import { firecrawlResponse, jinaResponse } from "./fixtures/web-article";
 
 const URL_ = "https://www.heise.de/hintergrund/mcp-erklaert-1234.html";
@@ -104,12 +107,19 @@ describe("web-article adapter", () => {
     expect((err as Error).message).toMatch(
       /500.*firecrawl: blocked.*request to www.heise.de failed/s,
     );
-    // Without keys only the direct fetch runs.
+    // Without keys: the direct fetch, then one keyless reader try.
     const fetch2 = fakeFetch([{ match: () => true, respond: () => json({}, 500) }]);
     await expect(createWebArticleAdapter({ fetch: fetch2 }).extract(input)).rejects.toThrow(
       /could not extract/,
     );
-    expect(fetch2.calls).toHaveLength(1);
+    expect(fetch2.calls.map((c) => c.url)).toEqual([URL_, `${JINA_READER_URL}${URL_}`]);
+    expect(fetch2.calls[1]!.headers.authorization).toBeUndefined();
+    // Switched off (KORTEX_KEYLESS_READER=off): only the direct fetch.
+    const fetch3 = fakeFetch([{ match: () => true, respond: () => json({}, 500) }]);
+    await expect(
+      createWebArticleAdapter({ fetch: fetch3, keylessReader: false }).extract(input),
+    ).rejects.toThrow(/could not extract/);
+    expect(fetch3.calls).toHaveLength(1);
   });
 
   it("only handles http(s) URLs without a file", () => {
@@ -117,5 +127,37 @@ describe("web-article adapter", () => {
     expect(a.canHandle({ userId: USER_ID, url: "ftp://x.org/file" })).toBe(false);
     expect(a.canHandle({ userId: USER_ID, rawText: "hi" })).toBe(false);
     expect(a.canHandle({ userId: USER_ID, url: URL_, fileBuffer: new Uint8Array(1) })).toBe(false);
+  });
+});
+
+describe("web-article fallbacks for shared links", () => {
+  it("reads a page that blocks the direct fetch through the keyless reader", async () => {
+    const fetch = fakeFetch([
+      { match: (u) => u === URL_, respond: () => html("<html><head><title>Access Denied</title></head></html>", 403) },
+      { match: (u) => u.startsWith(JINA_READER_URL), respond: () => json(jinaResponse) },
+    ]);
+    const out = await createWebArticleAdapter({ fetch }).extract(input);
+    expect(out.metadata.extractor).toBe("jina");
+    expect(out.titleHint).toBe("Model Context Protocol erklärt");
+    expect(fetch.calls[1]!.headers.authorization).toBeUndefined();
+  });
+
+  it("reads a linked PDF as a document instead of an empty bookmark", async () => {
+    const pdfUrl = "https://www.example.com/asset/expose-uhland-quartier.pdf";
+    const bytes = makePdf({ title: "Expose Uhland-Quartier", pages: ["Lage und Flaechen des Quartiers."] });
+    const pdfResponse = () =>
+      new Response(bytes, { status: 200, headers: { "content-type": "application/pdf" } });
+    const fetch = fakeFetch([{ match: (u) => u === pdfUrl, respond: pdfResponse }]);
+    const storage = createMemoryStorageGateway();
+    const out = await createWebArticleAdapter({
+      fetch,
+      documentAdapter: createPdfDocumentAdapter({ storage }),
+    }).extract({ userId: USER_ID, itemId: "11111111-2222-4333-8444-555555555555", url: pdfUrl });
+    expect(out.type).toBe("pdf");
+    expect(out.contentMd).toContain("Lage und Flaechen des Quartiers.");
+    expect(out.sourceUrl).toBe(pdfUrl);
+    expect(out.metadata).toMatchObject({ extractor: "pdf-link", source_url: pdfUrl });
+    // No reader detour for a document.
+    expect(fetch.calls.every((c) => c.url === pdfUrl)).toBe(true);
   });
 });

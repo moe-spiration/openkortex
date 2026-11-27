@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LINKED_CHARS_EACH, LINKED_CHARS_TOTAL, pickLinkedSources } from "./retrieval";
+import { LINKED_CHARS_EACH, LINKED_CHARS_TOTAL, ftsQueryOf, pickLinkedSources } from "./retrieval";
 import { LINKED_MAX_ITEMS } from "../../lib/shell/linked-context";
 
 const row = (i: number, content: string, title = `Item ${i}`) => ({
@@ -32,5 +32,17 @@ describe("pickLinkedSources (ghost context)", () => {
 
   it("returns nothing without candidates", () => {
     expect(pickLinkedSources([], [], "frage")).toEqual([]);
+  });
+});
+
+describe("ftsQueryOf (full-text side of the hybrid search)", () => {
+  it("keeps short keyword queries as typed", () => {
+    expect(ftsQueryOf("Hyrox Trainingsplan")).toBe("Hyrox Trainingsplan");
+  });
+  it("cuts a spoken question to its content words, joined with or", () => {
+    expect(ftsQueryOf("Kannst du mir mal sagen, was ich mir letzte Woche über Hyrox notiert habe?")).toBe("letzte or woche or hyrox or notiert");
+  });
+  it("leaves explicit search syntax alone", () => {
+    expect(ftsQueryOf('Was steht in "Q4 Sync" zum Budget drin')).toBe('Was steht in "Q4 Sync" zum Budget drin');
   });
 });

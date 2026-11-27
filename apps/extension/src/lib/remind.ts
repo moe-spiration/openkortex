@@ -31,3 +31,36 @@ export function remindOptions(now: Date = new Date()): RemindOption[] {
   out.push({ key: "next-week", label: t("Next week"), iso: at(now, toMonday, 8).toISOString() });
   return out;
 }
+
+export interface RemindChoice {
+  key: "tonight" | "tomorrow" | "weekend" | "next-week";
+  label: string;
+  /** Short local time shown at the right ("19:00", "Sa 10:00"). */
+  when: string;
+  iso: string;
+}
+
+/**
+ * The popup's four fixed snooze points after a save (keys 1 to 4): tonight 19:00 (21:00 once 19:00 has passed,
+ * the next evening after 21:00), tomorrow 08:00, the weekend (Saturday 10:00; next Saturday on a weekend) and
+ * next Monday 08:00.
+ */
+export function remindChoices(now: Date = new Date(), locale?: string): RemindChoice[] {
+  const time = (d: Date) => d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  const dayTime = (d: Date) => `${d.toLocaleDateString(locale, { weekday: "short" })} ${time(d)}`;
+  let tonight = at(now, 0, 19);
+  if (tonight.getTime() <= now.getTime()) tonight = at(now, 0, 21);
+  if (tonight.getTime() <= now.getTime()) tonight = at(now, 1, 19);
+  const tomorrow = at(now, 1, 8);
+  const day = now.getDay();
+  const toSat = day === 6 || day === 0 ? (6 - day + 7) % 7 || 7 : 6 - day;
+  const weekend = at(now, toSat, 10);
+  const toMonday = (8 - day) % 7 || 7;
+  const monday = at(now, toMonday, 8);
+  return [
+    { key: "tonight", label: t("Tonight"), when: tonight.getDate() === now.getDate() ? time(tonight) : dayTime(tonight), iso: tonight.toISOString() },
+    { key: "tomorrow", label: t("Tomorrow morning"), when: dayTime(tomorrow), iso: tomorrow.toISOString() },
+    { key: "weekend", label: t("At the weekend"), when: dayTime(weekend), iso: weekend.toISOString() },
+    { key: "next-week", label: t("Next week"), when: dayTime(monday), iso: monday.toISOString() },
+  ];
+}

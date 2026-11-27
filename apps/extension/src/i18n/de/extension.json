@@ -364,5 +364,8 @@
   "Add to “{name}”": "Zu „{name}“ hinzufügen",
   "Move to “{name}”": "Nach „{name}“ verschieben",
   "New session": "Neue Session",
-  "Drop here to start a session with this tab": "Hier ablegen, um eine Session mit diesem Tab anzulegen"
+  "Drop here to start a session with this tab": "Hier ablegen, um eine Session mit diesem Tab anzulegen",
+  "Look": "Look",
+  "Calm": "Ruhe",
+  "Vivid": "Lebendig"
 }

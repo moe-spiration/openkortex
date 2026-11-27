@@ -4,7 +4,7 @@ import { AppState, Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
 import { localeHeader, t } from "../i18n";
-import { createApiClient, type ApiClient } from "./ingest";
+import { createApiClient, INBOX_FOLDER, type ApiClient } from "./ingest";
 import { fetchWithForm } from "./formFetch";
 import { fetch as streamFetch } from "expo/fetch";
 import { createChatStreamParser, type ChatAnswer } from "./chatStream";
@@ -279,6 +279,22 @@ export async function loadItems(limit = 200): Promise<ItemRow[]> {
     .neq("status", "archived")
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as ItemRow[];
+}
+
+/** Few light rows for the "Einträge" home screen widget: newest, favourites or still in the inbox folder. */
+export async function loadWidgetItems(source: "recent" | "favorites" | "inbox", limit = 25): Promise<ItemRow[]> {
+  let q = supabase()
+    .from("knowledge_items")
+    // The inbox needs the placement (metadata) for its "Passt" suggestion; the other lists only the read mark.
+    .select(`id,type,title,summary,content_md,status,is_favorite,created_at,read_at:metadata->>read_at${source === "inbox" ? ",metadata,folder_path,is_manual_placement" : ""}`)
+    .eq("user_id", await uid())
+    .not("type", "in", "(daily_note,digest)")
+    .neq("status", "archived");
+  if (source === "favorites") q = q.eq("is_favorite", true);
+  if (source === "inbox") q = q.like("folder_path", `${INBOX_FOLDER}%`);
+  const { data, error } = await q.order("created_at", { ascending: false }).limit(limit);
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as ItemRow[];
 }

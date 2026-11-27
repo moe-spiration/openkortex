@@ -240,6 +240,9 @@ export const ACTION_ITEMS: ActionItem[] = [
   task("t12", "Set the Zone 2 plan for next week", "#fitness/running", "2026-10-25", undefined, "low", "n12", "voice", { ai: true, sourceSec: 3 * 60 + 48 }),
   task("t13", "Agree on a date for the day trip", "#family", "2026-10-24", undefined, "low", "n25", "voice", { sourceSec: 52 }),
   task("t14", "Plan hill sprints twice a week", "#fitness/running", "2026-10-21", undefined, "medium", "n20", "note", { done: true }),
+  // Ruhe board (2026-11-27): one task with the agent ("In Arbeit") and one handed over to Griply, so mock mode shows every stage.
+  task("t15", "Research backup options for the Hetzner server", "#it/platform", "2026-10-23", undefined, "medium", "n2", "meeting", { ai: true, accepted: true, assignee: "Agent" }),
+  task("t16", "Book the physio appointment", "#fitness/running", "2026-10-27", undefined, "medium", "n6", "note", { exportedAt: "2026-10-20T09:00:00Z" }),
 ];
 
 

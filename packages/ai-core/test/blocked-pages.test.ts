@@ -52,7 +52,11 @@ describe("blocked pages", () => {
     expect(out.contentMd).toContain("> Kleine Tasche aus Leder.");
     expect(out.contentMd).toContain(`[ZARA](${zara})`);
     expect(out.metadata).toMatchObject({ extractor: "client", site: "ZARA" });
-    expect(out.metadata.extraction_fallback_reasons).toEqual([expect.stringContaining("403")]);
+    // The direct fetch and the keyless reader both met the wall.
+    expect(out.metadata.extraction_fallback_reasons).toEqual([
+      expect.stringContaining("403"),
+      expect.stringMatching(/^jina \(keyless\):.*403/),
+    ]);
   });
 
   it("does not keep a 200 block page as content", async () => {

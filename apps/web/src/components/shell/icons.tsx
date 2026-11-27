@@ -1,4 +1,5 @@
 import {
+  AudioLines,
   Eye,
   ShieldCheck,
   Archive,
@@ -289,6 +290,8 @@ export const ICONS = {
   paperclip: Paperclip,
   trash: Trash2,
   "corner-down-left": CornerDownLeft,
+  // Ruhe look: dictation label
+  "audio-lines": AudioLines,
 } satisfies Record<string, LucideIcon>;
 
 export type IconId = keyof typeof ICONS;
@@ -299,10 +302,14 @@ export interface IcoProps extends SVGProps<SVGSVGElement> {
   size?: "sm" | "md" | "lg" | number;
 }
 
-/** `.kx-ico` sized icon: CSS sets 16px (14 sm / 20 lg) and stroke 1.6 like the prototype. */
+/**
+ * `.kx-ico` sized icon: CSS sets 16px (14 sm / 20 lg) and the stroke from --icon-stroke (Ruhe: --rz-icon-stroke 1.4,
+ * packages/ui/src/styles/ruhe.css). A numeric size of 20 px or more takes the large-icon stroke (.kx-ico--l).
+ */
 export function Ico({ name, size = "md", className, ...props }: IcoProps) {
   const Icon = ICONS[name];
-  const cls = ["kx-ico", size === "sm" && "kx-ico--sm", size === "lg" && "kx-ico--lg", className].filter(Boolean).join(" ");
+  const large = typeof size === "number" && size >= 20;
+  const cls = ["kx-ico", size === "sm" && "kx-ico--sm", size === "lg" && "kx-ico--lg", large && "kx-ico--l", className].filter(Boolean).join(" ");
   const px = typeof size === "number" ? { style: { width: size, height: size } } : {};
-  return <Icon aria-hidden className={cls} {...px} {...props} />;
+  return <Icon aria-hidden data-ico={name} className={cls} {...px} {...props} />;
 }

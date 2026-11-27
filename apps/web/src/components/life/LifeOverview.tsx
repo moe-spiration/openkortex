@@ -5,6 +5,8 @@ import { ChevronRight } from "lucide-react";
 import { ContextMenu, isContextMenuKey, menuFor, useContextMenu, type ActionId } from "@kortex/ui";
 import { Ico, type IconId } from "@/components/shell/icons";
 import { ThemeTile } from "@/components/theme/ThemeTile";
+import { LocationBar } from "@/components/shell/Bars";
+import { useLook } from "@/components/theme/look";
 import { lifeTopic } from "@/lib/theme/topics";
 import type { LifeAreaDetail, LifePick } from "@/lib/mock/life";
 import { LIFE_AREAS } from "@/lib/mock/workspace";
@@ -118,19 +120,35 @@ export function LifeOverview({ life, go, edit }: { life: LifeState; go: (key: st
   };
   // Live: only the areas chosen in onboarding; the mock shows all six.
   const areas = life.areas.filter((a) => a.active !== false);
+  const ruhe = useLook() === "ruhe";
   return (
     <div className="lf-ov">
-      <header className="lf-ov-head">
-        <div className="lf-ov-head-t">
-          <div className="lf-crumb">
-            Life
-            <ChevronRight className="kx-ico" aria-hidden />
-            <b>{t("Overview")}</b>
+      {ruhe ? (
+        <>
+          <LocationBar icon="life" crumbs={[{ label: "Life" }, { label: t("Overview") }]} />
+          <p className="lf-sub rz-lfo-sub">
+            {feature("griply") ? t("One page per area for vision, ideas and images. Goals and habits stay in Griply.") : t("One page per area for vision, ideas and images.")}
+          </p>
+        </>
+      ) : (
+        <header className="lf-ov-head kx-pagetitle has-crumbs">
+          <div className="lf-ov-head-t kx-pagetitle-text">
+            <div className="lf-crumb">
+              Life
+              <ChevronRight className="kx-ico" aria-hidden />
+              <b>{t("Overview")}</b>
+            </div>
+            <h1 className="lf-ov-h1 kx-h-page">{t("Life areas")}</h1>
+            <p className="lf-sub kx-pagetitle-help">
+              {feature("griply")
+                ? t(
+                    "One page per area for vision, ideas and images. Goals and habits stay in Griply.",
+                  )
+                : t("One page per area for vision, ideas and images.")}
+            </p>
           </div>
-          <h1 className="lf-ov-h1">{t("Life areas")}</h1>
-          <p className="lf-sub">{feature("griply") ? t("One page per area for vision, ideas and images. Goals and habits stay in Griply.") : t("One page per area for vision, ideas and images.")}</p>
-        </div>
-      </header>
+        </header>
+      )}
 
       {life.status !== "ready" && (
         <p className="e-meta" role="status" style={{ margin: 0 }}>

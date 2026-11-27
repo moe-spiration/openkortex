@@ -1,0 +1,128 @@
+/*
+ * Ruhe radikal (2026-11-27, web-shell): Heute as in the mockup screen "heute". Markup: apps/web components/home/HomeRuhe.tsx
+ * and the Ruhe branch of DailyStack.tsx. The location bar comes from the shell (Bars.tsx); the landscape sits behind
+ * the top 340 px of the panel (also behind the location bar) and fades into it. Only shared tokens.
+ * Shared list rows (.rz-lrow, .rz-ghead, .rz-h2, .rz-c, .rz-faint) live here too, other Ruhe screens may use them.
+ */
+@layer components {
+  /* ---------- Shared bits (mockup .lrow, .ghead, .h2, .c, .faint) ---------- */
+  .rz-h2 { margin: 0; font-size: var(--rz-fs-lead); font-weight: var(--rz-w-medium); letter-spacing: -0.01em; color: var(--t1); }
+  .rz-faint { color: var(--t4); }
+  .rz-c { margin-left: 6px; color: var(--t4); font-weight: var(--rz-w-regular); font-variant-numeric: tabular-nums; }
+  .rz-ghead { display: flex; align-items: center; height: 34px; margin: 0; padding: 0 10px; font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); color: var(--t2); }
+  .rz-lrow {
+    display: flex; align-items: center; gap: 10px; width: 100%; height: 36px; min-width: 0; padding: 0 10px; border: 0; border-radius: 8px;
+    background: transparent; color: var(--t1); font: inherit; font-size: var(--rz-fs-body); text-align: left; cursor: pointer;
+    transition: background var(--d1, 120ms) var(--eo, ease);
+  }
+  button.rz-lrow:hover, .rz-lrow:has(> button:hover) { background: var(--lum-2); }
+  .rz-lrow > svg, .rz-lrow > .kx-ico { flex: none; width: 14px; height: 14px; color: var(--t3); }
+  .rz-lrow-t { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--t1); }
+  .rz-lrow-r { flex: none; display: flex; align-items: center; gap: 10px; max-width: 45%; margin-left: auto; overflow: hidden; color: var(--t4); font-size: var(--rz-fs-meta); white-space: nowrap; text-overflow: ellipsis; }
+
+  /* ---------- Hero: landscape behind the top of the panel, faded into it ---------- */
+  [data-look="ruhe"] .kx-main-window:has(.rzh-page)::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 340px; z-index: 0; pointer-events: none;
+    background: url("/home/home.webp") center 35% / cover no-repeat; opacity: 0.3; filter: saturate(0.7);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 96%); mask-image: linear-gradient(180deg, #000 0%, transparent 96%);
+  }
+  [data-look="ruhe"][data-theme="light"] .kx-main-window:has(.rzh-page)::before { opacity: 0.42; filter: saturate(0.5); }
+  [data-look="ruhe"] .kx-main-window:has(.rzh-page) .rz-locbar { background: transparent; }
+  [data-look="ruhe"] .kx-main-window:has(.rzh-page) .kx-scroll { background: transparent; }
+
+  /* ---------- Page ---------- */
+  .rzh-page { position: relative; min-height: 100%; padding-bottom: max(90px, var(--kx-footbar-safe, 90px)); animation: rz-view-in var(--d3, 260ms) var(--eo, ease); }
+  .rzh-grid {
+    position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px;
+    max-width: 1280px; padding: 22px 40px 0 44px;
+  }
+  .rzh-main { min-width: 0; }
+  .rzh-greet { max-width: 720px; }
+  .rzh-date { margin-bottom: 8px; color: var(--t3); font-size: var(--rz-fs-ui); }
+  .rzh-title { margin: 0; font-size: var(--rz-fs-display); line-height: 1.12; font-weight: var(--rz-w-semi); letter-spacing: -0.028em; color: var(--t1); }
+  .rzh-sum { max-width: 560px; margin: 10px 0 0; color: var(--t2); font-size: var(--rz-fs-lead); line-height: 1.45; }
+  .rzh-sum b { color: var(--t1); font-weight: var(--rz-w-book); }
+  .rzh-more { display: inline-flex; align-items: center; gap: 2px; padding: 0; border: 0; background: none; color: var(--t3); font: inherit; cursor: pointer; }
+  .rzh-more:hover { color: var(--t1); }
+  .rzh-more svg { width: 13px; height: 13px; transition: transform var(--d2, 180ms) var(--eo, ease); }
+  .rzh-brief { margin-top: 12px; animation: rz-view-in var(--d2, 180ms) var(--eo, ease); }
+
+  /* ---------- Daily stack ---------- */
+  .rz-stack { margin-top: 30px; }
+  .rz-stack-h { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .rz-prog { display: flex; gap: 3px; margin-left: 6px; }
+  .rz-prog-i { width: 18px; height: 3px; padding: 0; border: 0; border-radius: 2px; background: var(--lum-4); cursor: pointer; }
+  .rz-prog-i.is-on { background: var(--t2); }
+  .rz-prog-i.is-done { background: var(--t4); opacity: 0.6; cursor: default; }
+  .rz-prog-i:hover:not(:disabled) { background: var(--t3); }
+  .rz-card { position: relative; display: flex; gap: 18px; padding: 18px; border-radius: 12px; background: var(--lum-2); animation: rz-view-in var(--d2, 180ms) var(--eo, ease); }
+  [data-theme="light"] .rz-card { background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair-strong); }
+  .rz-card.out-r { opacity: 0; transform: translateX(14px); transition: opacity var(--d2, 180ms) var(--eo, ease), transform var(--d2, 180ms) var(--eo, ease); }
+  .rz-card.out-l { opacity: 0; transform: translateX(-14px); transition: opacity var(--d2, 180ms) var(--eo, ease), transform var(--d2, 180ms) var(--eo, ease); }
+  .rz-card-img { position: relative; flex: none; width: 168px; height: 118px; overflow: hidden; border-radius: 8px; background: var(--lum-3); }
+  .rz-card-img .hm-ds-thumb, .rz-card-img .hm-ds-coll { position: absolute; inset: 0; display: grid; }
+  .rz-card-img .hm-ds-coll { grid-template-columns: 1fr 1fr; gap: 2px; }
+  .rz-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rz-card-img .hm-ds-im { position: relative; overflow: hidden; }
+  .rz-card-img .hm-ds-glyph { position: absolute; inset: 0; display: grid; place-items: center; color: var(--t4); background: none; box-shadow: none; }
+  .rz-card-img .hm-ds-glyph .kx-ico { width: 28px !important; height: 28px !important; }
+  .rz-card-b { min-width: 0; flex: 1; }
+  .rz-card-kind { display: inline-flex; align-items: center; gap: 6px; color: var(--accent-ink); font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); }
+  .rz-card-ti { margin: 6px 0 4px; font-size: var(--rz-fs-big); line-height: 1.3; font-weight: var(--rz-w-semi); letter-spacing: -0.018em; color: var(--t1); }
+  .rz-card-ti button { padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; }
+  .rz-card-ti button:hover { text-decoration: underline; text-decoration-color: var(--hair-strong); text-underline-offset: 3px; }
+  .rz-card-sub { margin: 0; color: var(--t2); font-size: var(--rz-fs-body); }
+  .rz-card-meta { margin: 8px 0 0; color: var(--t3); font-size: var(--rz-fs-meta); }
+  .rz-card-acts { display: flex; gap: 6px; margin-top: 14px; }
+  .rz-card--fin { align-items: center; }
+  .rz-card--fin .kx-pic { width: 72px; height: 72px; }
+  .rz-next { margin-top: 22px; }
+  .rz-next .rz-lrow-r { color: var(--t4); }
+
+  /* ---------- Rail ---------- */
+  .rzh-rail { display: flex; flex-direction: column; gap: 26px; min-width: 0; padding-top: 6px; }
+  .rzh-lab { display: flex; align-items: center; margin: 0 0 6px; padding: 0 10px; font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); color: var(--t3); }
+  .rzh-lab .rz-c { margin-left: 8px; }
+  .rzh-lab-aside { margin-left: auto; display: inline-flex; align-items: center; }
+  .rzh-icolink { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; color: var(--t4); }
+  .rzh-icolink:hover { color: var(--t1); background: var(--lum-2); }
+  .rzh-icolink svg { width: 13px; height: 13px; }
+  .rzh-quiet { color: var(--t4); font-weight: var(--rz-w-regular); text-decoration: none; }
+  .rzh-quiet:hover { color: var(--t1); }
+  .rzh-row { height: 32px; }
+  .rzh-t2 { color: var(--t2); }
+  .rzh-acc { color: var(--accent-ink) !important; }
+  .rzh-crit { color: var(--kx-danger, oklch(0.70 0.15 25)); }
+  [data-theme="light"] .rzh-crit { color: oklch(0.57 0.18 25); }
+  .rzh-empty { margin: 0; padding: 4px 10px; color: var(--t4); font-size: var(--rz-fs-ui); }
+  .rzh-chk { flex: none; display: grid; place-items: center; width: 15px; height: 15px; padding: 0; border: 0; border-radius: 50%; background: transparent; box-shadow: inset 0 0 0 1.4px var(--t4); color: var(--on-accent-ai, #fff); cursor: pointer; }
+  .rzh-chk:hover { box-shadow: inset 0 0 0 1.4px var(--t2); }
+  .rzh-chk.is-on { background: var(--accent); box-shadow: none; }
+  .rzh-chk svg { width: 10px; height: 10px; stroke-width: 3; }
+  .rzh-tbtn { padding: 0; border: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
+  .rzh-tbtn:disabled { cursor: default; }
+  .rzh-row.is-done .rzh-tbtn { color: var(--t3); text-decoration: line-through; }
+  .rzh-energy { display: flex; gap: 4px; padding: 2px 10px 0; }
+  .rzh-energy button {
+    flex: 1; height: 28px; padding: 0; border: 0; border-radius: 7px; background: var(--lum-2); color: var(--t3); font: inherit;
+    font-size: var(--rz-fs-meta); font-variant-numeric: tabular-nums; cursor: pointer; transition: background var(--d1, 120ms) var(--eo, ease);
+  }
+  [data-theme="light"] .rzh-energy button { background: var(--lum-3); }
+  .rzh-energy button:hover:not(:disabled) { color: var(--t1); }
+  .rzh-energy button.is-on { background: var(--accent-soft); color: var(--accent-ink); font-weight: var(--rz-w-regular); }
+  .rzh-thumb { flex: none; display: grid; place-items: center; width: 24px; height: 24px; overflow: hidden; border-radius: 5px; background: var(--lum-3); color: var(--t3); }
+  .rzh-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rzh-bar { display: block; width: 44px; height: 2px; overflow: hidden; border-radius: 2px; background: var(--lum-4); }
+  .rzh-bar i { display: block; height: 100%; background: var(--t3); }
+  .rzh-skel { height: 24px; margin: 6px 10px; }
+  .rzh-menu-check { display: inline-grid; place-items: center; width: 16px; }
+  .rzh-menu-check .kx-ico { width: 13px; height: 13px; }
+
+  @container kx-view (max-width: 959px) {
+    .rzh-grid { grid-template-columns: minmax(0, 1fr); gap: 30px; padding: 18px 24px 0; }
+  }
+  @container kx-view (max-width: 600px) {
+    .rz-card { flex-direction: column; }
+    .rz-card-img { width: 100%; height: 140px; }
+  }
+}

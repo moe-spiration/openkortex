@@ -49,7 +49,10 @@ export function createChatStreamParser() {
     } catch {
       return;
     }
-    if (part.type === "text-delta" && typeof part.delta === "string") text += part.delta;
+    // A new text block (the agent writes between tool calls) starts on its own paragraph.
+    if (part.type === "text-start") {
+      if (text.trim() && !text.endsWith("\n\n")) text = `${text.trimEnd()}\n\n`;
+    } else if (part.type === "text-delta" && typeof part.delta === "string") text += part.delta;
     else if (part.type === "data-citations" && Array.isArray(part.data?.citations))
       citations = part.data.citations.map(({ n, item_id, title }) => ({ n, item_id, title }));
     else if (part.type === "data-step" && typeof part.data?.label === "string")

@@ -1,7 +1,8 @@
 // Runtime messages between popup / options / content scripts / background.
 import { t } from "../i18n";
 import type { PageMeta } from "./page-meta";
-import type { ApiResult, IngestRequest, ItemStatusInfo } from "./api";
+import type { ApiResult, FileUploadFields, IngestRequest, IngestResponse, ItemStatusInfo } from "./api";
+import type { HighlightColor } from "./requests";
 import type { SubmitResult } from "./outbox";
 import type { SaveSessionResult } from "./sessions";
 
@@ -28,8 +29,44 @@ export type ExtMessage =
   | { type: "kortex/close-tabs"; windowId: number; tabIds: number[] }
   /** -> background: remove a saved highlight on the server (content script "Highlight entfernen"). */
   | { type: "kortex/highlight-delete"; highlightId: string }
-  /** background -> content script: save the current text selection as a highlight (context menu). */
-  | { type: "kortex/highlight-selection"; fallbackText?: string };
+  /**
+   * background/popup -> content script: save the current text selection as a highlight (context menu, popup mode
+   * "Selection"). Answers a `HighlightOutcome`.
+   */
+  | { type: "kortex/highlight-selection"; fallbackText?: string; color?: HighlightColor; note?: string }
+  /** -> background: upload a file (popup screenshot) as multipart to the ingest route; not queued. */
+  | { type: "kortex/upload"; dataUrl: string; name: string; fields: FileUploadFields; pageUrl?: string }
+  /** content script -> background: open the side panel, optionally with a question about a passage. */
+  | { type: "kortex/open-sidepanel"; ask?: AskDraft }
+  /** side panel / popup -> content script: what the page has (selection, highlights, readable text). Answers `PageInfo`. */
+  | { type: "kortex/page-info"; withText?: boolean }
+  /** side panel -> content script: scroll to a highlight and flash it. */
+  | { type: "kortex/hl-focus"; id: string };
+
+/** A question started on the page ("Ask" in the selection bar), picked up by the side panel. */
+export interface AskDraft {
+  url: string;
+  title: string;
+  quote: string;
+  at: number;
+}
+
+export interface PageInfo {
+  url: string;
+  /** The current selection (trimmed), empty when there is none. */
+  selection: string;
+  /** Readable page text (excerpt), only with `withText`. */
+  text?: string;
+  /** og:image / twitter:image of the page (the side panel's page card). */
+  image?: string;
+  /** Highlights shown on the page right now (restored or new). */
+  highlights: { id: string; quote: string; note?: string; color?: string; saved: boolean }[];
+}
+
+export type HighlightOutcome = { ok: true; text: string } | { ok: false; message: string };
+
+/** Key in chrome.storage.local of a pending question from the page (the side panel takes it once). */
+export const ASK_DRAFT_KEY = "askDraft";
 
 export type IngestSender = (request: IngestRequest) => Promise<SubmitResult>;
 export type StatusFetcher = (itemId: string) => Promise<ApiResult<ItemStatusInfo>>;
@@ -147,5 +184,44 @@ export async function reopenTabsViaBackground(windowId: number, urls: string[]) 
     await chrome.runtime.sendMessage({ type: "kortex/reopen-tabs", windowId, urls } satisfies ExtMessage);
   } catch {
     /* worker restarting */
+  }
+}
+
+/** Popup: screenshot upload through the background worker (it owns the API client and the mock inbox). */
+export async function uploadViaBackground(msg: Omit<Extract<ExtMessage, { type: "kortex/upload" }>, "type">): Promise<IngestResponse> {
+  try {
+    const res = (await chrome.runtime.sendMessage({ type: "kortex/upload", ...msg } satisfies ExtMessage)) as IngestResponse | undefined;
+    return res ?? { ok: false, error: { code: "network", message: t("No answer from the background service") } };
+  } catch (e) {
+    return { ok: false, error: { code: "network", message: e instanceof Error ? e.message : t("Message failed") } };
+  }
+}
+
+/** Asks the content script of a tab what the page has; null when no content script answers (store page, PDF, old tab). */
+export async function pageInfo(tabId: number, withText = false): Promise<PageInfo | null> {
+  try {
+    const res = (await chrome.tabs.sendMessage(tabId, { type: "kortex/page-info", withText } satisfies ExtMessage)) as PageInfo | undefined;
+    return res && Array.isArray(res.highlights) ? res : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Popup mode "Selection": the content script saves its selection as a highlight (colour, note). */
+export async function highlightSelectionInTab(tabId: number, opts: { color?: HighlightColor; note?: string } = {}): Promise<HighlightOutcome> {
+  try {
+    const res = (await chrome.tabs.sendMessage(tabId, { type: "kortex/highlight-selection", ...opts } satisfies ExtMessage)) as HighlightOutcome | undefined;
+    return res ?? { ok: false, message: t("The page did not answer. Reload it and try again.") };
+  } catch {
+    return { ok: false, message: t("The page did not answer. Reload it and try again.") };
+  }
+}
+
+/** Side panel: scroll the page to a highlight. */
+export async function focusHighlightInTab(tabId: number, id: string) {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: "kortex/hl-focus", id } satisfies ExtMessage);
+  } catch {
+    /* page reloaded meanwhile */
   }
 }

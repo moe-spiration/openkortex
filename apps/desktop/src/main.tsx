@@ -9,14 +9,31 @@ import { createRoot } from "react-dom/client";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { bridge, isTauri, type HudMode, type WindowLabel } from "./bridge";
 import { Toast } from "./components/Toast";
-import { FONT_SCALE_KEY, applyAccent, applyFontScale, parseFontScale, readFontScale, resolveAccent } from "./theme";
+import {
+  ACCENT_STORAGE_KEY,
+  FONT_SCALE_KEY,
+  LOOK_KEY,
+  THEME_KEY,
+  applyAccent,
+  applyFontScale,
+  applyLook,
+  applyTheme,
+  parseFontScale,
+  parseLook,
+  parseTheme,
+  readFontScale,
+  readLook,
+  readTheme,
+  resolveAccent,
+  resolveTheme,
+  type ThemePref,
+} from "./theme";
 import { NATIVE_WINDOWS, resolveWindow } from "./windowRoute";
 import { DesktopPreview } from "./preview/DesktopPreview";
 import { DesktopProvider, useDesktop } from "./state/desktop";
-import { Hud } from "./windows/Hud";
 import { MainWindow } from "./windows/MainWindow";
+import { MeetingBar } from "./windows/MeetingBar";
 import { NativeWindow } from "./windows/NativeWindow";
-import { Pill } from "./windows/Pill";
 import { QuickCapturePalette } from "./windows/QuickCapture";
 import { TrayMenu } from "./windows/TrayMenu";
 
@@ -28,18 +45,11 @@ import { TrayMenu } from "./windows/TrayMenu";
 const FILL: CSSProperties = { position: "relative", width: "100%", height: "100%" };
 const AT_ORIGIN: CSSProperties = { position: "relative" };
 
+/** The meeting bar: collapsed ("pill") or with its panel ("hud"); the window takes the content's height. */
 function HudWindow() {
   const d = useDesktop();
-  if (d.mode === "pill") return <Pill placement={AT_ORIGIN} />;
-  if (d.mode === "hud")
-    return (
-      <div style={FILL}>
-        <Hud placement={AT_ORIGIN} />
-        {/* Feedback of HUD actions (clip, task, upload) and of the tray / hotkeys. */}
-        <Toast />
-      </div>
-    );
-  return null;
+  if (d.mode !== "pill" && d.mode !== "hud") return null;
+  return <MeetingBar placement={AT_ORIGIN} fitWindow />;
 }
 
 function NativeRoot({ label }: { label: WindowLabel }) {
@@ -70,8 +80,10 @@ function NativeRoot({ label }: { label: WindowLabel }) {
 const params = new URLSearchParams(window.location.search);
 // Native: every window loads index.html and is identified by its Tauri label. Browser: ?window=<label>.
 const label = resolveWindow(isTauri() ? getCurrentWindow().label : params.get("window"));
-const theme = params.get("theme") === "light" ? "light" : "dark";
-if (theme === "light") document.documentElement.dataset.theme = "light";
+// Light / dark: ?theme= (preview, screenshots), else the stored choice, else Windows (prefers-color-scheme).
+const systemDark = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+let themePref: ThemePref = "system";
+const showTheme = () => applyTheme(document.documentElement, resolveTheme(themePref, systemDark?.matches ?? true));
 // Tactile Craft v2: one accent, everything else derives in CSS (?accent=violet | %2310B981, or the stored one).
 let store: Storage | null = null;
 try {
@@ -87,11 +99,27 @@ void bridge()
   .invoke("get_locale")
   .then((locale) => followLocale(locale, store), () => undefined);
 bridge().listen("settings:locale", ({ locale }) => followLocale(locale, store));
+themePref = readTheme(params.get("theme"), store);
+const theme = resolveTheme(themePref, systemDark?.matches ?? true);
+showTheme();
+systemDark?.addEventListener("change", showTheme);
+bridge().listen("settings:theme", ({ theme: next }) => {
+  if (params.get("theme")) return;
+  themePref = parseTheme(next);
+  showTheme();
+});
 applyAccent(document.documentElement, resolveAccent(params.get("accent"), store));
 applyFontScale(document.documentElement, readFontScale(store));
+applyLook(document.documentElement, readLook(params.get("look"), store));
 // Settings in one window changes the font size of every open window (same origin, `storage` fires in the others).
 window.addEventListener("storage", (e) => {
   if (e.key === FONT_SCALE_KEY) applyFontScale(document.documentElement, parseFontScale(e.newValue));
+  if (e.key === LOOK_KEY) applyLook(document.documentElement, parseLook(e.newValue));
+  if (e.key === ACCENT_STORAGE_KEY && !params.get("accent")) applyAccent(document.documentElement, e.newValue);
+  if (e.key === THEME_KEY && !params.get("theme")) {
+    themePref = parseTheme(e.newValue);
+    showTheme();
+  }
 });
 if (label && label !== "main") document.documentElement.classList.add("kx-transparent");
 // Natively the HUD window starts hidden (tauri.conf.json): every window starts "off" and follows the

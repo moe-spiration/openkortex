@@ -263,3 +263,82 @@ export function PropertyPills({ item, type }: { item: KnowledgeItem; type: Domai
     </div>
   );
 }
+
+/**
+ * Ruhe (mockup screens 03 and 06): the object's properties as a key/value table instead of a pill row. Labels in
+ * sentence case left, values right; a click on a value edits it (the same editor as the pills), an empty one shows
+ * "Add". `extra` rows (e.g. "Letzter Kontakt" from the meetings) come after the fields. Styles: ruhe-akte.css.
+ */
+export function PropertyTable({ item, type, extra = [] }: { item: KnowledgeItem; type: DomainObjectType; extra?: { key: string; label: string; value: ReactNode; onClick?: () => void }[] }) {
+  const { items } = useNotes();
+  const { openNote } = useShell();
+  const [edit, setEdit] = useState<string | null | "all">(null);
+  const findByTitle = (title: string) => Object.values(items).find((i) => i.title === title);
+  const fields = fieldsOf(type).filter(([k, d]) => d.pill || !isEmpty(item.metadata[k]));
+
+  return (
+    <div className="rz-kv-wrap">
+      <dl className="rz-kv" aria-label={t("Properties")}>
+        {fields.map(([k, d]) => {
+          const v = item.metadata[k];
+          const open = () => setEdit(k);
+          let value: ReactNode;
+          if (isEmpty(v)) value = <span className="rz-kv-empty">{t("Add")}</span>;
+          else if (d.kind === "percent")
+            value = (
+              <span className="rz-kv-pct">
+                <span className="rz-kv-bar" aria-hidden>
+                  <i style={{ width: `${Number(v)}%` }} />
+                </span>
+                <span className="kx-num">{Number(v)} %</span>
+              </span>
+            );
+          else value = display(k, d, v);
+          const target = d.kind === "link" && !isEmpty(v) ? findByTitle(String(v)) : undefined;
+          return (
+            <div key={k} className="rz-kv-row">
+              <dt>{d.label}</dt>
+              <dd>
+                {target ? (
+                  <span className="rz-kv-link">
+                    <button type="button" className="rz-wl" onClick={() => openNote(target.id)} title={t("Open {name}", { name: String(v) })}>
+                      {value}
+                    </button>
+                    <button type="button" className="rz-kv-pen" aria-label={t("Edit {name}", { name: d.label })} onClick={open}>
+                      <Ico name="pencil" style={{ width: 12, height: 12 }} />
+                    </button>
+                  </span>
+                ) : (
+                  <button type="button" className="rz-kv-v" onClick={open} title={t("Edit {name}", { name: d.label })}>
+                    {value}
+                  </button>
+                )}
+              </dd>
+            </div>
+          );
+        })}
+        {extra.map((x) => (
+          <div key={x.key} className="rz-kv-row">
+            <dt>{x.label}</dt>
+            <dd>
+              {x.onClick ? (
+                <button type="button" className="rz-kv-v" onClick={x.onClick}>
+                  {x.value}
+                </button>
+              ) : (
+                <span className="rz-kv-v is-static">{x.value}</span>
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <button type="button" className="rz-kv-all" onClick={() => setEdit("all")}>
+        <Ico name="pencil" style={{ width: 12, height: 12 }} />
+        {t("All properties")}
+      </button>
+      {edit !== null && <FieldEditor key={edit} item={item} type={type} only={edit === "all" ? null : edit} onClose={() => setEdit(null)} />}
+    </div>
+  );
+}
+
+const isEmpty = (v: unknown) => v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length);

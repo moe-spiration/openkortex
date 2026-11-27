@@ -136,6 +136,40 @@ describe("POST /api/chat as agent", () => {
     expect(cites.every((c) => c.id === "citations")).toBe(true);
   });
 
+  it("ends with an answer even when the model would keep searching: the last step allows no tools", async () => {
+    const choices: unknown[] = [];
+    let n = 0;
+    const model = new MockLanguageModelV4({
+      modelId: "mock-chat",
+      doStream: async (opts) => {
+        const choice = (opts as { toolChoice?: { type: string } }).toolChoice;
+        choices.push(choice?.type);
+        n++;
+        const parts: unknown[] =
+          choice?.type === "none"
+            ? [
+                { type: "stream-start", warnings: [] },
+                { type: "text-start", id: "t1" },
+                { type: "text-delta", id: "t1", delta: "Hier ist, was ich gefunden habe [1]." },
+                { type: "text-end", id: "t1" },
+                { type: "finish", finishReason: { unified: "stop", raw: "stop" }, usage },
+              ]
+            : [
+                { type: "stream-start", warnings: [] },
+                { type: "tool-call", toolCallId: `c${n}`, toolName: "vault_search", input: JSON.stringify({ query: `Mayer ${n}` }) },
+                { type: "finish", finishReason: { unified: "tool-calls", raw: "tool_use" }, usage },
+              ];
+        return { stream: convertArrayToReadableStream(parts as never[]) };
+      },
+    });
+    const { h } = make(model);
+    const parts = await readStream(await h.POST(session(CHAT, ask({ autonomy: "read" }))));
+    const text = parts.filter((p) => p.type === "text-delta").map((p) => p.delta).join("");
+    expect(text).toBe("Hier ist, was ich gefunden habe [1].");
+    expect(choices.at(-1)).toBe("none");
+    expect(choices.slice(0, -1).every((c) => c !== "none")).toBe(true);
+  });
+
   it("offers no write tools when the agent may only read", async () => {
     const { model, seen } = agentModel([]);
     const { h } = make(model);

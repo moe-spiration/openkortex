@@ -1,4 +1,5 @@
-// OpenKortex website: language choice, the step player and the screenshot deck.
+// OpenKortex website: language and theme choice, scroll reveals, the step player, the scenes and the screenshot deck.
+// No requests to other sites: everything it needs is on the page.
 // Autoplay only runs while a block is on screen, pauses on hover or focus, and is off when the
 // visitor asks for reduced motion (then everything is still reachable by click or keyboard).
 /* global window, document, IntersectionObserver */
@@ -32,36 +33,31 @@
     });
   });
 
-  // GitHub stars next to the header link. Cached for an hour; shown only from 10 stars on, and never blocks anything.
-  var stars = document.querySelector("[data-stars]");
-  var gh = stars && stars.closest("a");
-  var m = gh && /github\.com\/([\w.-]+\/[\w.-]+)/.exec(gh.href);
-  if (m && window.fetch) {
-    var showStars = function (n) {
-      if (typeof n !== "number" || n < 10) return;
-      stars.textContent = n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + "k" : String(n);
-      stars.hidden = false;
-    };
-    var cached = null;
-    try {
-      cached = JSON.parse(localStorage.getItem("okx-stars") || "null");
-    } catch {
-      cached = null;
-    }
-    if (cached && Date.now() - cached.at < 3600000) showStars(cached.n);
-    else
-      fetch("https://api.github.com/repos/" + m[1], { headers: { Accept: "application/vnd.github+json" } })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (d) {
-          if (!d) return;
-          showStars(d.stargazers_count);
-          try {
-            localStorage.setItem("okx-stars", JSON.stringify({ n: d.stargazers_count, at: Date.now() }));
-          } catch {
-            /* not cached */
-          }
-        })
-        .catch(function () {});
+  // The header gets its hairline once the page has scrolled.
+  var top = document.querySelector(".top");
+  if (top) {
+    var onScroll = function () { top.classList.toggle("is-scrolled", window.scrollY > 8); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
+  // Scroll reveals: each [data-reveal] block rises in once when it comes into view; pictograms inside start to loop.
+  // With reduced motion the stylesheet shows everything at once and nothing loops.
+  var reveals = document.querySelectorAll("[data-reveal]");
+  if ("IntersectionObserver" in window) {
+    var ro = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          e.target.classList.add("is-in");
+          ro.unobserve(e.target);
+        });
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
+    );
+    reveals.forEach(function (el) { ro.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add("is-in"); });
   }
 
   // Marquees loop seamlessly: the list is doubled once, the copy hidden from assistive technology.
@@ -241,7 +237,7 @@
       var next = cards[(at + 1) % cards.length].querySelector("img");
       if (next) next.loading = "eager";
     }
-    var again = autoplay(deck, 4800, function () { go(at + 1); });
+    var again = autoplay(deck, 5200, function () { go(at + 1); });
     dtabs.forEach(function (t, k) { t.addEventListener("click", function () { go(k); again(); }); });
     go(0);
   }

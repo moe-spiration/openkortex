@@ -9,6 +9,7 @@
  */
 
 import { accentFill } from "@kortex/ui/accent";
+import type { ThemePref } from "./bridge/contract";
 
 /** Preset ids of the web (apps/web/src/lib/shell/accent.ts ACCENTS). Grün/Orange are stored as hex values. */
 export const ACCENT_PRESETS: Record<string, string> = {
@@ -29,7 +30,14 @@ export function accentHex(value: string | null | undefined): string | null {
   const preset = ACCENT_PRESETS[v.toLowerCase()];
   if (preset) return preset;
   const s = v.replace(/^#/, "");
-  if (/^[0-9a-f]{3}$/i.test(s)) return "#" + [...s].map((c) => c + c).join("").toUpperCase();
+  if (/^[0-9a-f]{3}$/i.test(s))
+    return (
+      "#" +
+      [...s]
+        .map((c) => c + c)
+        .join("")
+        .toUpperCase()
+    );
   if (/^[0-9a-f]{6}$/i.test(s)) return "#" + s.toUpperCase();
   return null;
 }
@@ -53,7 +61,10 @@ export function applyAccent(root: HTMLElement, value: string | null | undefined)
 }
 
 /** The accent to use: `?accent=` first, then the stored desktop accent. */
-export function resolveAccent(param: string | null, storage: Pick<Storage, "getItem"> | null): string | null {
+export function resolveAccent(
+  param: string | null,
+  storage: Pick<Storage, "getItem"> | null,
+): string | null {
   if (accentHex(param)) return param;
   try {
     const stored = storage?.getItem(ACCENT_STORAGE_KEY) ?? null;
@@ -89,3 +100,65 @@ export function readFontScale(storage: Pick<Storage, "getItem"> | null): number 
 export function applyFontScale(root: HTMLElement, scale: number): void {
   root.style.setProperty("--kx-fs", String(parseFontScale(String(scale))));
 }
+
+/*
+ * Look of the desktop's own windows (HUD, pill, quick capture, tray, small windows): the calm "ruhe" look (default)
+ * or "vivid" (the former classic look; a stored "classic" from before 0.6.7 reads as "ruhe"), <html data-look>. Stored per device in localStorage `kortex.desktop.look` like the font
+ * size, `?look=ruhe` for the browser preview. The main window shows the web app, which has its own switch under
+ * Einstellungen > Erscheinungsbild > Look.
+ */
+export type Look = "ruhe" | "vivid";
+export const LOOK_KEY = "kortex.desktop.look";
+
+export const parseLook = (v: string | null | undefined): Look => (v === "vivid" ? "vivid" : "ruhe");
+
+/** `?look=` first, then the stored look. */
+export function readLook(param: string | null, storage: Pick<Storage, "getItem"> | null): Look {
+  if (param === "ruhe" || param === "vivid") return param;
+  try {
+    return parseLook(storage?.getItem(LOOK_KEY));
+  } catch {
+    return "ruhe";
+  }
+}
+
+export function applyLook(root: HTMLElement, look: Look): void {
+  root.dataset.look = look;
+  // Ruhe steps its font weights down on Windows, where Geist renders heavier (packages/ui ruhe.css, data-os).
+  if (typeof navigator !== "undefined" && /Windows/i.test(navigator.userAgent)) root.dataset.os = "windows";
+}
+
+/*
+ * Light or dark (Ruhe D5): the desktop's own windows follow Windows by default (prefers-color-scheme; the core sets
+ * WebView2's scheme with `set_theme`) or a fixed choice from Einstellungen → Erscheinungsbild. Stored per device in
+ * localStorage `kortex.desktop.theme` like look and font size, so every open window follows through the `storage`
+ * event; the core keeps a copy in desktop.json for the native parts. `?theme=` (browser preview, screenshots) wins.
+ */
+export type { ThemePref };
+export const THEME_KEY = "kortex.desktop.theme";
+
+export const parseTheme = (v: string | null | undefined): ThemePref => (v === "light" || v === "dark" ? v : "system");
+
+/** `?theme=light|dark` first, then the stored choice ("system" when nothing or something else is stored). */
+export function readTheme(param: string | null, storage: Pick<Storage, "getItem"> | null): ThemePref {
+  if (param === "light" || param === "dark") return param;
+  try {
+    return parseTheme(storage?.getItem(THEME_KEY));
+  } catch {
+    return "system";
+  }
+}
+
+/** The colours a window shows for `pref`; "system" asks Windows (prefers-color-scheme). */
+export function resolveTheme(pref: ThemePref, systemDark: boolean): "light" | "dark" {
+  return pref === "system" ? (systemDark ? "dark" : "light") : pref;
+}
+
+/** Sets <html data-theme> (light / dark); the tokens of @kortex/ui switch on it. */
+export function applyTheme(root: HTMLElement, theme: "light" | "dark"): void {
+  root.dataset.theme = theme;
+  root.style.colorScheme = theme;
+}
+
+/** Stored accent (Einstellungen → Erscheinungsbild → Akzent): preset id or hex, null = default. */
+export const ACCENT_CHOICES = ["indigo", "violet", "blue", "teal", "rose", "amber"] as const;

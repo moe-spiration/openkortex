@@ -1,0 +1,55 @@
+/*
+ * Ruhe (2026-11-27, web-scr2): the graph as in the mockup screen "graph": a location bar with Typen / Tags / period /
+ * "…" instead of the floating filter and tool HUDs, nodes coloured by cluster (tag domain) with the cluster names,
+ * the inspector top right (avatar, connections, "Stärkste Verbindungen", "Akte öffnen / Nur Nachbarn") and a legend of
+ * the clusters bottom left. Markup: components/graph/GraphView.tsx (ruhe branch), graph-engine.ts (.gr-cluster). Ruhe only.
+ */
+@layer components {
+  [data-look="ruhe"] .gr-page--ruhe { --rz-pad: 18px; }
+  [data-look="ruhe"] .gr-rz-meta { margin-left: 10px; color: var(--t4); font-size: var(--rz-fs-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  [data-look="ruhe"] .gr-rz-search { position: relative; margin-right: 4px; }
+  [data-look="ruhe"] .gr-rz-search .gr-search { min-width: 170px; height: 28px; background: var(--lum-2); box-shadow: none; }
+  [data-look="ruhe"] .gr-rz-search .gr-search:focus-within { box-shadow: 0 0 0 1px var(--accent-line, var(--accent)); }
+  [data-look="ruhe"] .rz-pop-item .gr-sh { width: 9px; height: 9px; background: var(--t3); }
+  [data-look="ruhe"] .rz-pop-item[aria-pressed="false"] .gr-sh, [data-look="ruhe"] .rz-pop-item[aria-pressed="false"] .gr-rz-dot { opacity: 0.35; }
+  [data-look="ruhe"] .gr-rz-dot { display: block; flex: none; width: 7px; height: 7px; border-radius: 50%; }
+  [data-look="ruhe"] .gr-page--ruhe .gr-canvas--3d { background: none; }
+
+  [data-look="ruhe"] .gr-cluster {
+    position: absolute; left: 0; top: 0; color: var(--t3); font-size: var(--rz-fs-body); font-weight: var(--rz-w-book); white-space: nowrap;
+    pointer-events: none; transition: opacity var(--d2) var(--eo);
+  }
+
+  [data-look="ruhe"] .gr-rz-ins {
+    position: absolute; right: 16px; top: 16px; z-index: 6; width: 300px; max-height: calc(100% - 120px); overflow: auto; padding: 16px; border-radius: 14px;
+    background: var(--glass, color-mix(in oklch, var(--lum-2) 88%, transparent)); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 18px 44px -16px rgb(0 0 0 / 0.5);
+  }
+  [data-look="ruhe"] .gr-rz-ins-h { display: flex; align-items: center; gap: 10px; }
+  [data-look="ruhe"] .gr-rz-av { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--lum-3); color: var(--t2); font-size: var(--rz-fs-meta); font-weight: var(--rz-w-medium); }
+  [data-look="ruhe"] .gr-rz-ins-t { font-size: var(--rz-fs-lead); font-weight: var(--rz-w-medium); letter-spacing: -0.01em; color: var(--t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [data-look="ruhe"] .gr-rz-ins-s { color: var(--t3); font-size: var(--rz-fs-meta); margin-top: 1px; }
+  [data-look="ruhe"] .gr-rz-ins > .gr-rz-ins-s { margin-top: 10px; }
+  [data-look="ruhe"] .gr-rz-ins-ai { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); color: var(--t1); font-size: var(--rz-fs-ui); line-height: 1.55; }
+  [data-look="ruhe"] .gr-rz-lab { margin: 12px 0 4px; color: var(--t3); font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); }
+  [data-look="ruhe"] .gr-rz-link {
+    display: flex; align-items: center; gap: 9px; width: calc(100% + 16px); height: 30px; margin: 0 -8px; padding: 0 8px; border: 0; border-radius: 7px;
+    background: none; color: var(--t1); font: inherit; font-size: var(--rz-fs-ui); text-align: left; cursor: pointer;
+  }
+  [data-look="ruhe"] .gr-rz-link:hover { background: var(--lum-3); }
+  [data-look="ruhe"] .gr-rz-link > svg { flex: none; color: var(--t3); }
+  [data-look="ruhe"] .gr-rz-n { margin-left: auto; color: var(--t4); font-variant-numeric: tabular-nums; }
+  [data-look="ruhe"] .gr-rz-acts { display: flex; gap: 6px; margin-top: 10px; }
+  [data-look="ruhe"] .gr-rz-acts .rz-btn { height: 28px; padding: 0 10px; font-size: var(--rz-fs-ui); text-decoration: none; }
+
+  [data-look="ruhe"] .gr-rz-leg { position: absolute; left: 18px; top: 14px; z-index: 6; display: flex; flex-wrap: wrap; gap: 14px; color: var(--t3); font-size: var(--rz-fs-meta); pointer-events: none; }
+  [data-look="ruhe"] .gr-rz-leg > span { display: inline-flex; align-items: center; gap: 6px; }
+  [data-look="ruhe"] .gr-rz-leg i { width: 6px; height: 6px; border-radius: 50%; }
+  [data-look="ruhe"] .gr-rz-faint { color: var(--t4); }
+  [data-look="ruhe"] .gr-rz-search .gr-ser { background: var(--lum-2); box-shadow: 0 0 0 1px var(--hair-strong); -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+  @container kx-view (max-width: 540px) {
+    [data-look="ruhe"] .gr-rz-meta, [data-look="ruhe"] .gr-rz-search { display: none; }
+    [data-look="ruhe"] .gr-rz-ins { left: 12px; right: 12px; width: auto; top: auto; bottom: 170px; }
+  }
+}

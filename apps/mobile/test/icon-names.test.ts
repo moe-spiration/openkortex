@@ -8,8 +8,8 @@ import { describe, expect, it } from "vitest";
  */
 
 const SRC = join(__dirname, "..", "src");
-const iconSrc = readFileSync(join(SRC, "ui", "Icon.tsx"), "utf8");
-const block = iconSrc.slice(iconSrc.indexOf("const ICONS = {"));
+const iconSrc = readFileSync(join(SRC, "ui", "iconShapes.ts"), "utf8");
+const block = iconSrc.slice(iconSrc.indexOf("export const ICONS = {"));
 const known = new Set([...block.slice(0, block.indexOf("\n};")).matchAll(/^ {2}"?([a-zA-Z-]+)"?:/gm)].map((m) => m[1]));
 
 const files = (dir: string): string[] =>
@@ -27,8 +27,8 @@ describe("icon names", () => {
     const missing: string[] = [];
     for (const f of files(SRC)) {
       const s = readFileSync(f, "utf8");
-      for (const m of s.matchAll(/\bicon(?:Name)?: "([a-zA-Z-]+)"|<Icon name="([a-zA-Z-]+)"/g)) {
-        const name = m[1] ?? m[2]!;
+      for (const m of s.matchAll(/\bicon(?:Name)?: "([a-zA-Z-]+)"|<Ico(?:n)? name="([a-zA-Z-]+)"|\bicon="([a-zA-Z-]+)"/g)) {
+        const name = m[1] ?? m[2] ?? m[3]!;
         if (!known.has(name)) missing.push(`${f.slice(SRC.length + 1)}: ${name}`);
       }
     }

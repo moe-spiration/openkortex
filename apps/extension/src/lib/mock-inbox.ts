@@ -19,6 +19,10 @@ export interface StoredHighlight {
   savedAt: string;
   /** Server id (item_highlights.id), set when Kortex confirmed the highlight; needed to remove it there. */
   highlightId?: string;
+  /** Colour of the selection bar (yellow, indigo, green, pink); missing = yellow (before 2026-11-27). */
+  color?: string;
+  /** The note written in the note card. */
+  note?: string;
 }
 const hlKey = (url: string) => `hl:${url.split("#")[0]}`;
 

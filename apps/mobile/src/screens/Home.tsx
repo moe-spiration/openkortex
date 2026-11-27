@@ -2,7 +2,9 @@ import { intlLocale, t, tn } from "../i18n";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
-import { dueReminders } from "../data/live";
+import { dueLabel, dueReminders } from "../data/live";
+import type { Entry } from "../data/mock";
+import { initialOf } from "../lib/greeting";
 import { remindOptions } from "../lib/remind";
 import { attentionCount, reminderGroups } from "../lib/reminders";
 import { openReminders } from "../ui/RemindersSheet";
@@ -11,7 +13,7 @@ import { greetingFor } from "../lib/greeting";
 import { useApp } from "../state/AppState";
 import { alpha } from "../theme/color";
 import { PackHero } from "../theme/PackImages";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
 import { RADIUS } from "../theme/tokens";
 import { Icon } from "../ui/Icon";
 import { Btn, Check, Eyebrow, Help, Label, Micro, Photo, Section, T } from "../ui/primitives";
@@ -19,7 +21,12 @@ import { Btn, Check, Eyebrow, Help, Label, Micro, Photo, Section, T } from "../u
 import { ScreenScroll } from "../ui/Screen";
 import { Flashcards } from "../ui/Flashcards";
 import { DailyStack } from "../ui/DailyStack";
-import { AgentNight, YourAgent } from "../ui/AgentHome";
+import { AgentNight, AgentRowsRuhe, YourAgent } from "../ui/AgentHome";
+import { EmptyState, GroupHead, RAvatar, RRow, RTaskCheck, RuheLocBar, useTickLater } from "../ui/ruhe";
+import { entryIcon } from "../ui/RuheLibrary";
+import type { IconName } from "../ui/Icon";
+
+const entryIconOf = (e: Entry | undefined): IconName => (e ? entryIcon(e) : "fileText");
 import { EnergyToday } from "../ui/EnergyToday";
 import { useEntryActions } from "../ui/entryActions";
 import { LifeMini } from "../ui/LifeMini";
@@ -27,7 +34,137 @@ import { LifeMini } from "../ui/LifeMini";
 /* Home (Mobile.dc.html "Tab: Home"): greeting, daily check-in, rediscover, jump back in, for today. */
 
 export function Home() {
+  return useRuhe() ? <HomeRuhe /> : <HomeVivid />;
+}
+
+/**
+ * Heute in Ruhe (mockup `mobil` / heute-soll): the Ortsleiste (date, "Heute", reminders and the avatar for
+ * settings), the day's card from the daily stack, then quiet rows: what is due (inbox first), the agent, where you
+ * left off, and the pages of the Heute family. No hero image, no stat tiles, no boxes in boxes.
+ */
+function HomeRuhe() {
   const th = useTheme();
+  const a = useApp();
+  const d = useData();
+  const act = useEntryActions();
+  const router = useRouter();
+  const [deckOpen, setDeckOpen] = useState(false);
+  const { ticked, tickLater } = useTickLater();
+  const reminders = useMemo(() => reminderGroups(d.entries, new Date()), [d.entries]);
+  const attention = attentionCount(reminders);
+  const now = new Date();
+  const todayIso = now.toISOString().slice(0, 10);
+  const tasks = d.tasks.filter((x) => x.status !== "done" && x.status !== "cancelled" && x.due_date && x.due_date.slice(0, 10) <= todayIso).slice(0, 5);
+  const due = dueReminders(d.entries, now).slice(0, 4);
+  const cardCount = a.cardsDone ? 0 : d.home?.flashcards ? d.home.flashcards.cards.length : d.home ? 0 : 3;
+  const today = now.toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long" });
+  const run = (p: Promise<string | null>) => void p.then((err) => err && a.say(err));
+  const tomorrow = remindOptions().find((o) => o.key === "tomorrow");
+  const dueRows = (a.inboxCount > 0 ? 1 : 0) + tasks.length + due.length;
+  const meeting = d.home?.meeting;
+  return (
+    <>
+      <ScreenScroll flush>
+        <RuheLocBar
+          eyebrow={today}
+          title={t("Today")}
+          actions={[{ icon: "bell", label: attention ? t("Reminders, {n} new", { n: attention }) : t("Reminders"), on: attention > 0, onPress: openReminders }]}
+          trailing={<RAvatar initials={initialOf(d.name)} label={t("Profile and settings")} onPress={() => router.navigate("/settings")} />}
+        />
+        <DailyStack />
+
+        {dueRows === 0 && (
+          <View>
+            <GroupHead label={t("Due today")} />
+            <EmptyState icon="checkCircle" pic="stack" size="sm" title={t("Nothing is due today.")} />
+          </View>
+        )}
+        {dueRows > 0 && (
+          <View>
+            <GroupHead label={t("Due today")} count={tasks.length + due.length || undefined} />
+            {a.inboxCount > 0 && <RRow first icon="inbox" title={t("Inbox")} sub={tn(a.inboxCount, "{n} entry waits", "{n} entries wait")} count={a.inboxCount} chevron onPress={() => router.navigate("/inbox")} />}
+            {tasks.map((task, i) => {
+              const label = dueLabel(task.due_date, now);
+              const late = task.due_date!.slice(0, 10) < todayIso;
+              return (
+                <RRow
+                  key={task.id}
+                  first={i === 0 && a.inboxCount === 0}
+                  lead={<RTaskCheck done={ticked(task.id)} label={task.title} onPress={() => tickLater(task.id, () => run(d.toggleTask(task.id)))} />}
+                  title={task.title}
+                  titleWeight={400}
+                  sub={label ?? undefined}
+                  subColor={late ? th.crit : undefined}
+                  onPress={() => (task.source_item_id ? a.openEntry(task.source_item_id) : router.navigate("/tasks"))}
+                />
+              );
+            })}
+            {due.map((e, i) => (
+              <RRow
+                key={e.id}
+                first={i === 0 && a.inboxCount === 0 && tasks.length === 0}
+                lead={<RTaskCheck done={ticked(e.id)} label={t("Done")} onPress={() => tickLater(e.id, () => run(d.setReminder(e.id, null)))} />}
+                title={e.title}
+                titleWeight={400}
+                sub={t("Reminder")}
+                onPress={() => a.openEntry(e.id)}
+                onLongPress={tomorrow ? () => run(d.setReminder(e.id, tomorrow.iso)) : undefined}
+              />
+            ))}
+          </View>
+        )}
+
+        <AgentRowsRuhe />
+
+        {meeting && (
+          <View>
+            <GroupHead label={t("For today")} />
+            <RRow first tall icon="mic" title={meeting.title} sub={meeting.coaching || meeting.people.slice(0, 3).join(", ") || undefined} onPress={() => a.openEntry(meeting.id)} />
+          </View>
+        )}
+
+        {d.jump.length > 0 && (
+          <View>
+            <GroupHead label={t("Pick up where you left off")} />
+            {d.jump.slice(0, 3).map((j, i) => (
+              <RRow key={j.id} first={i === 0} icon={entryIconOf(d.entryById(j.id))} title={j.title} sub={j.meta} meta={j.pct > 0 && j.pct < 100 ? `${Math.round(j.pct)} %` : undefined} onPress={() => a.openEntry(j.id)} />
+            ))}
+          </View>
+        )}
+
+        <View>
+          <GroupHead label={t("More")} />
+          <RRow first icon="sun" title={t("Journal")} sub={a.streak > 0 ? tn(a.streak, "{n} day", "{n} days") : undefined} chevron onPress={() => router.navigate("/journal")} />
+          <RRow icon="checkSquare" title={t("Tasks")} count={d.tasks.filter((x) => x.status !== "done" && x.status !== "cancelled").length || undefined} chevron onPress={() => router.navigate("/tasks")} />
+          <RRow
+            icon="book"
+            title={t("Cards")}
+            count={cardCount || undefined}
+            chevron
+            onPress={() => (d.home?.flashcards ? setDeckOpen(true) : a.reviewCards())}
+            onLongPress={d.home?.flashcards ? () => a.openMenu(act.deckMenu(d.home!.flashcards!, () => setDeckOpen(true))) : undefined}
+          />
+          <RRow icon="life" title={t("Life")} chevron onPress={() => router.navigate("/life")} />
+        </View>
+      </ScreenScroll>
+      {deckOpen && d.home?.flashcards && (
+        <Flashcards
+          deck={d.home.flashcards.deck}
+          cards={d.home.flashcards.cards}
+          onClose={() => setDeckOpen(false)}
+          onDone={(k) => {
+            a.reviewCards();
+            a.say(t("Knew {known} of {total}", { known: k, total: d.home!.flashcards!.cards.length }));
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function HomeVivid() {
+  const th = useTheme();
+  const ruhe = useRuhe();
   const a = useApp();
   const d = useData();
   const act = useEntryActions();
@@ -48,7 +185,14 @@ export function Home() {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Eyebrow color={th.textSecondary}>{today}</Eyebrow>
-            <T type="greeting">{greetingFor(d.name)}</T>
+            {/* Ruhe: one heading system, the page name in large tight type instead of the light greeting. */}
+            {ruhe ? (
+              <T size={30} lh={36} ls={-0.03} weight={600}>
+                {t("Today")}
+              </T>
+            ) : (
+              <T type="greeting">{greetingFor(d.name)}</T>
+            )}
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4, height: 32, paddingHorizontal: 10, borderRadius: RADIUS.pill, backgroundColor: alpha(th.bgSurfaceFlat, 0.72) }}>
             <Icon name="flame" size={14} color={th.accentCheckin} />

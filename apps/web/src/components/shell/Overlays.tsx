@@ -12,7 +12,10 @@ import { useShell } from "@/lib/shell/store";
 import { useAsk } from "./useAsk";
 import { rich } from "@/components/ui/rich";
 import { PRODUCT_NAME, msg, t, tx } from "@/i18n";
+import { Pictogram } from "@/components/motion/Pictogram";
 import { Ico, type IconId } from "./icons";
+import { useLook } from "@/components/theme/look";
+import { PaletteRuhe } from "./PaletteRuhe";
 
 /*
  * Command palette, shortcut overview and toast (WebApp.dc.html overlays), on the shared primitives: base-ui Dialog
@@ -47,8 +50,55 @@ const jumpTargets = (): [string, string, IconId][] => [
   ["/settings", t("Settings"), "gear"],
 ];
 
-export function CommandPalette() {
+/** Global commands (theme, voice note, sidebar …), shared by both looks. */
+function useGlobalCommands() {
   const router = useRouter();
+  const shell = useShell();
+  const { prefs } = shell;
+  return (close: () => void): Cmd[] => {
+    const go = (href: string) => {
+      close();
+      router.push(href);
+    };
+    const dark = prefs.theme === "dark";
+    return [
+      { icon: "mic", label: t("Record voice note"), hint: "Ctrl+Shift+Space", run: () => (close(), shell.startRec("tap")) },
+      { icon: "palette", label: t("Change accent color"), hint: t("Settings"), run: () => go("/settings") },
+      { icon: "sun", label: dark ? t("Switch to light") : t("Switch to dark"), hint: t("Theme"), run: () => (close(), shell.setTheme(dark ? "light" : "dark")) },
+      { icon: "file-plus", label: t("New note"), hint: "Alt+N", run: () => (close(), shell.openNewNote()) },
+      { icon: "panel", label: prefs.sidebarClosed ? t("Show sidebar") : t("Hide sidebar"), hint: "Ctrl+\\", run: () => (close(), shell.toggleSidebar()) },
+      { icon: "rail", label: prefs.rail ? t("Expand sidebar") : t("Sidebar as icon rail"), hint: t("Settings"), run: () => (close(), shell.toggleRail()) },
+      { icon: "split", label: t("Toggle split view"), hint: "Ctrl+Shift+\\", run: () => (close(), shell.setSplit(!shell.drawer.pinned)) },
+      { icon: "review", label: t("Start weekly review"), hint: t("Ritual"), run: () => go("/journal/week") },
+      { icon: "key", label: t("Show keyboard shortcuts"), hint: "?", run: () => (close(), shell.setKeys(true)) },
+      { icon: "sparkles", label: t("Start setup again"), hint: "Onboarding", run: () => (close(), shell.setOnboarding(1)) },
+    ];
+  };
+}
+
+function useJumps() {
+  const router = useRouter();
+  return (close: () => void): Cmd[] =>
+    jumpTargets().map(([href, label, icon]) => ({
+      icon,
+      label,
+      hint: t("Jump"),
+      run: () => {
+        close();
+        router.push(href);
+      },
+    }));
+}
+
+/** Ruhe gets its own palette (entries first, actions for the active entry, Tab asks the agent); Vivid keeps the old one. */
+export function CommandPalette() {
+  const look = useLook();
+  const jumps = useJumps();
+  const commands = useGlobalCommands();
+  return look === "ruhe" ? <PaletteRuhe jumps={jumps} commands={commands} /> : <ClassicPalette jumps={jumps} commands={commands} />;
+}
+
+function ClassicPalette({ jumps, commands }: { jumps: (close: () => void) => Cmd[]; commands: (close: () => void) => Cmd[] }) {
   const shell = useShell();
   const { setPalette, prefs } = shell;
   const ask = useAsk();
@@ -56,10 +106,6 @@ export function CommandPalette() {
   const [text, setText] = useState("");
 
   const close = () => setPalette(false);
-  const go = (href: string) => {
-    close();
-    router.push(href);
-  };
 
   const q = text.trim();
   const ql = q.toLowerCase();
@@ -138,21 +184,9 @@ export function CommandPalette() {
           };
         }),
       });
-    const jumps: Cmd[] = jumpTargets().filter((j) => match(j[1])).map(([href, label, icon]) => ({ icon, label, hint: t("Jump"), run: () => go(href) }));
-    if (jumps.length) out.push({ label: t("Jump to"), rows: jumps });
-    const dark = prefs.theme === "dark";
-    const allActs: Cmd[] = [
-      { icon: "mic", label: t("Record voice note"), hint: "Ctrl+Shift+Space", run: () => (close(), shell.startRec("tap")) },
-      { icon: "palette", label: t("Change accent color"), hint: t("Settings"), run: () => go("/settings") },
-      { icon: "sun", label: dark ? t("Switch to light") : t("Switch to dark"), hint: t("Theme"), run: () => (close(), shell.setTheme(dark ? "light" : "dark")) },
-      { icon: "file-plus", label: t("New note"), hint: "Alt+N", run: () => (close(), shell.openNewNote()) },
-      { icon: "panel", label: prefs.sidebarClosed ? t("Show sidebar") : t("Hide sidebar"), hint: "Ctrl+\\", run: () => (close(), shell.toggleSidebar()) },
-      { icon: "rail", label: prefs.rail ? t("Expand sidebar") : t("Sidebar as icon rail"), hint: t("Settings"), run: () => (close(), shell.toggleRail()) },
-      { icon: "split", label: t("Toggle split view"), hint: "Ctrl+Shift+\\", run: () => (close(), shell.setSplit(!shell.drawer.pinned)) },
-      { icon: "review", label: t("Start weekly review"), hint: t("Ritual"), run: () => go("/journal/week") },
-      { icon: "key", label: t("Show keyboard shortcuts"), hint: "?", run: () => (close(), shell.setKeys(true)) },
-      { icon: "sparkles", label: t("Start setup again"), hint: "Onboarding", run: () => (close(), shell.setOnboarding(1)) },
-    ];
+    const jumpRows = jumps(close).filter((j) => match(j.label));
+    if (jumpRows.length) out.push({ label: t("Jump to"), rows: jumpRows });
+    const allActs = commands(close);
     const acts = allActs.filter((a) => match(a.label));
     if (acts.length) out.push({ label: t("Actions"), rows: acts });
     return out;
@@ -213,7 +247,8 @@ export function CommandPalette() {
                 </Command.Group>
               ))}
               {count === 0 && (
-                <div className="kx-help" style={{ padding: "18px 12px" }}>
+                <div className="kx-help kx-palette-empty" style={{ padding: "18px 12px" }}>
+                  <Pictogram kind="search" size="sm" className="kx-art-ruhe" />
                   {t("Nothing found. Enter asks Kortex.")}
                 </div>
               )}

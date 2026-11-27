@@ -12,7 +12,12 @@ import { isLiveData } from "@/lib/workspace-data";
 import { addStandingOrder, confirmAgentJob, dismissAgentJob, getAgentOverview, removeStandingOrder, startAgentJob, toggleStandingOrder, undoAgentJob } from "@/server/agent/actions";
 import { ResultList, StaticAnswer, Steps, useOpenItem } from "@/components/shell/CopilotLive";
 import { Ico } from "@/components/shell/icons";
+import { Pictogram } from "@/components/motion/Pictogram";
+import { EmptyPic } from "@/components/motion/EmptyPic";
 import { AUTONOMY_LEVELS } from "@/components/shell/TargetMenu";
+import { useLook } from "@/components/theme/look";
+import { mockStandingOrders } from "@/lib/mock/agent";
+import { AgentRuhe } from "./AgentRuhe";
 
 /*
  * The agent's page (/agent): start a job that runs in the background, see what waits for a confirmation, what
@@ -73,9 +78,10 @@ function JobDetail({ job, busy, onConfirm, onDismiss, onUndo, onBack }: { job: J
         </button>
       </div>
       <p className="ag-bubble">{job.prompt}</p>
+      {active && <Pictogram kind="agent" className="kx-art-ruhe" />}
       {active && (
         <p className="kx-agent-note ag-working">
-          <span className="kx-spinner" aria-hidden />
+          <span className="kx-spinner kx-art-classic" aria-hidden />
           {t("The agent is working. You can leave this page, the result waits here.")}
         </p>
       )}
@@ -133,6 +139,7 @@ function JobDetail({ job, busy, onConfirm, onDismiss, onUndo, onBack }: { job: J
 }
 
 export function AgentView() {
+  const look = useLook();
   const live = isLiveData();
   const chat = useCopilotChat();
   const { showToast, setPrompt, setCmode, setPinned } = useShell();
@@ -145,7 +152,7 @@ export function AgentView() {
   const fail = useCallback((error: string) => showToast(t("That did not work: {error}", { error })), [showToast]);
 
   const loadOrders = useCallback(() => {
-    if (!live) return;
+    if (!live) return setOrders((old) => (old.length ? old : mockStandingOrders()));
     void getAgentOverview().then((r) => (r.ok ? setOrders(r.data.orders) : fail(r.error)));
   }, [live, fail]);
 
@@ -222,6 +229,30 @@ export function AgentView() {
     });
   };
 
+  /** Mock mode: the fixtures change in memory, so the page can be tried without an account. */
+  const mockConfirm = (j: JobView, picks: number[]) => {
+    const labels = j.result?.proposal?.labels ?? [];
+    patchAgentJob(j.id, {
+      status: "done",
+      finishedAt: new Date().toISOString(),
+      result: { ...j.result, proposal: undefined, done: { results: picks.map((i) => ({ ok: true, label: labels[i] ?? "", undo: true })) } },
+    });
+    showToast(tn(picks.length, "{n} change made", "{n} changes made"));
+  };
+
+  /** The composer under a job: the answer or a changed request starts a follow-up job with the same skill. */
+  const reply = async (j: JobView, text: string) => {
+    const said = text.trim();
+    if (!said) return;
+    if (!live) return showToast(t("The agent needs an account (not available in mock mode)"));
+    setBusy(true);
+    const r = await startAgentJob({ prompt: `${j.prompt}\n\n${said}`, title: j.title, autonomy: chat.autonomy, ...(j.skill ? { skill: j.skill as NonNullable<Parameters<typeof startAgentJob>[0]["skill"]> } : {}) });
+    setBusy(false);
+    if (!r.ok) return fail(r.error);
+    putAgentJob(r.data);
+    setPicked(r.data.id);
+  };
+
   const groups = groupJobs(jobs);
   const job = jobs.find((j) => j.id === picked) ?? null;
   const group = (label: string, list: JobView[]) =>
@@ -232,6 +263,35 @@ export function AgentView() {
           <JobRow key={j.id} job={j} on={j.id === picked} onPick={() => setPicked(j.id)} />
         ))}
       </>
+    );
+
+  // Ruhe look: list left, job right (AgentRuhe); the state and actions stay here.
+  if (look === "ruhe")
+    return (
+      <AgentRuhe
+        m={{
+          live,
+          loaded,
+          jobs,
+          groups,
+          orders,
+          job,
+          picked,
+          busy,
+          orderText,
+          setPicked,
+          setOrderText,
+          pickSkill,
+          confirm: (j, picks) => (live ? void act(() => confirmAgentJob(j.id, picks), j.id) : mockConfirm(j, picks)),
+          dismiss: (j) =>
+            live ? void act(() => dismissAgentJob(j.id), j.id, { status: "cancelled" }).then(() => setPicked(null)) : (patchAgentJob(j.id, { status: "cancelled" }), setPicked(null)),
+          undo: (j) => (live ? void act(() => undoAgentJob(j.id), j.id) : patchAgentJob(j.id, { result: { ...j.result, undone: true } })),
+          reply: (j, text) => void reply(j, text),
+          saveOrder: (s) => void saveOrder(s),
+          toggleOrder,
+          deleteOrder,
+        }}
+      />
     );
 
   return (
@@ -293,7 +353,11 @@ export function AgentView() {
           {group(t("Waiting for you"), groups.waiting)}
           {group(t("Running"), groups.running)}
           {group(t("Done"), groups.finished.slice(0, 12))}
-          {loaded && jobs.length === 0 && <p className="kx-agent-note">{t("No jobs yet. Pick a skill or hand a task to the agent on the board.")}</p>}
+          {loaded && jobs.length === 0 && (
+            <EmptyPic kind="agent" size="sm" idle classic={<p className="kx-agent-note">{t("No jobs yet. Pick a skill or hand a task to the agent on the board.")}</p>}>
+              {t("No jobs yet. Pick a skill or hand a task to the agent on the board.")}
+            </EmptyPic>
+          )}
         </section>
 
         <section className="ag-panel">

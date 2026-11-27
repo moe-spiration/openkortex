@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Menu } from "@base-ui/react/menu";
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { todayIso } from "@/lib/date/today";
 import { NEW_NOTE_PICK_TEMPLATE } from "@/lib/shell/new-note";
 import { DOMAIN_OBJECT_FOLDERS, NEW_OBJECT_TITLE } from "@/lib/objects/schema";
@@ -13,11 +13,13 @@ import { useShell } from "@/lib/shell/store";
 import { useDesktopMeeting } from "@/lib/shell/desktop-bridge";
 import { SCRATCHPAD_COUNT_EVENT, SCRATCHPAD_EVENT, SCRATCHPAD_OPEN_EVENT, SCRATCHPAD_SHORTCUT_LABEL, SCRATCHPAD_TOGGLE } from "@/lib/scratchpad/client";
 import { JOURNAL_DAY_HREF } from "@/lib/shell/nav";
-import { hasWindowControls, subscribeWindowControls, windowControls } from "@/lib/shell/window-controls";
 import { PRODUCT_NAME, t, tn, tx } from "@/i18n";
 import { Ico, type IconId } from "./icons";
 import { NavMenuButton } from "./MobileNav";
+import { useLook } from "@/components/theme/look";
 import { TabStrip } from "./TabBar";
+import { WindowButtons, useWindowControls } from "./WindowButtons";
+import { onTitlebarMouseDown } from "@/lib/shell/window-drag";
 
 /*
  * Titlebar of the frame (Tactile Craft v2, decision 2; dummy `Titlebar`): one bar across sidebar and canvas with
@@ -63,7 +65,7 @@ function newTask(router: ReturnType<typeof useRouter>) {
   setTimeout(tryFocus, 0);
 }
 
-function NewButton() {
+function NewButton({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const { openNewNote, openNote, startMeeting } = useShell();
   const desktopRec = useDesktopMeeting();
@@ -119,17 +121,24 @@ function NewButton() {
   return (
     <div style={{ position: "relative" }}>
       <Menu.Root open={open} onOpenChange={setOpen}>
-        <span className="tc-newbtn">
-          <button type="button" className="tc-nb-main" onClick={() => openNewNote()} aria-label={t("New note")} aria-keyshortcuts="Alt+N Control+N">
-            <Ico name="plus" />
-            <span className="tc-nb-label">{t("New")}</span>
-          </button>
-          <Menu.Trigger className="tc-nb-more" aria-label={t("More options for New")}>
-            <Ico name="chev-d" />
+        {compact ? (
+          // Ruhe (mockup): one quiet compose icon next to the sidebar toggle; it opens the New menu (first entry: note, Alt+N).
+          <Menu.Trigger className="tc-ibtn tc-compose" aria-label={t("New")} data-tip={t("New") + "  Alt N"} data-tip-align="start">
+            <Ico name="square-pen" />
           </Menu.Trigger>
-        </span>
+        ) : (
+          <span className="tc-newbtn">
+            <button type="button" className="tc-nb-main" onClick={() => openNewNote()} aria-label={t("New note")} aria-keyshortcuts="Alt+N Control+N">
+              <Ico name="plus" />
+              <span className="tc-nb-label">{t("New")}</span>
+            </button>
+            <Menu.Trigger className="tc-nb-more" aria-label={t("More options for New")}>
+              <Ico name="chev-d" />
+            </Menu.Trigger>
+          </span>
+        )}
         <Menu.Portal>
-          <Menu.Positioner align="end" sideOffset={6} style={{ zIndex: 70 }}>
+          <Menu.Positioner align={compact ? "start" : "end"} sideOffset={6} style={{ zIndex: 70 }}>
             <Menu.Popup className="kx-menu kx-pop tc-newmenu" aria-label={t("New")}>
               {groups.map((g) => (
                 <Menu.Group key={g.label} aria-label={g.label}>
@@ -160,23 +169,6 @@ function NewButton() {
         }}
       />
     </div>
-  );
-}
-
-function WindowButtons() {
-  const w = windowControls();
-  return (
-    <span className="tc-win" aria-label={t("Window buttons")}>
-      <button type="button" className="tc-wbtn" aria-label={t("Minimize")} onClick={() => void w.minimize()}>
-        <Ico name="minus" />
-      </button>
-      <button type="button" className="tc-wbtn tc-wbtn--max" aria-label={t("Maximize")} onClick={() => void w.toggleMaximize()}>
-        <Ico name="square" />
-      </button>
-      <button type="button" className="tc-wbtn tc-wbtn--close" aria-label={t("Close")} onClick={() => void w.close()}>
-        <Ico name="x" />
-      </button>
-    </span>
   );
 }
 
@@ -232,13 +224,15 @@ function ScratchButton() {
 
 export function Titlebar() {
   const { prefs, toggleSidebar, setPalette } = useShell();
-  // Window buttons only once the desktop app registered a controller (not merely inside Tauri, which keeps its
-  // native frame until the custom one is switched on); the server snapshot is false, so hydration agrees.
-  const desktop = useSyncExternalStore(subscribeWindowControls, hasWindowControls, () => false);
+  // Window buttons only once the desktop app accepted the custom frame (WindowButtons.tsx).
+  const desktop = useWindowControls();
   const closed = prefs.sidebarClosed;
+  const ruhe = useLook() === "ruhe";
 
   return (
-    <header className="tc-titlebar" data-tauri-drag-region>
+    // Windows app: a press on any free surface of the bar moves the window, a double click maximises
+    // (window-drag.ts; replaces the bare data-tauri-drag-region, which only fired on the header's own pixels).
+    <header className="tc-titlebar" onMouseDown={onTitlebarMouseDown}>
       <div className="tc-tb-left">
         <NavMenuButton />
         <span className="tc-brand">
@@ -255,6 +249,7 @@ export function Titlebar() {
           on={closed}
           onClick={toggleSidebar}
         />
+        {ruhe && <NewButton compact />}
       </div>
       <TabStrip />
       <div className={"tc-tb-right" + (desktop ? " has-win" : "")}>
@@ -266,8 +261,9 @@ export function Titlebar() {
           <span className="tc-search-label">{t("Search or ask")}</span>
           {keys(["Ctrl", "K"])}
         </button>
-        <ScratchButton />
-        <NewButton />
+        {/* Ruhe (mockup): search only; the Scratchpad stays on Alt+J, the New menu and the orbit bar. */}
+        {!ruhe && <ScratchButton />}
+        {!ruhe && <NewButton />}
         {desktop && <WindowButtons />}
       </div>
     </header>

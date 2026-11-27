@@ -3,7 +3,7 @@
  * a card gets when it is dragged into a column, the head line and the Weekly Digest numbers. Pure, so it is unit-tested.
  */
 
-import { feature, t, tn } from "@/i18n";
+import { feature, t, tn, tx } from "@/i18n";
 
 const DAY = 864e5;
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -222,4 +222,55 @@ export function stageMeta(c: Record<Stage, number>): string {
     ...(c.external ? [feature("griply") ? t("{n} in Griply", { n: c.external }) : t("{n} handed over", { n: c.external })] : []),
     t("{n} done", { n: c.done }),
   ].join(", ") + ".";
+}
+
+/*
+ * Ruhe board (2026-11-27, screen "Aufgaben"): four columns Offen / Heute / In Arbeit / Erledigt. They sit on top of the
+ * stages above, nothing new is stored: a suggestion, a taken-over task and a task handed to Griply stay what they are
+ * and only fall into Offen or Heute by their due date; the card shows the stage as a mark ("Vorschlag", "Griply").
+ *   open   not done, not with the agent, due later / this week / undated
+ *   today  not done, not with the agent, due today or overdue
+ *   doing  handed to the agent ("In Arbeit")
+ *   done   done
+ */
+export type RuheColumn = "open" | "today" | "doing" | "done";
+export const RUHE_COLUMNS: readonly RuheColumn[] = ["open", "today", "doing", "done"];
+export const RUHE_COLUMN_LABEL: Record<RuheColumn, string> = {
+  get open() {
+    return tx("status", "Open");
+  },
+  get today() {
+    return t("Today");
+  },
+  get doing() {
+    return tx("task", "In progress");
+  },
+  get done() {
+    return t("Done");
+  },
+};
+
+export function ruheColumnOf(task: StageTask & { due?: string }, today: string): RuheColumn {
+  const stage = stageOf(task);
+  if (stage === "done") return "done";
+  if (stage === "agent") return "doing";
+  const b = bucketOf(task.due || undefined, today);
+  return b === "today" || b === "overdue" ? "today" : "open";
+}
+
+/**
+ * What a drop into a Ruhe column changes: the stage to move to (null = keep) and a new due date (only when it changes).
+ * Heute: due today unless already due today / overdue. Offen: a task due today / overdue moves to tomorrow, an undated
+ * one stays undated. Leaving Erledigt or the agent puts the task back to "taken over" (a task in Griply stays there).
+ */
+export function ruheDrop(task: StageTask & { due?: string }, col: RuheColumn, today: string): { stage: Stage | null; due?: string } {
+  const from = ruheColumnOf(task, today);
+  if (from === col) return { stage: null };
+  if (col === "done") return { stage: "done" };
+  if (col === "doing") return { stage: "agent" };
+  const stage = stageOf(task);
+  const back: Stage | null = stage === "done" || stage === "agent" ? (task.exportedAt ? "external" : "accepted") : null;
+  const b = bucketOf(task.due || undefined, today);
+  const due = col === "today" ? (b === "today" || b === "overdue" ? undefined : today) : b === "today" || b === "overdue" ? addDay(today, 1) : undefined;
+  return due ? { stage: back, due } : { stage: back };
 }

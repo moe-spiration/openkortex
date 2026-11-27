@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { lifeHref } from "@/lib/shell/routes";
 import { useShell } from "@/lib/shell/store";
 import { LifeDetail } from "./LifeDetail";
+import { LifeDetailRuhe } from "./LifeDetailRuhe";
+import { useLook } from "@/components/theme/look";
 import { LifeOverview } from "./LifeOverview";
 import { LifeDetailSkeleton, LifeOverviewSkeleton } from "./Skeleton";
 import { useLifeData } from "./useLifeData";
@@ -14,6 +16,7 @@ export function LifeView({ area }: { area: string }) {
   const router = useRouter();
   const { openNote } = useShell();
   const life = useLifeData();
+  const ruhe = useLook() === "ruhe";
   const go = (k: string) => router.push(lifeHref(k));
   const cur = life.areas.find((a) => a.key === area);
   const waiting = life.status !== "ready";
@@ -34,6 +37,8 @@ export function LifeView({ area }: { area: string }) {
         </p>
       ) : waiting && !failed ? (
         area === "overview" ? <LifeOverviewSkeleton /> : <LifeDetailSkeleton />
+      ) : cur && ruhe ? (
+        <LifeDetailRuhe key={cur.key} area={cur} vision={life.visions[cur.key] || cur.vision} onOpen={openNote} />
       ) : cur ? (
         <LifeDetail
           key={cur.key}

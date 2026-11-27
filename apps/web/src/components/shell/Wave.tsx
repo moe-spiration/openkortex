@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
+import { motionOff } from "@/lib/settings/motion";
 
 /*
  * Animated audio waveform (design/reference/Wave.dc.html).
@@ -113,9 +114,8 @@ export function levelOf(samples: Uint8Array): number {
   return Math.min(1, Math.sqrt(rms) * 1.6);
 }
 
-const reducedMotion = () =>
-  (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches) ||
-  document.documentElement.dataset.motion === "reduced";
+/** Bewegung "Aus" (or System on an OS that asks for reduced motion): lib/settings/motion.ts. */
+const reducedMotion = motionOff;
 
 /**
  * Live wave of the Orbit-Bar: fed by the real microphone level (Web Audio AnalyserNode on the

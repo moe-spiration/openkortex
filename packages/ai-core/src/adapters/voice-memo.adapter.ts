@@ -1,8 +1,8 @@
 import { generateText, Output } from "ai";
 import { z } from "zod";
-import { PRIORITIES } from "@kortex/db";
+import { PRIORITIES, renderTaskSection } from "@kortex/db";
 import { AdapterDeclinedError, errorMessage } from "../errors";
-import { byLocale, ph } from "../i18n";
+import { byLocale, getLocale, ph } from "../i18n";
 import { voiceSynthesisPrompt } from "../prompts/voice";
 import { modelFor, modelIdFor, type ModelRouter } from "../router/model-router";
 import type {
@@ -52,10 +52,12 @@ export function renderVoiceMarkdown(s: VoiceSynthesis, transcript: string): stri
       md.push(...o.points.filter((p) => p.trim()).map((p) => `- ${p.trim()}`), "");
     }
   }
-  const tasks = s.action_items.filter((a) => a.title.trim());
-  if (tasks.length > 0) {
-    md.push(`## ${ph("actionItems")}`, "", ...tasks.map((a) => `- [ ] ${a.title.trim()}`), "");
-  }
+  // The one task section every entry type uses (@kortex/db task-section.ts).
+  const tasks = renderTaskSection(
+    voiceActionItems(s).map((a) => ({ title: a.title, due_date: a.due_date, timeframe: null, context: null })),
+    getLocale(),
+  );
+  if (tasks) md.push(tasks, "");
   md.push(...transcriptToggleLines(transcript));
   return md.join("\n").trim();
 }

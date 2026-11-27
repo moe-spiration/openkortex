@@ -6,11 +6,12 @@ import { remindOptions } from "../lib/remind";
 import { reminderGroups, remindLine, watchLine } from "../lib/reminders";
 import { useApp } from "../state/AppState";
 import { useData } from "../state/Data";
-import { useTheme } from "../theme/ThemeProvider";
+import { useRuhe, useTheme } from "../theme/ThemeProvider";
 import { RADIUS } from "../theme/tokens";
 import { Icon, type IconName } from "./Icon";
 import { Btn, Help, Micro, Pill, T } from "./primitives";
 import { SwipeSheet } from "./SwipeSheet";
+import { EmptyState, GroupHead, RIconButton, RRow, RSheet, RText } from "./ruhe";
 
 /*
  * Erinnerungen (Home bell): the web page /erinnerungen as a bottom sheet, no tab of its own. Fällig and
@@ -40,6 +41,7 @@ export function RemindersLayer() {
 
 function RemindersSheet({ onClose }: { onClose: () => void }) {
   const th = useTheme();
+  const ruhe = useRuhe();
   const a = useApp();
   const d = useData();
   const now = new Date();
@@ -99,6 +101,65 @@ function RemindersSheet({ onClose }: { onClose: () => void }) {
         </Btn>
       </>,
     );
+
+  if (ruhe) {
+    // Ruhe: glass sheet with group heads and quiet rows; the actions are icon buttons at the row's end, so the title keeps its room.
+    const rRow = (e: Entry, icon: IconName, line: string, actions: ReactNode, extra?: ReactNode) => (
+      <View key={e.id}>
+        <RRow tall icon={icon} title={e.title} sub={line} onPress={() => openEntry(e.id)} accessibilityLabel={t("Open: {title}", { title: e.title })} trailing={<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>{actions}</View>} />
+        {extra}
+      </View>
+    );
+    const rReminder = (e: Entry, due: boolean) =>
+      rRow(
+        e,
+        "flag",
+        remindLine(e.remindAt!, now),
+        <>
+          {due && !!tomorrow && <RIconButton icon="sun" size={36} label={t("Tomorrow")} onPress={() => run(d.setReminder(e.id, tomorrow.iso))} />}
+          <RIconButton icon={due ? "check" : "x"} size={36} label={due ? t("Done: {title}", { title: e.title }) : t("Remove")} onPress={() => run(d.setReminder(e.id, null))} />
+        </>,
+      );
+    return (
+      <RSheet z={30} scroll maxHeight="82%" onClose={onClose} label={t("Reminders")} contentStyle={{ paddingHorizontal: 0 }}>
+        <View style={{ paddingHorizontal: 20, gap: 4 }}>
+          <RText step="titleCard" accessibilityRole="header">
+            {t("Reminders")}
+          </RText>
+          <RText step="rowSub" color={th.t3}>
+            {t("Due entries, upcoming reminders and pages Kortex watches for you.")}
+          </RText>
+        </View>
+        {empty && <EmptyState icon="bell" pic="stack" size="md" title={t("Nothing to remind")} help={t("Nothing to remind you of. Set a reminder in an entry or turn on “Watch” for a page on the web.")} />}
+        {groups.due.length > 0 && <GroupHead label={t("Due")} count={groups.due.length} />}
+        {groups.due.map((e) => rReminder(e, true))}
+        {groups.upcoming.length > 0 && <GroupHead label={t("Upcoming")} count={groups.upcoming.length} />}
+        {groups.upcoming.slice(0, 20).map((e) => rReminder(e, false))}
+        {groups.watched.length > 0 && <GroupHead label={t("Watched pages")} count={groups.watched.length} />}
+        {groups.watched.map(({ entry: e, watch: w, unseen }) =>
+          rRow(
+            e,
+            "eye",
+            watchLine(w),
+            <>
+              {unseen && <RIconButton icon="check" size={36} label={t("Seen: {title}", { title: e.title })} onPress={() => run(d.patchWatch(e.id, { seen: true }))} />}
+              <RIconButton icon="eyeOff" size={36} label={t("Stop watching: {title}", { title: e.title })} onPress={() => run(d.patchWatch(e.id, { enabled: false }))} />
+            </>,
+            unseen && w.last_diff ? (
+              <View style={{ flexDirection: "row", gap: 8, paddingLeft: 50, paddingRight: 20, paddingBottom: 8 }}>
+                <RText step="kind" color={th.accentInk}>
+                  {t("New")}
+                </RText>
+                <RText step="rowSub" color={th.t3} numberOfLines={3} style={{ flex: 1 }}>
+                  {w.last_diff.summary}
+                </RText>
+              </View>
+            ) : undefined,
+          ),
+        )}
+      </RSheet>
+    );
+  }
 
   return (
     <>

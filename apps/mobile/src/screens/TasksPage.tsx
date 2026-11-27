@@ -3,12 +3,18 @@ import { View } from "react-native";
 import { Help, T } from "../ui/primitives";
 import { ScreenScroll } from "../ui/Screen";
 import { Tasks } from "../ui/Tasks";
+import { useRuhe } from "../theme/ThemeProvider";
+import { TasksRuhe } from "./ruhe/TasksRuhe";
 
 /*
  * Aufgaben as a page of its own (like the web /tasks board): the status board with its stages, quick-add and the
  * hand-over to the agent. The Inbox keeps only what is being processed and what waits for a check.
  */
 export function TasksPage() {
+  return useRuhe() ? <TasksRuhe /> : <TasksVivid />;
+}
+
+function TasksVivid() {
   return (
     <ScreenScroll gap={16}>
       <View style={{ gap: 4 }}>

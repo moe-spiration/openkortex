@@ -128,6 +128,23 @@ describe("/api/meeting/live", () => {
     expect(row(h, other).content_md).toBe("[00:00:01] Ich: Nachträglich transkribiert.");
   });
 
+  it("discards a running session: the item goes, an ended one cannot be discarded", async () => {
+    const h = make();
+    const id = await start(h);
+    await h.live.POST(postJson(LIVE, { action: "append", item_id: id, segments: [{ channel: 0, start_sec: 2, text: "Vertraulich." }] }));
+    const res = await h.live.POST(postJson(LIVE, { action: "discard", item_id: id }));
+    expect(await res.json()).toEqual({ ok: true, item_id: id, discarded: true });
+    expect(h.db.rows("knowledge_items").some((r) => r.id === id)).toBe(false);
+    expect(((await (await h.live.GET(new Request(LIVE, authed()))).json()) as { session: unknown }).session).toBeNull();
+    // Gone: a second discard (or an end) finds nothing.
+    expect((await h.live.POST(postJson(LIVE, { action: "discard", item_id: id }))).status).toBe(404);
+
+    const ended = await start(h);
+    await h.live.POST(postJson(LIVE, { action: "end", item_id: ended }));
+    expect((await h.live.POST(postJson(LIVE, { action: "discard", item_id: ended }))).status).toBe(409);
+    expect(row(h, ended)).toBeTruthy();
+  });
+
   it("rejects unknown items, other types and bad bodies", async () => {
     const h = make();
     h.db.rows("knowledge_items").push({ id: "33333333-3333-4333-8333-333333333333", user_id: USER_ID, type: "note", title: "x", metadata: {} });

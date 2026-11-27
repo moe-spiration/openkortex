@@ -4,6 +4,7 @@ import type { TagDomain } from "@kortex/ui";
 import { tagDomain } from "@kortex/ui";
 import { HASHTAGS, NOTES as MOCK_NOTES, NOTE_TYPES, RECENT_NOTE_IDS as MOCK_RECENT } from "./mock/notes";
 import { NOTE_CONTENT as MOCK_CONTENT } from "./mock/content";
+import { MOCK_REMINDERS } from "./mock/reminders";
 import { OBJECT_ITEMS as MOCK_OBJECTS, type MockObject } from "./mock/objects";
 import {
   ACTION_ITEMS as MOCK_TASKS,
@@ -104,7 +105,7 @@ const LIVE = process.env.NEXT_PUBLIC_KORTEX_DATA_SOURCE === "supabase";
 const mockItems = (): KnowledgeItem[] =>
   MOCK_NOTES.map((n): KnowledgeItem => {
     const c = MOCK_CONTENT[n.id] ?? { contentMd: "", cover: null, actionItems: [] };
-    return { ...n, ...c, metadata: {}, manualPlacement: false, folderSuggestion: null };
+    return { ...n, ...c, ...MOCK_REMINDERS[n.id], metadata: {}, manualPlacement: false, folderSuggestion: null };
   });
 
 const MOCK_SNAPSHOT: WorkspaceSnapshot = {

@@ -25,6 +25,8 @@
     "allow-start-recording",
     "allow-stop-recording",
     "allow-upload-recording",
+    "allow-discard-recording",
+    "core:window:allow-set-size",
     "allow-account-status",
     "allow-connect-account",
     "allow-disconnect-account",
@@ -70,6 +72,7 @@
     "allow-vault-sync-now",
     "allow-vault-open",
     "allow-run-selftest",
-    "allow-stop-web-recording"
+    "allow-stop-web-recording",
+    "allow-set-theme"
   ]
 }

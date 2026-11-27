@@ -8,8 +8,11 @@
 import { pickLocale, registerCatalog, setLocale, getLocale, type Catalog, type Locale } from "@kortex/i18n";
 import { chromeStore, loadSettings, type LanguageSetting } from "../lib/settings";
 import extension from "./de/extension.json";
+import ruhe from "./de/ruhe.json";
 
 registerCatalog("de", extension as Catalog);
+// Texts of the Ruhe components (src/ui/ruhe, 2026-11-27).
+registerCatalog("de", ruhe as Catalog);
 
 export { PRODUCT_NAME, feature, getLocale, intlLocale, msg, setLocale, t, tn, tx } from "@kortex/i18n";
 export type { Locale };

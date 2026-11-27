@@ -2,15 +2,36 @@ import { getVersion } from "@tauri-apps/api/app";
 import { useEffect, useState, type CSSProperties } from "react";
 import { bridge, type AccountStatus } from "@/bridge";
 import { DIco } from "@/components/icons";
+import { Keys } from "@/components/Key";
 import { Wave } from "@/components/Wave";
 import { HOTKEYS, SYS_OPTS, WIN_TITLES, type NativeWin } from "@/data";
-import { LOCALE_NAMES, getLocale, t, type Locale } from "@/i18n";
+import { LOCALE_NAMES, getLocale, msg, t, type Locale } from "@/i18n";
 import { VaultSettings } from "./VaultSettings";
-import { FONT_SCALES, FONT_SCALE_KEY, applyFontScale, readFontScale } from "@/theme";
+import {
+  ACCENT_CHOICES,
+  ACCENT_STORAGE_KEY,
+  FONT_SCALES,
+  FONT_SCALE_KEY,
+  LOOK_KEY,
+  THEME_KEY,
+  accentHex,
+  applyAccent,
+  applyFontScale,
+  applyLook,
+  applyTheme,
+  readFontScale,
+  readLook,
+  readTheme,
+  resolveAccent,
+  resolveTheme,
+  type Look,
+  type ThemePref,
+} from "@/theme";
 import type { SearchHit } from "@/launcher";
 import { DEFAULT_DEVICE, deviceLabel, useDesktop } from "@/state/desktop";
 import { meetingStatus } from "@/state/meeting";
 import { Clock } from "@/state/clock";
+import { dragWindow } from "@/components/drag";
 
 export const NATIVE_PLACEMENT: CSSProperties = {
   position: "absolute",
@@ -29,9 +50,9 @@ const switchRow = (
   toggle: () => void,
   minHeight: number,
 ) => (
-  <label key={label} className="kxh-row" style={{ gap: 12, minHeight, cursor: "pointer" }}>
+  <label key={label} className="kxd-set-line" style={{ minHeight, cursor: "pointer" }}>
     <div className="kxh-col kxh-grow" style={{ gap: 0 }}>
-      <span style={{ fontSize: "calc(13.5px * var(--kx-fs, 1))" }}>{label}</span>
+      <span className="kxd-set-name">{label}</span>
       <span className="kx-help">{help}</span>
     </div>
     <input
@@ -89,8 +110,8 @@ function MeetingCenter() {
         </div>
         <button
           type="button"
-          className={"kx-btn " + (live ? "kx-btn--secondary" : "kx-btn--primary")}
-          style={{ minHeight: 40, flex: "none" }}
+          className={live ? "kxd-nw-stop" : "kx-btn kx-btn--primary"}
+          style={{ minHeight: 36, flex: "none" }}
           onClick={d.toggleRecording}
           disabled={d.phase === "gen"}
         >
@@ -105,27 +126,17 @@ function MeetingCenter() {
         </button>
       )}
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 4 }}>
-        <span className="kx-label">{t("Recent meetings")}</span>
+        <h3 className="kxd-set-h">{t("Recent meetings")}</h3>
         {!d.connected && <span className="kx-help">{t("Connect a Kortex account in the settings, then your minutes from 20_Meetings/ appear here.")}</span>}
         {d.connected && recent === null && <span className="kx-help">{t("Loading …")}</span>}
         {error && <span className="kx-help" style={{ overflowWrap: "anywhere" }}>{error}</span>}
         {d.connected && recent?.length === 0 && !error && <span className="kx-help">{t("No meetings in the vault yet.")}</span>}
         {recent?.map((m) => (
-          <button
-            key={m.item_id}
-            type="button"
-            className="kxb kxh-row"
-            style={{ gap: 14, padding: "12px 0", textAlign: "left", boxShadow: "inset 0 -1px 0 0 var(--border-subtle)" }}
-            onClick={() => d.openItem(m.item_id)}
-          >
-            <DIco name="cal" />
-            <span className="kxh-col kxh-grow" style={{ gap: 3, minWidth: 0 }}>
-              <strong className="kx-truncate" style={{ fontSize: "calc(14px * var(--kx-fs, 1))", fontWeight: 500 }}>
-                {m.title}
-              </strong>
-              {m.snippet && <span className="kx-help kx-truncate">{m.snippet}</span>}
-            </span>
-            <DIco name="up-right" />
+          <button key={m.item_id} type="button" className="kxd-nw-row" onClick={() => d.openItem(m.item_id)} title={t("Open in the Kortex window")}>
+            <DIco name="cal" sm />
+            <span className="kxd-nw-rowtitle kx-truncate">{m.title}</span>
+            {m.snippet && <span className="kxd-nw-rowmeta kx-truncate">{m.snippet}</span>}
+            {m.page_or_timestamp && <span className="kxd-nw-rowdate kx-num">{m.page_or_timestamp}</span>}
           </button>
         ))}
       </div>
@@ -138,11 +149,9 @@ function AudioSetup() {
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 20 }}>
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 10 }}>
         <div className="kxh-row">
-          <span className="kx-icontile kx-icontile--checkin">
-            <DIco name="mic" />
-          </span>
+          <DIco name="mic" className="kxd-nw-chico" />
           <div className="kxh-col" style={{ gap: 0 }}>
-            <span className="kx-label">{t("Channel 0 · Microphone")}</span>
+            <span className="kxd-set-name">{t("Channel 0 · Microphone")}</span>
             <span className="kx-help">{t("Your voice, recorded separately")}</span>
           </div>
         </div>
@@ -162,15 +171,13 @@ function AudioSetup() {
             {t("Without a fixed choice Kortex checks at start whether the default device delivers a signal and otherwise takes the next real microphone.")}
           </span>
         )}
-        <Wave tone="mic" n={56} h={22} channel={0} showDb />
+        <Wave tone="ai" n={56} h={22} channel={0} showDb />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 10 }}>
         <div className="kxh-row">
-          <span className="kx-icontile">
-            <DIco name="speaker" style={{ color: "var(--tag-auto-dot)" }} />
-          </span>
+          <DIco name="speaker" className="kxd-nw-chico" />
           <div className="kxh-col" style={{ gap: 0 }}>
-            <span className="kx-label">{t("Channel 1 · Windows WASAPI loopback")}</span>
+            <span className="kxd-set-name">{t("Channel 1 · Windows WASAPI loopback")}</span>
             <span className="kx-help">{t("Everything that comes out of the speakers or headset")}</span>
           </div>
         </div>
@@ -185,9 +192,8 @@ function AudioSetup() {
           </span>
           <DIco name="chev-d" />
         </button>
-        <Wave tone="out" n={56} h={22} channel={1} showDb />
+        <Wave tone="ai" n={56} h={22} channel={1} showDb />
       </div>
-      <hr className="kx-hairline" />
       <div className="kxh-row" style={{ gap: 10 }}>
         <span className="kx-help kxh-grow">
           {t("Live transcript through your Kortex routing (Settings → AI routing → Audio transcription). The device choice applies from the next recording.")}
@@ -523,51 +529,149 @@ function Settings() {
     });
   };
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 22 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 6 }}>
-        <span className="kx-label">{t("Kortex account")}</span>
+    <div className="kxd-set">
+      <section className="kxd-set-group">
+        <h3 className="kxd-set-h">{t("Kortex account")}</h3>
         <Account />
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 6 }}>
-        <span className="kx-label">{t("Global hotkeys")}</span>
+      </section>
+      <section className="kxd-set-group">
+        <h3 className="kxd-set-h">{t("Appearance")}</h3>
+        <p className="kx-help">{t("For the windows of the Windows app. You set the main window in the web app under Settings → Appearance.")}</p>
+        <ThemeRow />
+        <AccentRow />
+        <LookRow />
+        <FontScaleRow />
+        <LanguageRow />
+      </section>
+      <section className="kxd-set-group">
+        <h3 className="kxd-set-h">{t("Global hotkeys")}</h3>
         {HOTKEYS.map((h) => (
-          <div
-            key={h.label}
-            className="kxh-row"
-            style={{ minHeight: 40, boxShadow: "inset 0 -1px 0 0 var(--border-subtle)" }}
-          >
-            <span className="kxh-grow" style={{ fontSize: "calc(13.5px * var(--kx-fs, 1))" }}>
-              {t(h.label)}
-            </span>
-            <span className="kx-keys">
-              {h.keys.map((k) => (
-                <span key={k} className="kx-kbd">
-                  {k}
-                </span>
-              ))}
-            </span>
+          <div key={h.label} className="kxd-set-line">
+            <span className="kxd-set-name kxh-grow">{t(h.label)}</span>
+            <Keys keys={h.keys} />
           </div>
         ))}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 2 }}>
-        <span className="kx-label" style={{ marginBottom: 4 }}>
-          {t("Privacy and system")}
-        </span>
-        {switchRow(t(SYS_OPTS.stealth[0]), t(SYS_OPTS.stealth[1]), d.stealth, () => d.setStealth(!d.stealth), 52)}
+      </section>
+      <section className="kxd-set-group">
+        <h3 className="kxd-set-h">{t("Privacy and system")}</h3>
+        {switchRow(t(SYS_OPTS.stealth[0]), t(SYS_OPTS.stealth[1]), d.stealth, () => d.setStealth(!d.stealth), 48)}
         {d.autostart !== null &&
-          switchRow(t(SYS_OPTS.autostart[0]), t(SYS_OPTS.autostart[1]), d.autostart, () => d.setAutostart(!d.autostart), 52)}
-        {reminders !== null && switchRow(t(SYS_OPTS.reminders[0]), t(SYS_OPTS.reminders[1]), reminders, toggleReminders, 52)}
-      </div>
-      <FontScaleRow />
-      <LanguageRow />
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 6 }}>
-        <span className="kx-label">{t("Vault folder")}</span>
+          switchRow(t(SYS_OPTS.autostart[0]), t(SYS_OPTS.autostart[1]), d.autostart, () => d.setAutostart(!d.autostart), 48)}
+        {reminders !== null && switchRow(t(SYS_OPTS.reminders[0]), t(SYS_OPTS.reminders[1]), reminders, toggleReminders, 48)}
+      </section>
+      <section className="kxd-set-group">
+        <h3 className="kxd-set-h">{t("Vault folder")}</h3>
         <VaultSettings />
-      </div>
-      <span className="kx-help kx-mono" aria-label="Version">
+      </section>
+      <span className="kx-help kx-num" aria-label="Version">
         {t("Kortex for Windows {version}", { version: version ?? t("(preview)") })}
       </span>
     </div>
+  );
+}
+
+/** One setting: name and help on the left, the control on the right (web Erscheinungsbild). */
+function SettingRow({ label, help, children }: { label: string; help?: string; children: React.ReactNode }) {
+  return (
+    <div className="kxd-set-row">
+      <div className="kxd-set-text">
+        <span className="kxd-set-name">{label}</span>
+        {help && <span className="kx-help">{help}</span>}
+      </div>
+      <div className="kxd-set-ctl">{children}</div>
+    </div>
+  );
+}
+
+/** Text tabs without a track: the chosen one sits on a quiet surface (Ruhe; replaces .kx-tabs here). */
+function Choice<V extends string | number>({ label, value, options, onPick, num }: { label: string; value: V; options: ReadonlyArray<readonly [V, string]>; onPick: (v: V) => void; num?: boolean }) {
+  return (
+    <div className="kxd-seg" role="radiogroup" aria-label={label}>
+      {options.map(([v, text]) => (
+        <button key={String(v)} type="button" role="radio" aria-checked={value === v} className={(value === v ? "is-on" : "") + (num ? " kx-num" : "")} onClick={() => onPick(v)}>
+          {text}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Light or dark for these windows, the HUD and Quick Capture (Ruhe D5): follows Windows unless a fixed choice is
+ * made. Stored per device (every window follows through `storage`) and in the core (`set_theme`: WebView2 and the
+ * native parts, event `settings:theme`).
+ */
+function ThemeRow() {
+  const d = useDesktop();
+  const [pref, setPref] = useState<ThemePref>(() => readTheme(null, storage()));
+  const pick = (next: ThemePref) => {
+    setPref(next);
+    try {
+      storage()?.setItem(THEME_KEY, next);
+    } catch {
+      /* storage blocked: the core still keeps it */
+    }
+    const dark = typeof matchMedia === "function" ? matchMedia("(prefers-color-scheme: dark)").matches : true;
+    applyTheme(document.documentElement, resolveTheme(next, dark));
+    bridge()
+      .invoke("set_theme", { theme: next })
+      .catch((e: unknown) => d.say(t("Mode: {error}", { error: String(e) })));
+  };
+  const options: Array<[ThemePref, string]> = [
+    ["system", t("System")],
+    ["light", t("Light")],
+    ["dark", t("Dark")],
+  ];
+  return (
+    <SettingRow label={t("Mode")} help={t("System follows Windows.")}>
+      <Choice label={t("Mode")} value={pref} options={options} onPick={pick} />
+    </SettingRow>
+  );
+}
+
+/** English names of the accent presets (shown with `t`). */
+const ACCENT_NAMES: Record<(typeof ACCENT_CHOICES)[number], string> = {
+  indigo: msg("Indigo"),
+  violet: msg("Violet"),
+  blue: msg("Blue"),
+  teal: msg("Teal"),
+  rose: msg("Rose"),
+  amber: msg("Amber"),
+};
+
+/** The one accent of these windows (per device, like the web's accent setting). */
+function AccentRow() {
+  const [current, setCurrent] = useState(() => resolveAccent(null, storage()));
+  const pick = (id: (typeof ACCENT_CHOICES)[number]) => {
+    setCurrent(applyAccent(document.documentElement, id));
+    try {
+      storage()?.setItem(ACCENT_STORAGE_KEY, id);
+    } catch {
+      /* storage blocked: the accent lasts for this window only */
+    }
+  };
+  return (
+    <SettingRow label={t("Accent")}>
+      <div className="kxd-swatches" role="radiogroup" aria-label={t("Accent")}>
+        {ACCENT_CHOICES.map((id) => {
+          const hex = accentHex(id)!;
+          const on = (current ?? accentHex("indigo")) === hex;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              aria-label={t(ACCENT_NAMES[id])}
+              title={t(ACCENT_NAMES[id])}
+              className={"kxd-swatch" + (on ? " is-on" : "")}
+              style={{ background: hex }}
+              onClick={() => pick(id)}
+            />
+          );
+        })}
+      </div>
+    </SettingRow>
   );
 }
 
@@ -584,17 +688,32 @@ function FontScaleRow() {
     }
   };
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 6 }}>
-      <span className="kx-label">{t("Font size")}</span>
-      <span className="kx-help">{t("For the windows of the Windows app. You set the main window in the web app under Settings → Appearance.")}</span>
-      <div className="kx-tabs" role="radiogroup" aria-label={t("Font size")} style={{ justifySelf: "start", flexWrap: "wrap" }}>
-        {FONT_SCALES.map((f) => (
-          <button key={f} type="button" role="radio" aria-checked={scale === f} className={"kx-tab kx-num" + (scale === f ? " is-on" : "")} onClick={() => pick(f)}>
-            {Math.round(f * 100)} %
-          </button>
-        ))}
-      </div>
-    </div>
+    <SettingRow label={t("Font size")}>
+      <Choice label={t("Font size")} value={scale} options={FONT_SCALES.map((f) => [f, `${Math.round(f * 100)} %`] as const)} onPick={pick} num />
+    </SettingRow>
+  );
+}
+
+/** Look of these windows, HUD and pill (per device, every open window follows through the `storage` event). */
+function LookRow() {
+  const [look, setLook] = useState<Look>(() => readLook(null, storage()));
+  const pick = (l: Look) => {
+    setLook(l);
+    applyLook(document.documentElement, l);
+    try {
+      storage()?.setItem(LOOK_KEY, l);
+    } catch {
+      /* storage blocked: the look lasts for this window only */
+    }
+  };
+  const looks: Array<[Look, string]> = [
+    ["ruhe", t("Calm")],
+    ["vivid", t("Vivid")],
+  ];
+  return (
+    <SettingRow label={t("Look")} help={t("Calm: quieter surfaces, glass HUD and pill. The main window follows the web app's own switch.")}>
+      <Choice label={t("Look")} value={look} options={looks} onPick={pick} />
+    </SettingRow>
   );
 }
 
@@ -613,17 +732,9 @@ function LanguageRow() {
       .catch((e: unknown) => d.say(t("Language: {error}", { error: String(e) })));
   };
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 6 }}>
-      <span className="kx-label">{t("Language")}</span>
-      <span className="kx-help">{t("For the windows of the Windows app and its notifications. The main window follows the language of your Kortex account.")}</span>
-      <div className="kx-tabs" role="radiogroup" aria-label={t("Language")} style={{ justifySelf: "start", flexWrap: "wrap" }}>
-        {(Object.keys(LOCALE_NAMES) as Locale[]).map((l) => (
-          <button key={l} type="button" role="radio" aria-checked={current === l} className={"kx-tab" + (current === l ? " is-on" : "")} onClick={() => pick(l)}>
-            {LOCALE_NAMES[l]}
-          </button>
-        ))}
-      </div>
-    </div>
+    <SettingRow label={t("Language")} help={t("For the windows of the Windows app and its notifications. The main window follows the language of your Kortex account.")}>
+      <Choice label={t("Language")} value={current} options={(Object.keys(LOCALE_NAMES) as Locale[]).map((l) => [l, LOCALE_NAMES[l]] as const)} onPick={pick} />
+    </SettingRow>
   );
 }
 
@@ -646,14 +757,11 @@ export function NativeWindow({
   const d = useDesktop();
   const title = t(WIN_TITLES[win]);
   return (
-    <div className="kx-window kx-slide-up" role="dialog" aria-label={title} style={placement}>
-      <div
-        className="kx-titlebar"
-        style={{ flex: "none", boxShadow: "inset 0 -1px 0 0 var(--border-subtle)" }}
-        data-tauri-drag-region
-      >
-        <span className="kx-appmark" style={{ width: 14, height: 14 }} />
-        <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>{title}</span>
+    <div className="kx-window kxd-nw kx-slide-up" role="dialog" aria-label={title} style={placement}>
+      {/* Ruhe round 2: the whole bar moves the window (the bare drag-region attribute only fired on its own pixels;
+          the title and the spacer covered them). */}
+      <div className="kx-titlebar kxd-nw-title" style={{ flex: "none" }} onMouseDown={dragWindow}>
+        <span className="kxd-nw-name">{title}</span>
         <span className="kxh-grow" />
         <button
           type="button"
@@ -670,13 +778,13 @@ export function NativeWindow({
           flex: 1,
           minHeight: 0,
           overflow: "auto",
-          padding: "20px 24px 24px",
+          padding: "12px 24px 24px",
           display: "grid",
           // One column that may shrink below its content (fx3: long lines spilled out of the 620 px window).
           gridTemplateColumns: "minmax(0, 1fr)",
           gap: 20,
           alignContent: "start",
-          background: "var(--bg-main-window)",
+          background: "var(--lum-1)",
         }}
       >
         {win === "meetings" && <MeetingCenter />}

@@ -22,15 +22,15 @@ export default async function NoAccessPage() {
   // One sentence with the address in bold: split the translated text at the placeholder.
   const [before = "", after = ""] = t("The account {email} has not been approved for Kortex.").split("{email}");
   return (
-    <main style={{ minHeight: "100dvh", display: "grid", placeItems: "center", padding: 16, background: "var(--bg-app-shell)" }}>
-      <Card padded style={{ width: "100%", maxWidth: 420, display: "grid", gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <main className="rz-auth" style={{ minHeight: "100dvh", display: "grid", placeItems: "center", padding: 16, background: "var(--bg-app-shell)" }}>
+      <Card padded className="rz-auth-col" style={{ width: "100%", maxWidth: 420, display: "grid", gap: 16 }}>
+        <div className="rz-auth-brand" style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <AppMark size={28} />
           <strong className="kx-body" style={{ fontWeight: 500 }}>
             Kortex
           </strong>
         </div>
-        <h1 className="kx-h-page" style={{ margin: 0 }}>
+        <h1 className="kx-h-page rz-auth-title" style={{ margin: 0 }}>
           {t("No access")}
         </h1>
         <p className="kx-body" style={{ margin: 0 }}>
@@ -48,7 +48,7 @@ export default async function NoAccessPage() {
         <p className="kx-help" style={{ margin: 0 }}>
           {t("For the operator:")} <span className="kx-mono">pnpm --filter @kortex/db db:allow -- {email ?? "<e-mail>"}</span>
         </p>
-        <a className="kx-btn kx-btn--secondary" href="/auth/logout" style={{ justifySelf: "start" }}>
+        <a className="kx-btn kx-btn--secondary rz-auth-out" href="/auth/logout" style={{ justifySelf: "start" }}>
           {t("Sign out")}
         </a>
       </Card>

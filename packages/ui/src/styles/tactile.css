@@ -428,10 +428,8 @@
     .tc-set-ctl { justify-content: flex-start; }
     .tc-bd-pick { flex-wrap: wrap; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .kx-app-shell > .kx-sidebar, .kx-nav-scrim { transition: none !important; }
-    .tc-backdrop img { animation: none; }
-  }
+  [data-motion="reduced"] .kx-app-shell > .kx-sidebar, [data-motion="reduced"] .kx-nav-scrim { transition: none !important; }
+  [data-motion="reduced"] .tc-backdrop img { animation: none; }
 
   /* ================= Settings > Erscheinungsbild (dummy .set, .bd-pick) ================= */
   .tc-set { border-radius: 14px; padding: 2px 18px; background: var(--lum-2); box-shadow: var(--edge-surface); }

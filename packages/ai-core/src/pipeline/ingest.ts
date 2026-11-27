@@ -550,6 +550,7 @@ export function createIngestionPipeline(config: IngestionPipelineConfig): Ingest
     fetch: config.fetch,
     jinaApiKey: env.JINA_API_KEY,
     firecrawlApiKey: env.FIRECRAWL_API_KEY,
+    keylessReader: !/^(off|false|0|no)$/i.test(env.KORTEX_KEYLESS_READER ?? ""),
     omdbApiKey: env.OMDB_API_KEY,
     youtube: config.youtube,
     audioTranscriber,

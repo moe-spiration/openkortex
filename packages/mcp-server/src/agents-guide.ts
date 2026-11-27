@@ -116,7 +116,7 @@ export const FRONTMATTER_GUIDE: readonly { key: string; column: string; note: st
 export const TOOL_GUIDE: readonly { name: string; use: string; example: unknown }[] = [
   {
     name: "brain_search",
-    use: "Find items first (hybrid semantic + full-text). Filter by type/types, status (metadata.status), metadata, folder_path, tags; without query it lists the newest matches. Hits carry metadata (status, rating).",
+    use: "Find items first (hybrid semantic + full-text). Filter by type/types, status (metadata.status), metadata, folder_path, tags; without query it lists the newest matches. Hits carry metadata (status, rating). unread: true is the reading queue (unread, not snoozed clippings and documents, ranked by the query).",
     example: { query: "Dune", types: ["book"], status: "want_to_read", limit: 5 },
   },
   {
@@ -126,7 +126,7 @@ export const TOOL_GUIDE: readonly { name: string; use: string; example: unknown 
   },
   {
     name: "brain_save_item",
-    use: "Save new Markdown, or update an existing item with id (only given fields change; metadata merged and validated against the type, null removes a key; remind_at). Creating never duplicates: same URL, isbn/imdb_id, content or object title merges into the existing item (response duplicate.reason). Without folder_path: Inbox or the type's home folder. With folder_path: manual placement, never moved.",
+    use: "Save new Markdown, or update an existing item with id (only given fields change; metadata merged and validated against the type, null removes a key; remind_at). Creating never duplicates: same URL, isbn/imdb_id, content or object title merges into the existing item (response duplicate.reason). Without folder_path: Inbox or the type's home folder. With folder_path: manual placement, never moved. Managed section: section + content_md (+ id, or date for the daily note, created if missing) replaces only that `## ` section and keeps the rest.",
     example: {
       id: "<uuid from brain_search>",
       metadata: { status: "read", feedback: "Loved the world-building", rating: 9 },
@@ -134,7 +134,7 @@ export const TOOL_GUIDE: readonly { name: string; use: string; example: unknown 
   },
   {
     name: "brain_organize",
-    use: "create_folder, move_item (becomes manual placement), add_tags, snooze (item_id + date) / clear_reminder (set or remove remind_at), turn_into_object (retype into a domain object, metadata validated).",
+    use: "create_folder, move_item (becomes manual placement), add_tags, snooze (item_id + date) / clear_reminder (set or remove remind_at), set_read_status (item_id + read_status unread|read|skipped for clippings and documents), turn_into_object (retype into a domain object, metadata validated).",
     example: {
       action: "turn_into_object",
       item_id: "<uuid>",

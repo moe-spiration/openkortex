@@ -11,6 +11,7 @@ import { buildAiChat } from "../lib/requests";
 import type { ExtensionSettings } from "../lib/settings";
 import { SaveAnswerButton, SaveChatButton, SavePromptButton, type SaveState } from "../ui/ChatControls";
 import { Toast, type ToastMessage } from "../ui/Toast";
+import { ToastStack } from "../ui/ruhe/kit";
 import { mountReact, type MountedUi } from "./mount";
 import { createStore, useStore } from "./store";
 
@@ -106,8 +107,9 @@ export async function startChatExport(ctx: ContentScriptContext, settings: Exten
   await mountReact(ctx, {
     name: "kortex-chat",
     theme: settings.theme,
+    look: settings.look,
     position: "overlay",
-    node: <ChatOverlay store={store} onSave={() => void saveChat()} />,
+    node: <ChatOverlay store={store} onSave={() => void saveChat()} ruhe={settings.look === "ruhe"} />,
   });
 
   async function syncAnswerButtons() {
@@ -139,10 +141,11 @@ export async function startChatExport(ctx: ContentScriptContext, settings: Exten
     return mountReact(ctx, {
       name: "kortex-prompt",
       theme: settings.theme,
+      look: settings.look,
       position: "inline",
       anchor: spec.actionHost(el),
       append: "last",
-      node: <PromptView id={id} store={store} onSave={() => void savePrompt(id, el)} />,
+      node: <PromptView id={id} store={store} onSave={() => void savePrompt(id, el)} ruhe={settings.look === "ruhe"} />,
     });
   }
 
@@ -150,10 +153,11 @@ export async function startChatExport(ctx: ContentScriptContext, settings: Exten
     return mountReact(ctx, {
       name: "kortex-answer",
       theme: settings.theme,
+      look: settings.look,
       position: "inline",
       anchor: spec.actionHost(el),
       append: "last",
-      node: <AnswerView id={id} store={store} onSave={() => void saveAnswer(id, el)} />,
+      node: <AnswerView id={id} store={store} onSave={() => void saveAnswer(id, el)} ruhe={settings.look === "ruhe"} />,
     });
   }
 
@@ -181,38 +185,48 @@ export async function startChatExport(ctx: ContentScriptContext, settings: Exten
   schedule();
 }
 
-function ChatOverlay({ store, onSave }: { store: ReturnType<typeof createStore<ChatState>>; onSave: () => void }) {
+function ChatOverlay({ store, onSave, ruhe }: { store: ReturnType<typeof createStore<ChatState>>; onSave: () => void; ruhe?: boolean }) {
   const s = useStore(store);
+  const clear = () => store.set((p) => ({ ...p, toast: null }));
   return (
     <>
       {s.hasMessages && (
         <div style={{ position: "fixed", right: 24, bottom: 112 }}>
-          <SaveChatButton state={s.chat} onSave={onSave} />
+          <SaveChatButton state={s.chat} onSave={onSave} ruhe={ruhe} />
         </div>
       )}
-      {s.toast && (
+      {s.toast && ruhe && (
+        <div className="rx">
+          <ToastStack
+            toasts={[{ id: s.toast.text, tone: s.toast.tone === "error" ? "error" : "ok", text: s.toast.text }]}
+            onDismiss={clear}
+            style={{ left: "50%", right: "auto", transform: "translateX(-50%)" }}
+          />
+        </div>
+      )}
+      {s.toast && !ruhe && (
         <div style={{ position: "fixed", bottom: 48, left: "50%", marginLeft: -180 }}>
-          <Toast message={s.toast} onDone={() => store.set((p) => ({ ...p, toast: null }))} />
+          <Toast message={s.toast} onDone={clear} />
         </div>
       )}
     </>
   );
 }
 
-function AnswerView({ id, store, onSave }: { id: string; store: ReturnType<typeof createStore<ChatState>>; onSave: () => void }) {
+function AnswerView({ id, store, onSave, ruhe }: { id: string; store: ReturnType<typeof createStore<ChatState>>; onSave: () => void; ruhe?: boolean }) {
   const state = useStore(store).answers[id] ?? idle;
   return (
     <div style={{ padding: "6px 0" }}>
-      <SaveAnswerButton state={state} onSave={onSave} />
+      <SaveAnswerButton state={state} onSave={onSave} ruhe={ruhe} />
     </div>
   );
 }
 
-function PromptView({ id, store, onSave }: { id: string; store: ReturnType<typeof createStore<ChatState>>; onSave: () => void }) {
+function PromptView({ id, store, onSave, ruhe }: { id: string; store: ReturnType<typeof createStore<ChatState>>; onSave: () => void; ruhe?: boolean }) {
   const state = useStore(store).prompts[id] ?? idle;
   return (
     <div style={{ padding: "6px 0" }}>
-      <SavePromptButton state={state} onSave={onSave} />
+      <SavePromptButton state={state} onSave={onSave} ruhe={ruhe} />
     </div>
   );
 }

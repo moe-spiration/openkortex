@@ -1,12 +1,12 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterAll, describe, expect, it } from "vitest";
-import { bridge } from "@/bridge";
-import { DEMO_LINES } from "@/bridge/mock";
+import { bridge, setBridgeForTests } from "@/bridge";
+import { createMockBridge } from "@/bridge/mock";
 import { DesktopProvider, useDesktop } from "@/state/desktop";
 import { clockStore } from "@/state/clock";
 import { levelStore } from "@/state/levels";
-import { Hud } from "@/windows/Hud";
+import { MeetingBar } from "@/windows/MeetingBar";
 
 /*
  * fx3 (device test 0.6.1, "HUD wirkt hakelig"): level events (~30/s) must not re-render React.
@@ -16,10 +16,24 @@ import { Hud } from "@/windows/Hud";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+/*
+ * The mock bridge plays a demo conversation on real timers: two transcript lines 60 ms after start and one more
+ * every DEMO_EVERY ticks. Those are real state changes that rightly re-render the HUD. Before, the test raced
+ * them: whether the intro landed before or inside the measured window depended on how fast the first render was,
+ * and under load (pnpm check, parallel workers) a demo line could land in the tick test. So the clock runs at
+ * one tick per hour here, and the test waits for the intro before it measures.
+ */
+const mock = createMockBridge({ tickMs: 3_600_000 });
+setBridgeForTests(mock);
+
 const host = document.createElement("div");
 document.body.appendChild(host);
 const root = createRoot(host);
-afterAll(() => act(() => root.unmount()));
+afterAll(() => {
+  act(() => root.unmount());
+  mock.dispose();
+  setBridgeForTests(null);
+});
 
 const frame = () => new Promise((r) => setTimeout(r, 20));
 
@@ -28,7 +42,7 @@ let renders = 0;
 function CountedHud() {
   useDesktop();
   renders += 1;
-  return <Hud />;
+  return <MeetingBar />;
 }
 
 describe("HUD rendering under level events", () => {
@@ -42,13 +56,10 @@ describe("HUD rendering under level events", () => {
       await frame();
     });
     const hud = host.querySelector(".kxd-hud")!;
+    // The mock's intro (meeting:live + two lines) must be in before the measured window starts.
+    for (let i = 0; i < 250 && hud.querySelectorAll(".kxd-hud-line").length < 2; i++) await act(frame);
+    expect(hud.querySelectorAll(".kxd-hud-line").length).toBeGreaterThanOrEqual(2);
     expect(hud.getAttribute("data-phase")).toBe("live");
-    // The mock bridge opens on a running conversation: 60 ms after it is created it sends the first
-    // transcript lines, a real state change that renders. Wait for them before counting, otherwise a
-    // slow runner counts that render as one caused by the level events.
-    const intro = DEMO_LINES[1]!.text;
-    for (let i = 0; i < 100 && !hud.textContent?.includes(intro); i++) await act(frame);
-    expect(hud.textContent).toContain(intro);
 
     const b = bridge() as ReturnType<typeof bridge> & { emit: (e: string, p: unknown) => void };
     const N = 300;
@@ -70,7 +81,7 @@ describe("HUD rendering under level events", () => {
       console.log(`hud-perf: ${N} level events -> ${renders} HUD renders, ${script.toFixed(0)} ms script (${(script / N).toFixed(2)} ms/event), ${mutations} DOM mutations`);
 
     expect(renders).toBe(0);
-    // The latest level reached the DOM: dB readout and the microphone attribute for the self-test probe
+    // The latest level reached the DOM: the wave's scale and the microphone attribute for the self-test probe
     // (the mock bridge keeps sending its own levels, so compare with the store).
     // The DOM must show a level the store actually held (the mock may send one between the read and
     // the next animation frame, which made an exact comparison flaky).
@@ -80,7 +91,9 @@ describe("HUD rendering under level events", () => {
     off();
     const shown = hud.getAttribute("data-mic-db")!;
     expect(seen.has(shown) || shown === String(levelStore.get().a)).toBe(true);
-    expect(hud.textContent).toContain(`${shown} dB`);
+    // The bar's one wave (both channels) moves by transform, without React.
+    const wv = hud.querySelector<HTMLElement>(".kxd-mb-wave .kx-wv")!;
+    expect(wv.style.transform).toMatch(/^scaleY\(/);
   });
 
   it("does not re-render the HUD tree on the 1 s meeting:tick, only the clock text", async () => {
@@ -95,7 +108,7 @@ describe("HUD rendering under level events", () => {
     await act(frame);
     // Device test 0.6.2 ("HUD träge"): the tick used to re-render every context consumer.
     expect(renders).toBe(0);
-    expect(hud.textContent).toContain(`REC ${"1:03:"}`);
+    expect(hud.querySelector(".kxd-mb-time")?.textContent).toContain("1:03:");
     expect(clockStore.get()).toBeGreaterThanOrEqual(3600 + 125);
   });
 });

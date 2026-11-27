@@ -163,7 +163,7 @@ describe("meeting markdown parity", () => {
       { title: "Sync", date: "2026-11-01" },
     );
     expect(md).toContain(
-      "- [ ] @Max: Folien senden (Due: 2026-11-05) · [00:01:12] · Zeitrahmen: diese Woche · Kontext: Beim Sync besprochen",
+      "- [ ] Folien senden · Zuständig: Max · Zeitrahmen: diese Woche · Fällig: 2026-11-05 · Kontext: Beim Sync besprochen",
     );
   });
 });

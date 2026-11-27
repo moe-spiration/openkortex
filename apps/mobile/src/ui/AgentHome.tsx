@@ -9,6 +9,7 @@ import { useTheme } from "../theme/ThemeProvider";
 import { RADIUS } from "../theme/tokens";
 import { Icon } from "./Icon";
 import { Help, Micro, Spinner, T } from "./primitives";
+import { GroupHead, RRow, StatusRing } from "./ruhe";
 
 /*
  * The agent on Home (like the web Home and the approved preview): "Über Nacht erledigt" under the daily stack (what
@@ -86,6 +87,38 @@ export function YourAgent() {
       ) : (
         <Help>{t("Nothing running right now. Open the agent to give it a job.")}</Help>
       )}
+    </View>
+  );
+}
+
+/**
+ * Ruhe: the agent on Heute as quiet rows under one group head: what waits for an OK, what runs, what finished
+ * overnight, each with its status ring. A tap opens the agent. Live only (demo has no jobs).
+ */
+export function AgentRowsRuhe() {
+  const router = useRouter();
+  const live = useData().auth === "live";
+  const { jobs } = useAgentJobs(live);
+  if (!live) return null;
+  const now = new Date();
+  const g = groupJobs(jobs);
+  const night = overnightJobs(jobs, now).filter((j) => j.status !== "waiting");
+  const rows = [...g.waiting.map((j) => ({ j, s: "waiting" as const })), ...g.running.filter((j) => !isStale(j, now)).map((j) => ({ j, s: "running" as const })), ...night.map((j) => ({ j, s: "done" as const }))].slice(0, 4);
+  if (!rows.length) return null;
+  return (
+    <View>
+      <GroupHead label={t("Your agent")} count={g.waiting.length || undefined} />
+      {rows.map(({ j, s }, i) => (
+        <RRow
+          key={j.id}
+          first={i === 0}
+          lead={<StatusRing state={s} size={18} />}
+          title={j.title}
+          titleWeight={400}
+          sub={s === "waiting" ? t("Waits for your OK") : s === "running" ? t("Running …") : t("Done overnight")}
+          onPress={() => router.navigate("/agent")}
+        />
+      ))}
     </View>
   );
 }

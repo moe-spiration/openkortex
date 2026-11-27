@@ -1,0 +1,89 @@
+/*
+ * Ruhe (2026-11-27, web-scr1; gap web-b W7): overlays. Menus, context menus, popovers, dialogs, toasts, tooltips and
+ * the mobile sheet as one flat family (artifact "Kortex Ruhe-Iteration", principles 2 and 7; palette screen 05 for the
+ * floating surface): solid --lum-2, one hairline ring and a soft drop instead of glass with an edge light, radius
+ * 10 to 14 px, 28-px menu rows, sentence-case labels, shortcuts as small key caps. Glass stays on mobile (principle 9).
+ * Classic is untouched; every rule is scoped to <html data-look="ruhe">. The command palette belongs to
+ * ruhe-library (web-lib) and is left out here.
+ */
+
+@layer components {
+  /* ---------- Floating surface: menus, popovers, toasts ---------- */
+  [data-look="ruhe"] :is(.kx-menu, .kx-popover, .kx-toast) {
+    border: 0; background: var(--lum-2); background-image: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 16px 40px -16px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.25);
+  }
+  [data-look="ruhe"][data-theme="light"] :is(.kx-menu, .kx-popover, .kx-toast),
+  [data-look="ruhe"] [data-theme="light"] :is(.kx-menu, .kx-popover, .kx-toast) {
+    background: var(--lum-1);
+    box-shadow: 0 0 0 1px var(--hair-strong), 0 14px 34px -16px oklch(0.25 0.01 var(--ruhe-h, 75) / 0.28), 0 2px 6px -2px oklch(0.25 0.01 var(--ruhe-h, 75) / 0.08);
+  }
+
+  /* Menus and context menus: 28-px rows, a grey hover, icons quiet, the shortcut as a key cap on the right. */
+  [data-look="ruhe"] .kx-menu { min-width: 200px; padding: 4px; border-radius: 10px; }
+  [data-look="ruhe"] .kx-menu-label { padding: 7px 8px 3px; font-size: var(--rz-fs-micro); font-weight: var(--rz-w-book); letter-spacing: 0; text-transform: none; color: var(--t4); }
+  [data-look="ruhe"] .kx-menu-item {
+    gap: 9px; height: 28px; padding: 0 8px; border-radius: 6px; color: var(--t1); font-size: var(--rz-fs-body);
+    transition: background var(--d1) var(--eo);
+  }
+  [data-look="ruhe"] .kx-menu-item > :is(.kx-ico, svg, .kx-nico) { width: 15px; height: 15px; color: var(--t3); }
+  [data-look="ruhe"] .kx-menu-item:hover, [data-look="ruhe"] .kx-menu-item.is-selected, [data-look="ruhe"] .kx-menu-item:focus-visible {
+    background: var(--lum-3); color: var(--t1); outline: 0;
+  }
+  [data-look="ruhe"] .kx-menu-item:hover > :is(.kx-ico, svg, .kx-nico), [data-look="ruhe"] .kx-menu-item.is-selected > :is(.kx-ico, svg, .kx-nico) { color: var(--t2); }
+  [data-look="ruhe"] .kx-menu-item[aria-checked="true"] > :is(.kx-ico, svg, .kx-nico):last-child { color: var(--accent-ink); }
+  [data-look="ruhe"] .kx-menu-item--danger, [data-look="ruhe"] .kx-menu-item--danger > :is(.kx-ico, svg) { color: var(--crit-ink, var(--status-urgent-text)) !important; }
+  [data-look="ruhe"] .kx-menu-item--danger:hover { background: color-mix(in oklch, var(--crit-ink, var(--status-urgent-text)) 10%, transparent); }
+  [data-look="ruhe"] .kx-menu-item .kx-hint, [data-look="ruhe"] .kx-menu-item .kx-kbd {
+    display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 5px; background: var(--lum-3); box-shadow: none;
+    color: var(--t4); font: var(--rz-w-regular) var(--rz-fs-kbd) / 1 var(--font-mono, ui-monospace, monospace);
+  }
+  [data-look="ruhe"] .kx-menu-item:hover :is(.kx-hint, .kx-kbd) { background: var(--lum-4); color: var(--t3); }
+  [data-look="ruhe"] .kx-menu-item--rich { height: auto; padding: 6px 8px; }
+  [data-look="ruhe"] .kx-menu-item--rich small { color: var(--t3); }
+  [data-look="ruhe"] .kx-menu-item--rich .kx-icontile { width: 28px; height: 28px; border-radius: 7px; background: var(--lum-3); box-shadow: none; color: var(--t2); }
+  [data-look="ruhe"] :is(.kx-menu-sep, .fs-menu-sep, .kx-menu > .kx-sep) { height: 1px; margin: 4px -4px; border: 0; background: var(--hair); }
+  [data-look="ruhe"] .kx-menu-check { color: var(--accent-ink); }
+
+  /* Popovers (field editor, cover and icon picker). */
+  [data-look="ruhe"] .kx-popover { padding: 12px; border-radius: 12px; }
+  [data-look="ruhe"] .kx-popover .kx-label { font-size: var(--rz-fs-meta); font-weight: var(--rz-w-book); letter-spacing: 0; text-transform: none; color: var(--t3); }
+
+  /* Dialogs (shortcuts, confirmations): solid, 14 px, no inner edge light, the foot without a fill. */
+  [data-look="ruhe"] :is(.kx-dialog, .kx-dlg:not(.kx-palette)) {
+    border-radius: 14px; background: var(--lum-2); box-shadow: 0 0 0 1px var(--hair-strong), 0 30px 80px -20px rgb(0 0 0 / 0.7);
+  }
+  [data-look="ruhe"][data-theme="light"] :is(.kx-dialog, .kx-dlg:not(.kx-palette)), [data-look="ruhe"] [data-theme="light"] :is(.kx-dialog, .kx-dlg:not(.kx-palette)) {
+    background: var(--lum-1); box-shadow: 0 0 0 1px var(--hair-strong), 0 30px 70px -24px oklch(0.25 0.01 var(--ruhe-h, 75) / 0.3);
+  }
+  [data-look="ruhe"] .kx-dialog-body { padding: 18px 18px 14px; }
+  [data-look="ruhe"] .kx-dialog-foot { padding: 10px 14px; border-radius: 0 0 14px 14px; background: transparent; box-shadow: 0 -1px 0 var(--hair); }
+  [data-look="ruhe"] .kx-dlg--keys .kx-eyebrow { font: var(--rz-w-book) var(--rz-fs-meta) / 1.4 var(--font-sans); letter-spacing: 0; text-transform: none; color: var(--t3); }
+  [data-look="ruhe"] .kx-dlg--keys .kx-h-page { font-size: var(--rz-fs-h1); font-weight: var(--rz-w-semi); letter-spacing: -0.02em; }
+  [data-look="ruhe"] .kx-dlg--keys .kx-keys .kx-kbd, [data-look="ruhe"] .kx-dlg--keys .kx-kbd { background: var(--lum-3); box-shadow: none; color: var(--t3); }
+  [data-look="ruhe"] .kx-scrim, [data-look="ruhe"] .kx-dlg-backdrop { background: oklch(0.1 0 0 / 0.45); }
+  [data-look="ruhe"][data-theme="light"] :is(.kx-scrim, .kx-dlg-backdrop), [data-look="ruhe"] [data-theme="light"] :is(.kx-scrim, .kx-dlg-backdrop) { background: oklch(0.2 0.01 75 / 0.22); }
+
+  /* Toasts (Sonner, top centre): one quiet line, no tinted icon, the action as a text button in the accent. */
+  [data-look="ruhe"] .kx-toast {
+    gap: 10px; width: auto; min-width: 280px; max-width: 440px; min-height: 40px; padding: 8px 8px 8px 12px; border-radius: 10px;
+    color: var(--t1); font-size: var(--rz-fs-body);
+  }
+  [data-look="ruhe"] .kx-toast > .kx-ico:first-child, [data-look="ruhe"] .kx-toast [data-icon] { width: 15px; height: 15px; color: var(--t3); }
+  [data-look="ruhe"] .kx-toast--error > .kx-ico:first-child { color: var(--crit-ink, var(--t3)); }
+  [data-look="ruhe"] .kx-toast .kx-btn {
+    height: 26px; padding: 0 8px; border-radius: 6px; background: transparent; box-shadow: none; color: var(--accent-ink); font-weight: var(--rz-w-book);
+  }
+  [data-look="ruhe"] .kx-toast .kx-btn:hover { background: var(--lum-3); }
+
+  /* Tooltips: the same flat surface, small. */
+  [data-look="ruhe"] [data-tip]:hover::after, [data-look="ruhe"] [data-tip]:focus-visible::after {
+    padding: 5px 7px; border-radius: 6px; background: var(--lum-3); color: var(--t1); font-weight: var(--rz-w-regular);
+    -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: 0 0 0 1px var(--hair-strong), 0 6px 16px -8px rgb(0 0 0 / 0.5);
+  }
+  [data-look="ruhe"] .kx-tooltip { height: 24px; border-radius: 6px; background: var(--lum-3); color: var(--t1); box-shadow: 0 0 0 1px var(--hair-strong); }
+
+  /* Sheet (narrow screens): glass with discipline, the grabber quiet. */
+  [data-look="ruhe"] .kx-sheet { border-radius: 22px 22px 0 0; box-shadow: 0 0 0 1px var(--hair-strong), var(--drop); }
+}
